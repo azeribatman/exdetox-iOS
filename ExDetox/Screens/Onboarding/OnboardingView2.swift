@@ -2,11 +2,10 @@ import SwiftUI
 import Charts
 
 struct OnboardingView2: View {
-    // Navigation State
     @Environment(Router.self) private var router
+    @Environment(UserProfileStore.self) private var userProfileStore
     @State private var currentStep = 0
     
-    // User Data Responses
     @State private var name: String = ""
     @State private var selectedGender: String = ""
     @State private var exName: String = ""
@@ -18,15 +17,12 @@ struct OnboardingView2: View {
     @State private var sleepQuality: String = ""
     @State private var socialStalking: String = ""
     
-    // Signature State
     @State private var signatureLines: [Line] = []
     @State private var currentLine: Line = Line(points: [])
     @State private var isSigned = false
     
-    // Total steps for progress calculation
     let totalSteps = 12
     
-    // Colors
     let accentGradient = LinearGradient(colors: [.pink, .indigo], startPoint: .leading, endPoint: .trailing)
     
     var body: some View {
@@ -34,7 +30,6 @@ struct OnboardingView2: View {
             Color(hex: "F9F9F9").ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Header
                 HStack(spacing: 12) {
                     if currentStep > 0 {
                         Button(action: previousStep) {
@@ -67,7 +62,6 @@ struct OnboardingView2: View {
                 .padding(.top, 20)
                 .padding(.bottom, 10)
                 
-                // Content Area (Switched from TabView to ZStack for custom non-swipeable navigation)
                 ZStack {
                     switch currentStep {
                     case 0:
@@ -175,7 +169,6 @@ struct OnboardingView2: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .animation(.easeInOut(duration: 0.4), value: currentStep)
                 
-                // Footer
                 VStack {
                     Button(action: nextStep) {
                         HStack {
@@ -211,6 +204,9 @@ struct OnboardingView2: View {
         }
         .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)
+        .onAppear {
+            loadExistingData()
+        }
     }
     
     var stepTransition: AnyTransition {
@@ -220,12 +216,41 @@ struct OnboardingView2: View {
         )
     }
     
-    // Logic
+    func loadExistingData() {
+        let profile = userProfileStore.profile
+        if !profile.name.isEmpty {
+            name = profile.name
+            selectedGender = profile.gender
+            exName = profile.exName
+            exGender = profile.exGender
+            relationshipDuration = profile.relationshipDuration
+            breakupInitiator = profile.breakupInitiator
+            contactStatus = profile.contactStatus
+            socialStalking = profile.socialMediaHabits
+            sleepQuality = profile.sleepQuality
+            mood = profile.mood
+        }
+    }
+    
+    func saveCurrentData() {
+        userProfileStore.profile.name = name
+        userProfileStore.profile.gender = selectedGender
+        userProfileStore.profile.exName = exName
+        userProfileStore.profile.exGender = exGender
+        userProfileStore.profile.relationshipDuration = relationshipDuration
+        userProfileStore.profile.breakupInitiator = breakupInitiator
+        userProfileStore.profile.contactStatus = contactStatus
+        userProfileStore.profile.socialMediaHabits = socialStalking
+        userProfileStore.profile.sleepQuality = sleepQuality
+        userProfileStore.profile.mood = mood
+    }
+    
     func nextStep() {
         withAnimation {
             if currentStep < totalSteps - 1 {
                 currentStep += 1
             } else {
+                saveCurrentData()
                 router.navigate(.onboarding3)
             }
         }
@@ -259,8 +284,6 @@ struct OnboardingView2: View {
     }
 }
 
-// MARK: - Animated Subviews
-
 struct CombinedInputView: View {
     var isVisible: Bool
     let title: String
@@ -283,11 +306,10 @@ struct CombinedInputView: View {
             VStack(spacing: 24) {
                 Spacer(minLength: 40)
                 
-                // Adjusted Title Visuals
                 Text(title)
-                    .font(.caption) // Smaller font
+                    .font(.caption)
                     .fontWeight(.bold)
-                    .foregroundStyle(.tertiary) // Much lighter color
+                    .foregroundStyle(.tertiary)
                     .textCase(.uppercase)
                     .tracking(2)
                     .opacity(show ? 1 : 0)
@@ -301,7 +323,7 @@ struct CombinedInputView: View {
                     .padding(.bottom, 20)
                     .opacity(show ? 1 : 0)
                     .scaleEffect(show ? 1 : 0.95)
-                    .animation(.easeOut(duration: 0.5).delay(0.05), value: show) // Slightly faster than title
+                    .animation(.easeOut(duration: 0.5).delay(0.05), value: show)
                 
                 VStack(alignment: .leading, spacing: 24) {
                     VStack(alignment: .leading, spacing: 8) {
@@ -329,7 +351,6 @@ struct CombinedInputView: View {
                             .foregroundStyle(.secondary)
                             .padding(.leading, 4)
                         
-                        // Vertical Layout for Gender to accommodate long text like "Walking Red Flag"
                         VStack(spacing: 10) {
                             ForEach(Array(genderOptions.enumerated()), id: \.element) { index, option in
                                 Button(action: { withAnimation { genderSelection = option } }) {
@@ -358,7 +379,7 @@ struct CombinedInputView: View {
                 
                 Spacer(minLength: 40)
             }
-            .frame(minHeight: UIScreen.main.bounds.height * 0.6) // Ensure scrolling works if needed but centers mostly
+            .frame(minHeight: UIScreen.main.bounds.height * 0.6)
         }
         .onAppear {
             internalState = true
@@ -595,7 +616,7 @@ struct EmotionalRollercoasterView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 20))
                 .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
                 .padding(.horizontal, 24)
-                .onChange(of: show) { newValue in
+                .onChange(of: show) { _, newValue in
                     if newValue {
                         showDot = false
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
@@ -743,7 +764,6 @@ struct FinalContractView: View {
                         .animation(.easeOut.delay(0.3), value: show)
                 }
                 
-                // Signature Pad
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Sign here to commit:")
                         .font(.caption)
@@ -758,7 +778,6 @@ struct FinalContractView: View {
                             .fill(Color.white)
                             .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
                         
-                        // Signature Canvas
                         Canvas { context, size in
                             for line in lines {
                                 var path = Path()
@@ -866,4 +885,6 @@ struct Line {
 
 #Preview {
     OnboardingView2()
+        .environment(Router.base)
+        .environment(UserProfileStore())
 }

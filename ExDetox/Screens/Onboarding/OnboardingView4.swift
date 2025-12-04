@@ -2,13 +2,12 @@ import SwiftUI
 
 struct OnboardingView4: View {
     @Environment(Router.self) private var router
+    @Environment(UserProfileStore.self) private var userProfileStore
     @State private var isAnimating = false
     @State private var showContent = false
     @State private var userCount = 0
     @State private var activeReviewIndex = 0
-    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     
-    // Fake Reviews Data
     let reviews = [
         Review(name: "Sarah K.", text: "I finally stopped stalking his IG. This app is a lifesaver! 🙏", stars: 5),
         Review(name: "Mike T.", text: "The panic button actually works. Haven't texted her in 3 weeks.", stars: 5),
@@ -24,7 +23,6 @@ struct OnboardingView4: View {
             VStack(spacing: 0) {
                 ScrollView {
                     VStack(spacing: 32) {
-                        // Header
                         VStack(spacing: 16) {
                             Text("We prepared a personal plan for you")
                                 .font(.system(size: 32, weight: .bold, design: .rounded))
@@ -34,7 +32,6 @@ struct OnboardingView4: View {
                                 .opacity(showContent ? 1 : 0)
                                 .offset(y: showContent ? 0 : 20)
                             
-                            // 100k Users Badge with "Wheats" (Laurels)
                             ZStack {
                                 HStack(spacing: 20) {
                                     Image(systemName: "laurel.leading")
@@ -67,7 +64,6 @@ struct OnboardingView4: View {
                             .scaleEffect(showContent ? 1 : 0.8)
                         }
                         
-                        // Fake Reviews Carousel
                         VStack(alignment: .leading, spacing: 16) {
                             HStack {
                                 Text("Real Stories")
@@ -98,7 +94,6 @@ struct OnboardingView4: View {
                             }
                         }
                         
-                        // Plan Preview
                         VStack(spacing: 20) {
                             Text("Your Plan Includes:")
                                 .font(.title3)
@@ -127,11 +122,9 @@ struct OnboardingView4: View {
                     }
                 }
                 
-                // Footer / CTA
                 VStack {
                     Button(action: {
                         withAnimation {
-                            hasCompletedOnboarding = true
                             router.navigate(.onboarding5)
                         }
                     }) {
@@ -168,7 +161,6 @@ struct OnboardingView4: View {
             withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
                 isAnimating = true
             }
-            // Animate number
             let duration: TimeInterval = 2.0
             let steps = 50
             let stepDuration = duration / Double(steps)
@@ -283,5 +275,6 @@ struct PlanItemRow: View {
 
 #Preview {
     OnboardingView4()
+        .environment(Router.base)
+        .environment(UserProfileStore())
 }
-

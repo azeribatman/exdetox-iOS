@@ -4,7 +4,6 @@ struct OnboardingView1: View {
     @Environment(Router.self) private var router
     @State private var currentPage = 0
     
-    // Grid animation states
     @State private var animateGrid = false
     
     let pages: [OnboardingPage] = [
@@ -33,14 +32,11 @@ struct OnboardingView1: View {
             Color(hex: "F9F9F9").ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Animated Background Grid (Fixed at top)
                 ZStack {
-                    // Background Gradients/Shapes
                     GeometryReader { geometry in
                         let width = geometry.size.width
                         let height = geometry.size.height
                         
-                        // Floating cards/grid elements
                         LazyVGrid(columns: [
                             GridItem(.flexible()),
                             GridItem(.flexible()),
@@ -82,7 +78,6 @@ struct OnboardingView1: View {
                 Spacer()
             }
             
-            // Content
             VStack(spacing: 0) {
                 Spacer()
                 
@@ -95,7 +90,6 @@ struct OnboardingView1: View {
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .frame(height: 400)
                 
-                // Page Indicator
                 HStack(spacing: 8) {
                     ForEach(0..<pages.count, id: \.self) { index in
                         Circle()
@@ -107,7 +101,6 @@ struct OnboardingView1: View {
                 }
                 .padding(.bottom, 32)
                 
-                // Action Button
                 Button(action: {
                     withAnimation {
                         if currentPage < pages.count - 1 {
@@ -128,14 +121,13 @@ struct OnboardingView1: View {
                         .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
                 }
                 .padding(.horizontal, 24)
-                .padding(.bottom, 20) // Safe area padding handled by layout, but extra space feels nice
+                .padding(.bottom, 20)
             }
             
-            // Floating Icon in the middle transition
             GeometryReader { geo in
                 VStack {
                     Spacer()
-                        .frame(height: geo.size.height * 0.35) // Position overlaps with grid bottom
+                        .frame(height: geo.size.height * 0.35)
                     
                     HStack {
                         Spacer()
@@ -149,7 +141,7 @@ struct OnboardingView1: View {
                                 .font(.system(size: 40))
                                 .foregroundColor(pages[currentPage].color)
                                 .transition(.scale.combined(with: .opacity))
-                                .id("icon-\(currentPage)") // Force transition
+                                .id("icon-\(currentPage)")
                         }
                         Spacer()
                     }
@@ -195,11 +187,11 @@ struct OnboardingPageView: View {
             
             Spacer()
         }
-        .padding(.top, 60) // Make room for the floating icon
+        .padding(.top, 60)
     }
 }
 
 #Preview {
     OnboardingView1()
+        .environment(Router.base)
 }
-

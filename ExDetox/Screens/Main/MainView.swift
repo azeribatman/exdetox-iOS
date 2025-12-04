@@ -1,6 +1,11 @@
 import SwiftUI
+import SwiftData
 
 struct MainView: View {
+    @Environment(NotificationStore.self) private var notificationStore
+    @Environment(TrackingStore.self) private var trackingStore
+    @Environment(\.modelContext) private var modelContext
+    
     @State private var selectedTab: Tab = .home
     @State private var whyItems: [WhyItem] = [
         WhyItem(title: "He never listened to me when I was crying."),
@@ -36,7 +41,14 @@ struct MainView: View {
                 tabBar()
             }
         }
+        .overlay(alignment: .top) {
+            NotificationBannerView()
+                .padding(.top, 4)
+        }
         .navigationBarBackButtonHidden()
+        .onAppear {
+            TrackingPersistence.bootstrap(store: trackingStore, context: modelContext)
+        }
     }
     
     private func tabBar() -> some View {
@@ -59,12 +71,12 @@ struct MainView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.top, 12)
-                    .padding(.bottom, 4) // Adjust for safe area if needed, usually handled by background
+                    .padding(.bottom, 4)
                 }
             }
         }
         .padding(.horizontal, 16)
-        .padding(.bottom, 0) // SafeArea automatically adds padding to the background
+        .padding(.bottom, 0)
         .background(Color.white.ignoresSafeArea(edges: .bottom))
         .overlay(alignment: .top) {
             Rectangle()
@@ -95,14 +107,90 @@ struct MainView: View {
             case .home: return "house"
             case .analytics: return "chart.bar"
             case .aiAgent: return "brain.head.profile"
-            case .myWhy: return "heart.slash" // or list.bullet.clipboard or similar
+            case .myWhy: return "heart.slash"
             case .learning: return "book"
             }
         }
     }
 }
 
-#Preview {
-    MainView()
+struct MainView_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            MainView()
+                .environment(TrackingStore.previewNewUser)
+                .environment(NotificationStore())
+                .environment(previewUserProfile())
+                .modelContainer(for: [
+                    TrackingRecord.self,
+                    RelapseRecord.self,
+                    PowerActionObject.self,
+                    DailyCheckInRecord.self,
+                    BadgeRecord.self,
+                    UserProfileRecord.self
+                ], inMemory: true)
+                .previewDisplayName("New User")
+            
+            MainView()
+                .environment(TrackingStore.previewLevel2WithProgress)
+                .environment(NotificationStore())
+                .environment(previewUserProfile())
+                .modelContainer(for: [
+                    TrackingRecord.self,
+                    RelapseRecord.self,
+                    PowerActionObject.self,
+                    DailyCheckInRecord.self,
+                    BadgeRecord.self,
+                    UserProfileRecord.self
+                ], inMemory: true)
+                .previewDisplayName("Level 2 Progress")
+            
+            MainView()
+                .environment(TrackingStore.previewLevel3WithRelapses)
+                .environment(NotificationStore())
+                .environment(previewUserProfile())
+                .modelContainer(for: [
+                    TrackingRecord.self,
+                    RelapseRecord.self,
+                    PowerActionObject.self,
+                    DailyCheckInRecord.self,
+                    BadgeRecord.self,
+                    UserProfileRecord.self
+                ], inMemory: true)
+                .previewDisplayName("Level 3 With Relapses")
+            
+            MainView()
+                .environment(TrackingStore.previewLevel5)
+                .environment(NotificationStore())
+                .environment(previewUserProfile())
+                .modelContainer(for: [
+                    TrackingRecord.self,
+                    RelapseRecord.self,
+                    PowerActionObject.self,
+                    DailyCheckInRecord.self,
+                    BadgeRecord.self,
+                    UserProfileRecord.self
+                ], inMemory: true)
+                .previewDisplayName("Level 5 Unbothered")
+        }
+    }
+    
+    static func previewUserProfile() -> UserProfileStore {
+        let store = UserProfileStore()
+        store.profile = UserProfile(
+            name: "Sarah",
+            gender: "Female",
+            exName: "Jake",
+            exGender: "Male",
+            relationshipDuration: "1 - 3 years",
+            breakupInitiator: "They did (Their loss)",
+            contactStatus: "No Contact (Clean streak)",
+            socialMediaHabits: "Muted but looking",
+            sleepQuality: "Tossing & turning",
+            mood: "Okay-ish 😐",
+            excitementRating: 4,
+            onboardingCompletedDate: Date()
+        )
+        return store
+    }
 }
-

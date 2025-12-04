@@ -1,13 +1,17 @@
 import SwiftUI
+import SwiftData
 
 struct OnboardingView5: View {
     @Environment(Router.self) private var router
+    @Environment(UserProfileStore.self) private var userProfileStore
+    @Environment(TrackingStore.self) private var trackingStore
+    @Environment(\.modelContext) private var modelContext
+    
     @State private var isAnimating = false
     @State private var showContent = false
     @State private var rating = 0
     @State private var buttonScale: CGFloat = 1.0
     
-    // Dynamic feedback based on rating
     var feedbackTitle: String {
         switch rating {
         case 1, 2: return "We'll do better! 🥺"
@@ -32,7 +36,6 @@ struct OnboardingView5: View {
         ZStack {
             Color(hex: "F9F9F9").ignoresSafeArea()
             
-            // Floating background elements
             ZStack {
                 Circle()
                     .fill(Color.orange.opacity(0.1))
@@ -49,7 +52,6 @@ struct OnboardingView5: View {
             .blur(radius: 30)
             
             VStack(spacing: 30) {
-                // Header
                 VStack(spacing: 16) {
                     Text("Before we start...")
                         .font(.headline)
@@ -80,8 +82,6 @@ struct OnboardingView5: View {
                 
                 Spacer()
                 
-
-                // Rating Stars
                 HStack(spacing: 12) {
                     ForEach(1...5, id: \.self) { index in
                         Image(systemName: index <= rating ? "star.fill" : "star")
@@ -117,11 +117,9 @@ struct OnboardingView5: View {
                 .animation(.spring(response: 0.5, dampingFraction: 0.7).delay(0.2), value: showContent)
                 
                 Spacer()
-
                 
                 Spacer()
                 
-                // Continue Button
                 Button(action: {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                         buttonScale = 0.95
@@ -131,7 +129,7 @@ struct OnboardingView5: View {
                             buttonScale = 1.0
                         }
                     }
-                    router.set(.main)
+                    completeOnboarding()
                 }) {
                     HStack {
                         Text("See My Plan")
@@ -166,9 +164,29 @@ struct OnboardingView5: View {
         .toolbar(.hidden, for: .navigationBar)
         .disableSwipeGesture()
     }
+    
+    private func completeOnboarding() {
+        userProfileStore.profile.excitementRating = rating
+        userProfileStore.completeOnboarding()
+        
+        trackingStore.state.exName = userProfileStore.profile.exName
+        
+        let profile = userProfileStore.profile
+        trackingStore.recordDailyCheckIn(
+            mood: profile.initialMoodScore,
+            urge: profile.initialUrgeScore,
+            note: "Initial check-in from onboarding"
+        )
+        
+        TrackingPersistence.bootstrap(store: trackingStore, context: modelContext)
+        
+        router.set(.main)
+    }
 }
 
 #Preview {
     OnboardingView5()
+        .environment(Router.base)
+        .environment(UserProfileStore())
+        .environment(TrackingStore())
 }
-

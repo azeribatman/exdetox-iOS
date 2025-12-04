@@ -5,7 +5,6 @@ struct OnboardingView3: View {
     @State private var currentPage = 0
     @State private var isAnimating = false
     
-    // Feature data
     let features: [FeaturePage] = [
         FeaturePage(
             title: "AI Relationship Coach",
@@ -32,7 +31,6 @@ struct OnboardingView3: View {
             Color(hex: "F9F9F9").ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Animated Header Area
                 ZStack {
                     Circle()
                         .fill(features[currentPage].color.opacity(0.1))
@@ -56,7 +54,6 @@ struct OnboardingView3: View {
                 .frame(height: UIScreen.main.bounds.height * 0.4)
                 .padding(.top, 40)
                 
-                // Sliding Content
                 TabView(selection: $currentPage) {
                     ForEach(0..<features.count, id: \.self) { index in
                         FeaturePageView(feature: features[index])
@@ -67,9 +64,7 @@ struct OnboardingView3: View {
                 
                 Spacer()
                 
-                // Bottom Controls
                 VStack(spacing: 24) {
-                    // Custom Page Indicator
                     HStack(spacing: 8) {
                         ForEach(0..<features.count, id: \.self) { index in
                             Capsule()
@@ -79,7 +74,6 @@ struct OnboardingView3: View {
                         }
                     }
                     
-                    // Action Button
                     Button(action: {
                         withAnimation {
                             if currentPage < features.count - 1 {
@@ -143,5 +137,5 @@ struct FeaturePageView: View {
 
 #Preview {
     OnboardingView3()
+        .environment(Router.base)
 }
-
