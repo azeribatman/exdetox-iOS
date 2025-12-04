@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct OnboardingView1: View {
+    @Environment(Router.self) private var router
     @State private var currentPage = 0
     
     // Grid animation states
@@ -112,7 +113,7 @@ struct OnboardingView1: View {
                         if currentPage < pages.count - 1 {
                             currentPage += 1
                         } else {
-
+                            router.navigate(.onboarding2)
                         }
                     }
                 }) {
@@ -160,6 +161,9 @@ struct OnboardingView1: View {
         .onAppear {
             animateGrid = true
         }
+        .navigationBarBackButtonHidden()
+        .toolbar(.hidden, for: .navigationBar)
+        .disableSwipeGesture()
     }
 }
 

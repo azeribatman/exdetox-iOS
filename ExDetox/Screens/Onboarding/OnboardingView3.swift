@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct OnboardingView3: View {
+    @Environment(Router.self) private var router
     @State private var currentPage = 0
     @State private var isAnimating = false
     
@@ -84,7 +85,7 @@ struct OnboardingView3: View {
                             if currentPage < features.count - 1 {
                                 currentPage += 1
                             } else {
-                                
+                                router.navigate(.onboarding4)
                             }
                         }
                     }) {
@@ -106,6 +107,9 @@ struct OnboardingView3: View {
         .onAppear {
             isAnimating = true
         }
+        .navigationBarBackButtonHidden()
+        .toolbar(.hidden, for: .navigationBar)
+        .disableSwipeGesture()
     }
 }
 

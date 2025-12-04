@@ -3,6 +3,7 @@ import Charts
 
 struct OnboardingView2: View {
     // Navigation State
+    @Environment(Router.self) private var router
     @State private var currentStep = 0
     
     // User Data Responses
@@ -208,6 +209,8 @@ struct OnboardingView2: View {
         .onTapGesture {
             hideKeyboard()
         }
+        .navigationBarBackButtonHidden()
+        .toolbar(.hidden, for: .navigationBar)
     }
     
     var stepTransition: AnyTransition {
@@ -223,7 +226,7 @@ struct OnboardingView2: View {
             if currentStep < totalSteps - 1 {
                 currentStep += 1
             } else {
-
+                router.navigate(.onboarding3)
             }
         }
     }

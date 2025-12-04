@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct OnboardingView4: View {
+    @Environment(Router.self) private var router
     @State private var isAnimating = false
     @State private var showContent = false
     @State private var userCount = 0
@@ -131,6 +132,7 @@ struct OnboardingView4: View {
                     Button(action: {
                         withAnimation {
                             hasCompletedOnboarding = true
+                            router.navigate(.onboarding5)
                         }
                     }) {
                         HStack {
@@ -178,6 +180,9 @@ struct OnboardingView4: View {
                 }
             }
         }
+        .navigationBarBackButtonHidden()
+        .toolbar(.hidden, for: .navigationBar)
+        .disableSwipeGesture()
     }
 }
 

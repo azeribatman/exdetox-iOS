@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct OnboardingView5: View {
+    @Environment(Router.self) private var router
     @State private var isAnimating = false
     @State private var showContent = false
     @State private var rating = 0
@@ -122,7 +123,6 @@ struct OnboardingView5: View {
                 
                 // Continue Button
                 Button(action: {
-                    // Action would go here
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                         buttonScale = 0.95
                     }
@@ -131,6 +131,7 @@ struct OnboardingView5: View {
                             buttonScale = 1.0
                         }
                     }
+                    router.set(.main)
                 }) {
                     HStack {
                         Text("See My Plan")
@@ -161,6 +162,9 @@ struct OnboardingView5: View {
                 isAnimating = true
             }
         }
+        .navigationBarBackButtonHidden()
+        .toolbar(.hidden, for: .navigationBar)
+        .disableSwipeGesture()
     }
 }
 
