@@ -10,9 +10,11 @@ struct HomeView: View {
     
     let weekDays = ["M", "T", "W", "T", "F", "S", "S"]
     
+    // Timer state
     @State private var timeComponents: (days: String, hours: String, minutes: String, seconds: String) = ("00", "00", "00", "00")
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
+    // Sheets state
     @State private var showSettings = false
     @State private var showRoastMe = false
     @State private var showMeditate = false
@@ -85,19 +87,47 @@ struct HomeView: View {
             headerView
             
             ScrollView {
-                VStack(spacing: 24) {
-                    levelBadgeCard
+                VStack(spacing: 20) {
+                    // 2. Timer (The "Streak")
+                    timerCard
+                    
+                    // 1. Weekly Streak
                     weeklyStreakCard
-                    noContactTimerCard
-                    quickCheckInCard
-                    quickActionsCard
-                    dailyQuoteCard
+                    
+                    // 3. Level (Separate)
+                    levelCard
+                    
+                    // 4. Simplified Check-in
+                    simpleCheckInCard
+                    
+                    // 5. Other Actions
+                    simpleActionsView
+                    
+                    // 6. Quote (Minimal)
+                    if !randomQuote.isEmpty {
+                        Text(randomQuote)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 40)
+                            .padding(.top, 10)
+                    }
+                    
+                    // 7. Relapse Button (Subtle)
+                    Button {
+                        showRelapseConfirm = true
+                    } label: {
+                        Text("I broke no-contact")
+                            .font(.caption)
+                            .foregroundStyle(.red.opacity(0.8))
+                            .padding(.top, 20)
+                    }
                 }
-                .padding(.bottom, 40)
+                .padding(.top, 10)
+                .padding(.bottom, 20)
             }
-            .safeAreaInset(edge: .bottom) {
-                panicButton
-            }
+            
+            panicButtonView
         }
         .background(Color(hex: "F9F9F9").ignoresSafeArea())
         .onReceive(timer) { _ in
@@ -166,99 +196,131 @@ struct HomeView: View {
         .background(Color(hex: "F9F9F9"))
     }
     
-    private var levelBadgeCard: some View {
+    private var timerCard: some View {
+        VStack(spacing: 8) {
+            Text(timeComponents.days)
+                .font(.system(size: 96, weight: .bold, design: .rounded))
+                .foregroundStyle(.primary)
+                .contentTransition(.numericText(value: Double(timeComponents.days) ?? 0))
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
+                .frame(height: 80)
+            
+            Text("DAYS SINCE THE ICK")
+                .font(.caption)
+                .fontWeight(.bold)
+                .foregroundStyle(.secondary)
+                .tracking(1)
+            
+            HStack(spacing: 12) {
+                timeUnit(value: timeComponents.hours, unit: "h")
+                timeUnit(value: timeComponents.minutes, unit: "m")
+                timeUnit(value: timeComponents.seconds, unit: "s")
+            }
+            .padding(.top, 4)
+        }
+        .padding(.vertical, 24)
+        .padding(.horizontal, 20)
+    }
+    
+    private var levelCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 8) {
-                Text(trackingStore.currentLevel.emoji)
-                Text("YOUR LEVEL")
+                Text("CURRENT LEVEL")
                     .font(.caption)
                     .fontWeight(.bold)
                     .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, 4)
-            
-            HStack {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(trackingStore.currentLevel.title)
-                        .font(.title3)
-                        .fontWeight(.bold)
-                    
-                    Text(trackingStore.currentLevel.genZTagline)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                }
                 
                 Spacer()
                 
-                Text("Lvl \(trackingStore.currentLevel.index)")
-                    .font(.headline)
+                Text("Level \(trackingStore.currentLevel.index)")
+                    .font(.caption)
                     .fontWeight(.bold)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .background(Color(hex: trackingStore.currentLevel.color))
-                    .foregroundColor(.white)
+                    .foregroundStyle(Color(hex: trackingStore.currentLevel.color))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Color(hex: trackingStore.currentLevel.color).opacity(0.1))
                     .clipShape(Capsule())
             }
+            .padding(.horizontal, 4)
             
-            VStack(spacing: 6) {
-                GeometryReader { geometry in
-                    ZStack(alignment: .leading) {
-                        RoundedRectangle(cornerRadius: 6)
-                            .fill(Color.gray.opacity(0.1))
-                            .frame(height: 8)
-                        
-                        RoundedRectangle(cornerRadius: 6)
-                            .fill(Color(hex: trackingStore.currentLevel.color))
-                            .frame(width: geometry.size.width * CGFloat(trackingStore.levelProgress), height: 8)
-                    }
-                }
-                .frame(height: 8)
+            HStack(spacing: 16) {
+                Text(trackingStore.currentLevel.emoji)
+                    .font(.title)
+                    .padding(12)
+                    .background(Color(hex: trackingStore.currentLevel.color).opacity(0.1))
+                    .clipShape(Circle())
                 
-                HStack {
-                    Text("\(Int(trackingStore.levelProgress * 100))%")
-                        .font(.caption2)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(trackingStore.currentLevel.title)
+                            .font(.headline)
+                            .fontWeight(.bold)
+                        
+                        Spacer()
+                        
+                        Text("\(Int(trackingStore.levelProgress * 100))%")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.secondary)
+                    }
                     
-                    Spacer()
-                    
-                    if trackingStore.bonusDays > 0 {
-                        HStack(spacing: 4) {
-                            Image(systemName: "bolt.fill")
-                                .font(.caption2)
-                                .foregroundStyle(.orange)
-                            Text("+\(String(format: "%.1f", trackingStore.bonusDays)) speed-up days")
-                                .font(.caption2)
-                                .fontWeight(.medium)
-                                .foregroundStyle(.orange)
+                    GeometryReader { geometry in
+                        ZStack(alignment: .leading) {
+                            Capsule()
+                                .fill(Color.gray.opacity(0.1))
+                                .frame(height: 6)
+                            
+                            Capsule()
+                                .fill(Color(hex: trackingStore.currentLevel.color))
+                                .frame(width: geometry.size.width * CGFloat(trackingStore.levelProgress), height: 6)
                         }
                     }
+                    .frame(height: 6)
                     
                     if trackingStore.daysLeftInLevel > 0 {
-                        Text("\(trackingStore.daysLeftInLevel)d to next level")
+                        Text("\(trackingStore.daysLeftInLevel) days to next level")
                             .font(.caption2)
-                            .fontWeight(.medium)
-                            .foregroundStyle(Color(hex: trackingStore.currentLevel.color))
+                            .foregroundStyle(.secondary)
                     }
                 }
             }
+            .padding(20)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+            .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
         }
-        .padding(20)
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 24))
-        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
         .padding(.horizontal, 20)
+    }
+    
+    // Kept for backward compatibility if needed, but not used in body
+    private var heroStatusCard: some View {
+        EmptyView()
     }
     
     private var weeklyStreakCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 8) {
-                Text("📅")
                 Text("THIS WEEK")
                     .font(.caption)
                     .fontWeight(.bold)
                     .foregroundStyle(.secondary)
+                
+                Spacer()
+                
+                HStack(spacing: 4) {
+                    Image(systemName: "flame.fill")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                    Text("\(trackingStore.currentStreakDays)d streak")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.orange)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(Color.orange.opacity(0.1))
+                .clipShape(Capsule())
             }
             .padding(.horizontal, 4)
             
@@ -276,42 +338,93 @@ struct HomeView: View {
                         .frame(maxWidth: .infinity)
                     }
                 }
-                
-                Divider()
-                    .overlay(Color.primary.opacity(0.1))
-                
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(streakMotivationText)
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundStyle(.secondary)
+            }
+            .padding(20)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+            .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
+        }
+        .padding(.horizontal, 20)
+    }
+    
+    private var simpleCheckInCard: some View {
+        Group {
+            if trackingStore.hasCheckedInToday {
+                weeklyMoodTrackerCard
+            } else {
+                Button {
+                    showCheckInSheet = true
+                } label: {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Daily Check-In")
+                                .font(.headline)
+                                .foregroundStyle(.primary)
+                            Text("Track your mood & urges")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                         
-                        Button {
-                            showRelapseConfirm = true
-                        } label: {
-                            Text("I broke no-contact today")
-                                .font(.caption2)
-                                .fontWeight(.semibold)
-                                .foregroundStyle(.red)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 6)
-                                .background(Color.red.opacity(0.06))
-                                .clipShape(Capsule())
+                        Spacer()
+                        
+                        Text("Log Now")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .background(Color.blue)
+                            .clipShape(Capsule())
+                    }
+                    .padding(20)
+                    .background(Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
+                    .padding(.horizontal, 20)
+                }
+            }
+        }
+    }
+    
+    private var weeklyMoodTrackerCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 8) {
+                Text("WEEKLY MOOD")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.secondary)
+                
+                Spacer()
+                
+                Button {
+                    showCheckInSheet = true
+                } label: {
+                    Image(systemName: "pencil.circle.fill")
+                        .font(.title3)
+                        .foregroundStyle(.blue.opacity(0.8))
+                }
+            }
+            .padding(.horizontal, 4)
+            
+            HStack(spacing: 0) {
+                ForEach(0..<weekDays.count, id: \.self) { index in
+                    VStack(spacing: 12) {
+                        Text(weekDays[index])
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                        
+                        if let checkIn = trackingStore.weeklyCheckIns[index] {
+                            Text(moodEmoji(checkIn.mood))
+                                .font(.title3)
+                                .frame(width: 32, height: 32)
+                        } else {
+                            Circle()
+                                .fill(Color.gray.opacity(0.1))
+                                .frame(width: 32, height: 32)
                         }
                     }
-                    
-                    Spacer()
-                    
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text("\(trackingStore.state.successfulDaysThisWeek)/7")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.green)
-                        Text("this week")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                    }
+                    .frame(maxWidth: .infinity)
                 }
             }
             .padding(20)
@@ -322,303 +435,82 @@ struct HomeView: View {
         .padding(.horizontal, 20)
     }
     
-    private var streakMotivationText: String {
-        let successDays = trackingStore.state.successfulDaysThisWeek
-        let relapseDays = trackingStore.state.relapsesDaysThisWeek
-        
-        if relapseDays == 0 && successDays > 0 {
-            return "Perfect week so far! Keep it green! 🌿"
-        } else if relapseDays > 0 {
-            return "You slipped, but you're still here. That's growth 💪"
-        } else {
-            return "New week, fresh start. Let's make it count! 🔥"
+    private func moodEmoji(_ value: Int) -> String {
+        switch value {
+        case 1: return "😢"
+        case 2: return "😔"
+        case 3: return "😐"
+        case 4: return "🙂"
+        case 5: return "😊"
+        default: return "😐"
         }
     }
     
-    private var noContactTimerCard: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("NO CONTACT")
-                        .font(.caption)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.secondary)
-                    Text("Healing in progress")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                }
-                Spacer()
-                
-                if trackingStore.currentStreakDays > 0 {
-                    HStack(spacing: 4) {
-                        Image(systemName: "flame.fill")
-                            .foregroundStyle(.orange)
-                        Text("\(trackingStore.currentStreakDays)")
-                            .font(.headline)
-                            .fontWeight(.bold)
-                    }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(Color.orange.opacity(0.1))
-                    .clipShape(Capsule())
-                }
-            }
-            
-            VStack(alignment: .leading, spacing: 16) {
-                HStack(alignment: .lastTextBaseline, spacing: 12) {
-                    HStack(alignment: .lastTextBaseline, spacing: 4) {
-                        Text(timeComponents.days)
-                            .font(.system(size: 64, weight: .bold, design: .rounded))
-                            .contentTransition(.numericText(value: Double(timeComponents.days) ?? 0))
-                            .foregroundStyle(.primary)
-                        
-                        Text("days")
-                            .font(.title3)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.secondary)
-                    }
-                    
-                    HStack(spacing: 8) {
-                        timeUnit(value: timeComponents.hours, unit: "hr")
-                        timeUnit(value: timeComponents.minutes, unit: "min")
-                        timeUnit(value: timeComponents.seconds, unit: "sec")
-                    }
-                    .padding(.bottom, 6)
-                }
-                
-                HStack(spacing: 12) {
-                    if trackingStore.maxStreak > 0 {
-                        HStack(spacing: 6) {
-                            Image(systemName: "trophy.fill")
-                                .foregroundStyle(.yellow)
-                            Text("Best: \(trackingStore.maxStreak)d")
-                                .font(.caption)
-                                .fontWeight(.semibold)
-                                .foregroundStyle(.primary)
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(Color.yellow.opacity(0.1))
-                        .clipShape(Capsule())
-                    }
-                    
-                    HStack(spacing: 6) {
-                        Image(systemName: "sparkles")
-                            .foregroundStyle(Color(hex: trackingStore.currentLevel.color))
-                        Text(trackingStore.currentLevel.title)
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.primary)
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color(hex: trackingStore.currentLevel.color).opacity(0.1))
-                    .clipShape(Capsule())
-                }
-            }
-        }
-        .padding(24)
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 24))
-        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
-        .padding(.horizontal, 20)
-    }
-    
-    private var quickCheckInCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Text("🧠")
-                Text("QUICK CHECK-IN")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.secondary)
-                
-                Spacer()
-                
-                if trackingStore.hasCheckedInToday {
-                    HStack(spacing: 4) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(.green)
-                        Text("Done today")
-                            .font(.caption2)
-                            .foregroundStyle(.green)
-                    }
-                }
-            }
-            .padding(.horizontal, 4)
-            
-            Button {
-                showCheckInSheet = true
-            } label: {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        if let checkIn = trackingStore.todayCheckIn {
-                            HStack(spacing: 16) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Mood")
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
-                                    HStack(spacing: 2) {
-                                        ForEach(1...5, id: \.self) { i in
-                                            Circle()
-                                                .fill(i <= checkIn.mood ? Color.green : Color.gray.opacity(0.2))
-                                                .frame(width: 8, height: 8)
-                                        }
-                                    }
-                                }
-                                
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Urge to Contact")
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
-                                    Text("\(checkIn.urge)/10")
-                                        .font(.subheadline)
-                                        .fontWeight(.semibold)
-                                        .foregroundStyle(urgeColor(checkIn.urge))
-                                }
-                            }
-                            
-                            Text("Tap to update")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                        } else {
-                            Text("How are you feeling today?")
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                                .foregroundStyle(.primary)
-                            
-                            Text("Takes 5 seconds, helps track your progress")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    
-                    Spacer()
-                    
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.tertiary)
-                }
-                .padding(16)
-                .background(Color.white)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-            }
-            .buttonStyle(.plain)
-        }
-        .padding(16)
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 24))
-        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
-        .padding(.horizontal, 20)
-    }
-    
-    private func urgeColor(_ urge: Int) -> Color {
-        switch urge {
-        case 0...3: return .green
-        case 4...6: return .orange
-        default: return .red
-        }
-    }
-    
-    private var quickActionsCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Text("⚡️")
-                    .font(.title3)
-                Text("ACTIONS")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, 4)
-            
-            VStack(spacing: 0) {
-                actionRow(title: "Power Actions", subtitle: "Speed up your healing", icon: "bolt.fill", color: .purple) {
-                    showPowerActionsSheet = true
-                }
-                
-                Divider()
-                    .padding(.leading, 54)
-                
-                actionRow(title: "Roast Me", subtitle: "Reality check time", icon: "flame.fill", color: .orange) {
-                    showRoastMe = true
-                }
-                
-                Divider()
-                    .padding(.leading, 54)
-                
-                actionRow(title: "Meditate", subtitle: "Clear your mind", icon: "brain.head.profile", color: .teal) {
-                    showMeditate = true
-                }
-            }
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 24))
-            .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
-        }
-        .padding(.horizontal, 20)
-    }
-    
-    private var dailyQuoteCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Text("✨")
-                    .font(.title3)
-                Text("DAILY REALITY CHECK")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, 4)
-            
-            VStack(alignment: .leading, spacing: 12) {
-                Text(randomQuote)
-                    .font(.system(size: 18, weight: .medium, design: .rounded))
-                    .foregroundStyle(.primary)
-                    .lineSpacing(4)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .padding(24)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 24))
-            .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
-        }
-        .padding(.horizontal, 20)
-        .padding(.top, 24)
-    }
-    
-    private var panicButton: some View {
-        Button(action: { showPanic = true }) {
-            HStack {
+    private var panicButtonView: some View {
+        Button {
+            showPanic = true
+        } label: {
+            HStack(spacing: 12) {
                 Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.headline)
-                Text("PANIC BUTTON 🚨")
-                    .font(.headline)
+                    .font(.title2)
+                Text("PANIC BUTTON")
+                    .font(.title3)
                     .fontWeight(.bold)
             }
             .foregroundColor(.white)
             .frame(maxWidth: .infinity)
-            .padding()
+            .frame(height: 60)
             .background(Color.red)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .shadow(color: .red.opacity(0.3), radius: 8, x: 0, y: 4)
-            .padding(20)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .shadow(color: .red.opacity(0.3), radius: 10, x: 0, y: 5)
         }
-        .background(
-            LinearGradient(colors: [Color(hex: "F9F9F9").opacity(0), Color(hex: "F9F9F9")], startPoint: .top, endPoint: .bottom)
-        )
+        .padding(.horizontal, 20)
+        .padding(.vertical, 10)
+        .background(Color(hex: "F9F9F9"))
     }
     
-    func updateTimer() {
-        let startDate = trackingStore.state.noContactStartDate
-        let diff = Calendar.current.dateComponents([.day, .hour, .minute, .second], from: startDate, to: Date())
-        let days = String(diff.day ?? 0)
-        let hours = String(format: "%02d", diff.hour ?? 0)
-        let minutes = String(format: "%02d", diff.minute ?? 0)
-        let seconds = String(format: "%02d", diff.second ?? 0)
-        
-        timeComponents = (days, hours, minutes, seconds)
+    private var simpleActionsView: some View {
+        HStack(spacing: 12) {
+            // Power Actions
+            simpleActionButton(title: "Power Actions", icon: "bolt.fill", color: .purple) {
+                showPowerActionsSheet = true
+            }
+            
+            // Meditate
+            simpleActionButton(title: "Meditate", icon: "wind", color: .teal) {
+                showMeditate = true
+            }
+            
+            // Roast Me
+            simpleActionButton(title: "Roast Me", icon: "flame.fill", color: .orange) {
+                showRoastMe = true
+            }
+        }
+        .padding(.horizontal, 20)
+    }
+    
+    private func simpleActionButton(title: String, icon: String, color: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.headline)
+                    .foregroundStyle(color)
+                    .frame(width: 40, height: 40)
+                    .background(color.opacity(0.1))
+                    .clipShape(Circle())
+                
+                Text(title)
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.primary)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+        }
     }
     
     @ViewBuilder
@@ -636,7 +528,7 @@ struct HomeView: View {
                 .foregroundStyle(.secondary)
         }
     }
-
+    
     @ViewBuilder
     func streakCircle(status: Int) -> some View {
         let size: CGFloat = 36
@@ -668,39 +560,28 @@ struct HomeView: View {
         }
     }
     
-    @ViewBuilder
-    func actionRow(title: String, subtitle: String? = nil, icon: String, color: Color, action: @escaping () -> Void = {}) -> some View {
-        Button(action: action) {
-            HStack(spacing: 16) {
-                Image(systemName: icon)
-                    .font(.body)
-                    .foregroundStyle(.black)
-                    .frame(width: 36, height: 36)
-                    .background(color.opacity(0.1))
-                    .clipShape(Circle())
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(.body)
-                        .fontWeight(.medium)
-                        .foregroundStyle(.black)
-                    
-                    if let subtitle {
-                        Text(subtitle)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                
-                Spacer()
-                
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.tertiary)
-            }
-            .padding(16)
+    private var streakMotivationText: String {
+        let successDays = trackingStore.state.successfulDaysThisWeek
+        let relapseDays = trackingStore.state.relapsesDaysThisWeek
+        
+        if relapseDays == 0 && successDays > 0 {
+            return "Perfect week so far! Keep it green! 🌿"
+        } else if relapseDays > 0 {
+            return "You slipped, but you're still here. That's growth 💪"
+        } else {
+            return "New week, fresh start. Let's make it count! 🔥"
         }
+    }
+    
+    func updateTimer() {
+        let startDate = trackingStore.state.noContactStartDate
+        let diff = Calendar.current.dateComponents([.day, .hour, .minute, .second], from: startDate, to: Date())
+        let days = String(diff.day ?? 0)
+        let hours = String(format: "%02d", diff.hour ?? 0)
+        let minutes = String(format: "%02d", diff.minute ?? 0)
+        let seconds = String(format: "%02d", diff.second ?? 0)
+        
+        timeComponents = (days, hours, minutes, seconds)
     }
 }
 
@@ -714,98 +595,119 @@ struct QuickCheckInSheet: View {
     @State private var urge: Int = 5
     
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 32) {
-                VStack(spacing: 24) {
-                    VStack(spacing: 12) {
-                        Text("How's your mood?")
-                            .font(.headline)
-                        
-                        HStack(spacing: 16) {
-                            ForEach(1...5, id: \.self) { i in
-                                Button {
-                                    withAnimation(.spring(response: 0.3)) {
-                                        mood = i
-                                    }
-                                } label: {
-                                    Text(moodEmoji(i))
-                                        .font(.system(size: i == mood ? 48 : 32))
-                                        .opacity(i == mood ? 1 : 0.5)
-                                        .scaleEffect(i == mood ? 1.1 : 1)
-                                }
-                            }
-                        }
-                        
-                        Text(moodLabel(mood))
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                    
-                    Divider()
-                    
-                    VStack(spacing: 12) {
-                        Text("Urge to contact them?")
-                            .font(.headline)
-                        
-                        VStack(spacing: 8) {
-                            Slider(value: Binding(
-                                get: { Double(urge) },
-                                set: { urge = Int($0) }
-                            ), in: 0...10, step: 1)
-                            .tint(urgeSliderColor)
-                            
-                            HStack {
-                                Text("0")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                Spacer()
-                                Text("\(urge)")
-                                    .font(.title2)
-                                    .fontWeight(.bold)
-                                    .foregroundStyle(urgeSliderColor)
-                                Spacer()
-                                Text("10")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        
-                        Text(urgeLabel(urge))
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .padding(24)
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                Text("Daily Check-In")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.primary)
                 
                 Spacer()
                 
-                Button {
-                    TrackingPersistence.recordDailyCheckIn(store: trackingStore, context: modelContext, mood: mood, urge: urge)
+                Button(action: {
                     dismiss()
-                } label: {
-                    Text("Save Check-In")
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.black)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                }) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(.black)
+                        .padding(10)
+                        .background(Color.gray.opacity(0.1))
+                        .clipShape(Circle())
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 20)
             }
-            .navigationTitle("Daily Check-In")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Cancel") {
-                        dismiss()
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
+            .padding(.bottom, 20)
+            
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Main Card
+                    VStack(spacing: 24) {
+                        VStack(spacing: 12) {
+                            Text("How's your mood?")
+                                .font(.headline)
+                            
+                            HStack(spacing: 16) {
+                                ForEach(1...5, id: \.self) { i in
+                                    Button {
+                                        withAnimation(.spring(response: 0.3)) {
+                                            mood = i
+                                        }
+                                    } label: {
+                                        Text(moodEmoji(i))
+                                            .font(.system(size: i == mood ? 48 : 32))
+                                            .opacity(i == mood ? 1 : 0.5)
+                                            .scaleEffect(i == mood ? 1.1 : 1)
+                                    }
+                                }
+                            }
+                            
+                            Text(moodLabel(mood))
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                        
+                        Divider()
+                        
+                        VStack(spacing: 12) {
+                            Text("Urge to contact them?")
+                                .font(.headline)
+                            
+                            VStack(spacing: 8) {
+                                Slider(value: Binding(
+                                    get: { Double(urge) },
+                                    set: { urge = Int($0) }
+                                ), in: 0...10, step: 1)
+                                .tint(urgeSliderColor)
+                                
+                                HStack {
+                                    Text("0")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                    Spacer()
+                                    Text("\(urge)")
+                                        .font(.title2)
+                                        .fontWeight(.bold)
+                                        .foregroundStyle(urgeSliderColor)
+                                    Spacer()
+                                    Text("10")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            
+                            Text(urgeLabel(urge))
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
                     }
+                    .padding(24)
+                    .background(Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
+                    .padding(.horizontal, 20)
+                    
+                    Button {
+                        TrackingPersistence.recordDailyCheckIn(store: trackingStore, context: modelContext, mood: mood, urge: urge)
+                        dismiss()
+                    } label: {
+                        Text("Save Check-In")
+                            .font(.headline)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.black)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 20)
                 }
             }
         }
-        .presentationDetents([.medium])
+        .background(Color(hex: "F9F9F9").ignoresSafeArea())
         .onAppear {
             if let existing = trackingStore.todayCheckIn {
                 mood = existing.mood
@@ -980,50 +882,6 @@ struct PowerActionRow: View {
     }
 }
 
-struct FlowLayout: Layout {
-    var spacing: CGFloat = 8
-    
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let result = flow(proposal: proposal, subviews: subviews)
-        return result.size
-    }
-    
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        let result = flow(proposal: proposal, subviews: subviews)
-        for (index, subview) in subviews.enumerated() {
-            let point = result.points[index]
-            subview.place(at: CGPoint(x: bounds.minX + point.x, y: bounds.minY + point.y), proposal: .unspecified)
-        }
-    }
-    
-    private func flow(proposal: ProposedViewSize, subviews: Subviews) -> (size: CGSize, points: [CGPoint]) {
-        let containerWidth = proposal.width ?? .infinity
-        var points: [CGPoint] = []
-        var currentX: CGFloat = 0
-        var currentY: CGFloat = 0
-        var lineHeight: CGFloat = 0
-        var maxWidth: CGFloat = 0
-        
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            
-            if currentX > 0 && currentX + size.width > containerWidth {
-                currentX = 0
-                currentY += lineHeight + spacing
-                lineHeight = 0
-            }
-            
-            points.append(CGPoint(x: currentX, y: currentY))
-            lineHeight = max(lineHeight, size.height)
-            
-            maxWidth = max(maxWidth, currentX + size.width)
-            currentX += size.width + spacing
-        }
-        
-        return (CGSize(width: maxWidth, height: currentY + lineHeight), points)
-    }
-}
-
 struct HomeView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
@@ -1034,40 +892,10 @@ struct HomeView_Previews: PreviewProvider {
                 .previewDisplayName("New User")
             
             HomeView()
-                .environment(TrackingStore.previewLevel1)
-                .environment(NotificationStore())
-                .environment(previewUserProfile())
-                .previewDisplayName("Level 1 - Day 3")
-            
-            HomeView()
                 .environment(TrackingStore.previewLevel2WithProgress)
                 .environment(NotificationStore())
                 .environment(previewUserProfile())
                 .previewDisplayName("Level 2 - With Progress")
-            
-            HomeView()
-                .environment(TrackingStore.previewLevel3WithRelapses)
-                .environment(NotificationStore())
-                .environment(previewUserProfile())
-                .previewDisplayName("Level 3 - With Relapses")
-            
-            HomeView()
-                .environment(TrackingStore.previewLevel4NearLevelUp)
-                .environment(NotificationStore())
-                .environment(previewUserProfile())
-                .previewDisplayName("Level 4 - Near Level Up")
-            
-            HomeView()
-                .environment(TrackingStore.previewLevel5)
-                .environment(NotificationStore())
-                .environment(previewUserProfile())
-                .previewDisplayName("Level 5 - Unbothered")
-            
-            HomeView()
-                .environment(TrackingStore.previewJustRelapsed)
-                .environment(NotificationStore())
-                .environment(previewUserProfile())
-                .previewDisplayName("Just Relapsed")
         }
     }
     

@@ -8,6 +8,7 @@ struct AnalyticsView: View {
     
     @State private var animateProgress = false
     @State private var selectedTab: AnalyticsTab = .overview
+    @State private var showAllLevels = false
     
     enum AnalyticsTab: String, CaseIterable {
         case overview = "Overview"
@@ -42,6 +43,9 @@ struct AnalyticsView: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 animateProgress = true
             }
+        }
+        .sheet(isPresented: $showAllLevels) {
+            AllLevelsSheet()
         }
     }
     
@@ -92,10 +96,6 @@ struct AnalyticsView: View {
         freedomCountdownCard
         weeklyMoodCard
         statsGrid
-        
-        #if DEBUG
-        debugControls
-        #endif
     }
     
     @ViewBuilder
@@ -117,256 +117,174 @@ struct AnalyticsView: View {
     }
     
     private var levelProgressCard: some View {
-        VStack(spacing: 20) {
-            HStack {
+        VStack(spacing: 16) {
+            HStack(alignment: .center) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("CURRENT LEVEL")
                         .font(.caption)
                         .fontWeight(.bold)
                         .foregroundStyle(.secondary)
-                    Text(trackingStore.currentLevel.title)
-                        .font(.title2)
-                        .fontWeight(.bold)
+                    
+                    HStack(spacing: 8) {
+                        Text(trackingStore.currentLevel.emoji)
+                            .font(.title2)
+                        Text(trackingStore.currentLevel.title)
+                            .font(.title2)
+                            .fontWeight(.bold)
+                    }
                 }
+                
                 Spacer()
+                
                 Text("Lvl \(trackingStore.currentLevel.index)")
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color(hex: trackingStore.currentLevel.color))
-                    .foregroundColor(.white)
-                    .clipShape(Capsule())
-            }
-            
-            VStack(alignment: .leading, spacing: 8) {
-                Text(trackingStore.currentLevel.emoji + " " + trackingStore.currentLevel.genZTagline)
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .fontWeight(.bold)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Color(hex: trackingStore.currentLevel.color).opacity(0.1))
+                    .foregroundColor(Color(hex: trackingStore.currentLevel.color))
+                    .clipShape(Capsule())
             }
             
             VStack(spacing: 8) {
                 GeometryReader { geometry in
                     ZStack(alignment: .leading) {
-                        RoundedRectangle(cornerRadius: 10)
+                        Capsule()
                             .fill(Color.gray.opacity(0.1))
-                            .frame(height: 12)
+                            .frame(height: 8)
                         
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(
-                                LinearGradient(
-                                    colors: [Color(hex: trackingStore.currentLevel.color), Color(hex: trackingStore.currentLevel.color).opacity(0.7)],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .frame(width: animateProgress ? geometry.size.width * CGFloat(trackingStore.levelProgress) : 0, height: 12)
+                        Capsule()
+                            .fill(Color(hex: trackingStore.currentLevel.color))
+                            .frame(width: animateProgress ? geometry.size.width * CGFloat(trackingStore.levelProgress) : 0, height: 8)
                             .animation(.spring(response: 1, dampingFraction: 0.8), value: animateProgress)
                     }
                 }
-                .frame(height: 12)
+                .frame(height: 8)
                 
                 HStack {
-                    Text("\(Int(trackingStore.levelProgress * 100))% Complete")
+                    Text("\(Int(trackingStore.levelProgress * 100))%")
                         .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundStyle(.secondary)
+                        .fontWeight(.bold)
+                        .foregroundStyle(Color(hex: trackingStore.currentLevel.color))
+                    
                     Spacer()
                     
                     if trackingStore.daysLeftInLevel > 0 {
-                        Text("\(trackingStore.daysLeftInLevel) days to next level")
+                        Text("\(trackingStore.daysLeftInLevel) days left")
                             .font(.caption)
                             .fontWeight(.medium)
-                            .foregroundStyle(Color(hex: trackingStore.currentLevel.color))
+                            .foregroundStyle(.secondary)
                     } else {
-                        Text("Final level reached! 🏆")
+                        Text("Completed! 🏆")
                             .font(.caption)
-                            .fontWeight(.medium)
+                            .fontWeight(.bold)
                             .foregroundStyle(.green)
                     }
                 }
             }
-            
-            Divider()
-            
-            HStack(spacing: 24) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Days in Level")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text("\(trackingStore.daysInLevel)")
-                        .font(.title3)
-                        .fontWeight(.bold)
-                }
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Min Required")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text("\(trackingStore.currentLevel.minDays)")
-                        .font(.title3)
-                        .fontWeight(.bold)
-                }
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Speed-Up Earned")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    HStack(spacing: 4) {
-                        Image(systemName: "bolt.fill")
-                            .foregroundStyle(.orange)
-                            .font(.caption)
-                        Text(String(format: "%.1f", trackingStore.bonusDays))
-                            .font(.title3)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.orange)
-                    }
-                }
-            }
         }
-        .padding(24)
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 24))
-        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
         .padding(.horizontal, 20)
+        .padding(.vertical, 10)
     }
     
     @ViewBuilder
     private var nextLevelPreviewCard: some View {
         if let nextLevel = trackingStore.currentLevel.nextLevel {
             VStack(alignment: .leading, spacing: 16) {
-                HStack(spacing: 8) {
-                    Text("🔮")
-                    Text("COMING UP")
-                        .font(.caption)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.secondary)
+                HStack {
+                    HStack(spacing: 8) {
+                        Text("🔮")
+                        Text("COMING UP")
+                            .font(.caption)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.secondary)
+                    }
+                    
+                    Spacer()
+                    
+                    Button {
+                        showAllLevels = true
+                    } label: {
+                        Text("See All")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.blue)
+                    }
                 }
                 
-                HStack {
-                    VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 16) {
+                    Text(nextLevel.emoji)
+                        .font(.largeTitle)
+                        .padding(12)
+                        .background(Color(hex: nextLevel.color).opacity(0.1))
+                        .clipShape(Circle())
+                    
+                    VStack(alignment: .leading, spacing: 4) {
                         Text(nextLevel.title)
-                            .font(.title3)
+                            .font(.headline)
                             .fontWeight(.bold)
                         
-                        Text(nextLevel.subtitle)
+                        Text("Level \(nextLevel.index)")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
                     
                     Spacer()
                     
-                    Text(nextLevel.emoji)
-                        .font(.system(size: 40))
-                }
-                
-                Divider()
-                
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("To unlock:")
-                        .font(.caption)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.secondary)
-                    
-                    HStack(spacing: 8) {
-                        Image(systemName: "calendar")
-                            .foregroundStyle(Color(hex: nextLevel.color))
-                        Text("Keep no-contact for \(trackingStore.daysLeftInLevel) more days")
-                            .font(.subheadline)
-                    }
-                    
-                    HStack(spacing: 8) {
-                        Image(systemName: "bolt.fill")
-                            .foregroundStyle(.orange)
-                        Text("Complete power actions to speed up (max \(trackingStore.currentLevel.maxBonusDays - Int(trackingStore.bonusDays)) more days)")
-                            .font(.subheadline)
-                    }
+                    Image(systemName: "lock.fill")
+                        .foregroundStyle(.secondary.opacity(0.5))
+                        .font(.title3)
                 }
             }
-            .padding(24)
-            .background(
-                LinearGradient(
-                    colors: [Color(hex: nextLevel.color).opacity(0.1), Color.white],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
+            .padding(20)
+            .background(Color.white)
             .clipShape(RoundedRectangle(cornerRadius: 24))
-            .overlay(
-                RoundedRectangle(cornerRadius: 24)
-                    .stroke(Color(hex: nextLevel.color).opacity(0.2), lineWidth: 1)
-            )
+            .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
             .padding(.horizontal, 20)
         }
     }
     
     private var freedomCountdownCard: some View {
-        VStack(alignment: .center, spacing: 24) {
-            HStack(spacing: 8) {
-                Text("🏁")
-                Text("FREEDOM COUNTDOWN")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            
+        HStack(spacing: 20) {
             ZStack {
                 Circle()
-                    .stroke(lineWidth: 24)
+                    .stroke(lineWidth: 8)
                     .opacity(0.1)
                     .foregroundColor(.secondary)
                 
                 Circle()
                     .trim(from: 0.0, to: animateProgress ? CGFloat(trackingStore.detoxProgress) : 0.0)
-                    .stroke(style: StrokeStyle(lineWidth: 24, lineCap: .round, lineJoin: .round))
+                    .stroke(style: StrokeStyle(lineWidth: 8, lineCap: .round, lineJoin: .round))
                     .foregroundStyle(
                         LinearGradient(colors: [.green, .mint], startPoint: .topLeading, endPoint: .bottomTrailing)
                     )
                     .rotationEffect(Angle(degrees: 270.0))
                     .animation(.spring(response: 1.5, dampingFraction: 0.7), value: animateProgress)
                 
-                VStack(spacing: 4) {
-                    Text("\(Int(trackingStore.detoxProgress * 100))%")
-                        .font(.system(size: 56, weight: .bold, design: .rounded))
-                        .contentTransition(.numericText(value: trackingStore.detoxProgress * 100))
-                        .foregroundStyle(.primary)
-                    
-                    Text("\(trackingStore.daysLeftInProgram) days left")
-                        .font(.headline)
-                        .fontWeight(.medium)
-                        .foregroundStyle(.secondary)
-                }
+                Text("\(Int(trackingStore.detoxProgress * 100))%")
+                    .font(.headline)
+                    .fontWeight(.bold)
             }
-            .frame(width: 260, height: 260)
-            .padding(.vertical, 12)
+            .frame(width: 60, height: 60)
             
-            Divider()
-                .overlay(Color.primary.opacity(0.1))
-            
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Freedom Date")
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundStyle(.secondary)
-                    
-                    Text(trackingStore.freedomDate.formatted(date: .long, time: .omitted))
-                        .font(.headline)
-                        .fontWeight(.bold)
-                }
+            VStack(alignment: .leading, spacing: 4) {
+                Text("FREEDOM COUNTDOWN")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.secondary)
                 
-                Spacer()
+                Text("\(trackingStore.daysLeftInProgram) days left")
+                    .font(.title3)
+                    .fontWeight(.bold)
                 
-                Image(systemName: "flag.checkered")
-                    .font(.title2)
-                    .foregroundStyle(.green)
-                    .padding(12)
-                    .background(Color.green.opacity(0.1))
-                    .clipShape(Circle())
+                Text("Until \(trackingStore.freedomDate.formatted(date: .abbreviated, time: .omitted))")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
+            
+            Spacer()
         }
-        .padding(24)
+        .padding(20)
         .background(Color.white)
         .clipShape(RoundedRectangle(cornerRadius: 24))
         .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
@@ -899,96 +817,6 @@ struct AnalyticsView: View {
         .padding(.horizontal, 20)
     }
     
-    #if DEBUG
-    private var debugControls: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Text("🧪")
-                Text("DEBUG CONTROLS")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, 4)
-            
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Button("Test Daily Check-In") {
-                        notificationStore.showDailyCheckIn()
-                    }
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color.black.opacity(0.05))
-                    .clipShape(Capsule())
-                    
-                    Button("Test Challenge") {
-                        notificationStore.showChallenge()
-                    }
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color.black.opacity(0.05))
-                    .clipShape(Capsule())
-                }
-                
-                HStack {
-                    Button("Test Level-Up") {
-                        notificationStore.showLevelUp(for: trackingStore.currentLevel)
-                    }
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color.black.opacity(0.05))
-                    .clipShape(Capsule())
-                    
-                    Button("Test Relapse Support") {
-                        notificationStore.showRelapseSupport()
-                    }
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color.black.opacity(0.05))
-                    .clipShape(Capsule())
-                }
-                
-                HStack {
-                    Button("Add Power Action") {
-                        TrackingPersistence.recordPowerAction(store: trackingStore, context: modelContext, type: .deletePhotos)
-                    }
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color.green.opacity(0.08))
-                    .foregroundStyle(.green)
-                    .clipShape(Capsule())
-                    
-                    Button("Log Relapse") {
-                        TrackingPersistence.recordRelapse(store: trackingStore, context: modelContext)
-                    }
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color.red.opacity(0.08))
-                    .foregroundStyle(.red)
-                    .clipShape(Capsule())
-                }
-            }
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-            .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
-        }
-        .padding(.horizontal, 20)
-    }
-    #endif
     
     @ViewBuilder
     func statCard(title: String, value: String, unit: String, icon: String, color: Color) -> some View {
@@ -1023,6 +851,107 @@ struct AnalyticsView: View {
         .background(Color.white)
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
+    }
+}
+
+struct AllLevelsSheet: View {
+    @Environment(TrackingStore.self) private var trackingStore
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 16) {
+                    ForEach(HealingLevel.allCases, id: \.self) { level in
+                        LevelDetailRow(level: level, currentLevel: trackingStore.currentLevel)
+                    }
+                }
+                .padding(20)
+            }
+            .background(Color(hex: "F9F9F9"))
+            .navigationTitle("All Levels")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct LevelDetailRow: View {
+    let level: HealingLevel
+    let currentLevel: HealingLevel
+    
+    var isUnlocked: Bool {
+        level.rawValue <= currentLevel.rawValue
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text(level.emoji)
+                    .font(.title)
+                    .padding(8)
+                    .background(Color(hex: level.color).opacity(0.1))
+                    .clipShape(Circle())
+                    .grayscale(isUnlocked ? 0 : 1)
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(level.title)
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .foregroundStyle(isUnlocked ? .primary : .secondary)
+                    
+                    Text("Level \(level.index)")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundStyle(.secondary)
+                }
+                
+                Spacer()
+                
+                if !isUnlocked {
+                    Image(systemName: "lock.fill")
+                        .foregroundStyle(.secondary.opacity(0.5))
+                } else if level == currentLevel {
+                     Text("Current")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.green)
+                        .clipShape(Capsule())
+                } else {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(.green)
+                }
+            }
+            
+            Text(level.subtitle)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            
+            if !isUnlocked {
+                Divider()
+                HStack(spacing: 6) {
+                    Image(systemName: "lock")
+                        .font(.caption)
+                    Text("Unlocks after \(level.minDays) days no contact")
+                        .font(.caption)
+                }
+                .foregroundStyle(.secondary)
+            }
+        }
+        .padding(16)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+        .opacity(isUnlocked ? 1 : 0.7)
     }
 }
 

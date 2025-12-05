@@ -314,7 +314,7 @@ struct TrackingState: StoreState {
 }
 
 extension TrackingState {
-    static func initialNow(totalProgramDays: Int = 365) -> TrackingState {
+    static func initialNow(totalProgramDays: Int = 180) -> TrackingState {
         let now = Date()
         return TrackingState(
             exName: "",
@@ -492,6 +492,22 @@ extension TrackingState {
     var relapsesDaysThisWeek: Int {
         weeklyStatuses.filter { $0 == 2 }.count
     }
+    
+    var weeklyCheckIns: [DailyCheckIn?] {
+        let today = calendar.startOfDay(for: Date())
+        let weekday = calendar.component(.weekday, from: today)
+        let daysFromMonday = (weekday + 5) % 7
+        guard let monday = calendar.date(byAdding: .day, value: -daysFromMonday, to: today) else {
+            return Array(repeating: nil, count: 7)
+        }
+        
+        return (0..<7).map { offset in
+            guard let day = calendar.date(byAdding: .day, value: offset, to: monday) else {
+                return nil
+            }
+            return dailyCheckIns.first { calendar.isDate($0.date, inSameDayAs: day) }
+        }
+    }
 }
 
 @MainActor
@@ -507,6 +523,10 @@ final class TrackingStore: Store<TrackingState> {
     
     var weekStatuses: [Int] {
         state.weeklyStatuses
+    }
+    
+    var weeklyCheckIns: [DailyCheckIn?] {
+        state.weeklyCheckIns
     }
     
     var daysSinceProgramStart: Int {
