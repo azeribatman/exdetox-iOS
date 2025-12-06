@@ -117,3 +117,18 @@ final class BadgeRecord {
         BadgeType(rawValue: typeRaw) ?? .firstDay
     }
 }
+
+@Model
+final class WhyItemRecord {
+    @Attribute(.unique) var id: UUID
+    var title: String
+    var createdAt: Date
+    var imageFileName: String?
+    
+    init(id: UUID = UUID(), title: String, createdAt: Date = Date(), imageFileName: String? = nil) {
+        self.id = id
+        self.title = title
+        self.createdAt = createdAt
+        self.imageFileName = imageFileName
+    }
+}

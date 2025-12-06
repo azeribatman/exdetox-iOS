@@ -1,13 +1,24 @@
 import SwiftUI
+import SwiftData
 
 struct PanicView: View {
     @Environment(\.dismiss) var dismiss
-    @Binding var whyItems: [WhyItem]
+    @Query(sort: \WhyItemRecord.createdAt, order: .reverse) private var whyItems: [WhyItemRecord]
     @State private var showMeditate = false
     @State private var showCamera = false
     
     // Animation states
     @State private var animateText = false
+    
+    private func documentsDirectory() -> URL? {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+    }
+    
+    private func loadImage(from fileName: String) -> UIImage? {
+        guard let directory = documentsDirectory() else { return nil }
+        let url = directory.appendingPathComponent(fileName)
+        return UIImage(contentsOfFile: url.path)
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -54,23 +65,13 @@ struct PanicView: View {
                             
                             ForEach(whyItems) { item in
                                 VStack(alignment: .leading, spacing: 12) {
-                                    if let addedImage = item.addedImage {
-                                        addedImage
+                                    if let fileName = item.imageFileName, let uiImage = loadImage(from: fileName) {
+                                        Image(uiImage: uiImage)
                                             .resizable()
                                             .aspectRatio(contentMode: .fit)
                                             .frame(maxHeight: 250)
                                             .clipShape(RoundedRectangle(cornerRadius: 16))
                                             .frame(maxWidth: .infinity)
-                                    } else if let imageName = item.imageName {
-                                        Rectangle()
-                                            .fill(Color.gray.opacity(0.1))
-                                            .aspectRatio(16/9, contentMode: .fit)
-                                            .overlay(
-                                                Image(systemName: imageName)
-                                                    .font(.largeTitle)
-                                                    .foregroundStyle(.gray.opacity(0.5))
-                                            )
-                                            .clipShape(RoundedRectangle(cornerRadius: 16))
                                     }
                                     
                                     Text(item.title)
@@ -183,14 +184,13 @@ struct PanicView: View {
 }
 
 #Preview("With Whys") {
-    PanicView(whyItems: .constant([
-        WhyItem(title: "Toxic behavior", imageName: "exclamationmark.triangle"),
-        WhyItem(title: "Made me cry", imageName: "cloud.rain")
-    ]))
+    PanicView()
+        .modelContainer(for: [WhyItemRecord.self], inMemory: true)
 }
 
 #Preview("Empty State") {
-    PanicView(whyItems: .constant([]))
+    PanicView()
+        .modelContainer(for: [WhyItemRecord.self], inMemory: true)
 }
 
 

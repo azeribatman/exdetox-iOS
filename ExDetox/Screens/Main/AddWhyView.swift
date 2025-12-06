@@ -5,10 +5,9 @@ struct AddWhyView: View {
     @Environment(\.dismiss) var dismiss
     @State private var title: String = ""
     @State private var selectedItem: PhotosPickerItem?
-    @State private var selectedImage: Image?
+    @State private var selectedImage: UIImage?
     
-    // Callback to save the new item
-    var onSave: (String, Image?) -> Void
+    var onSave: (String, UIImage?) -> Void
     
     var body: some View {
         NavigationStack {
@@ -55,7 +54,7 @@ struct AddWhyView: View {
                         // Image Picker
                         if let selectedImage {
                             ZStack(alignment: .topTrailing) {
-                                selectedImage
+                                Image(uiImage: selectedImage)
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(maxHeight: 300)
@@ -121,7 +120,7 @@ struct AddWhyView: View {
                 Task {
                     if let data = try? await newItem?.loadTransferable(type: Data.self),
                        let uiImage = UIImage(data: data) {
-                        selectedImage = Image(uiImage: uiImage)
+                        selectedImage = uiImage
                     }
                 }
             }

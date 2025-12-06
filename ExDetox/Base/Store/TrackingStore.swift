@@ -88,15 +88,15 @@ enum HealingLevel: Int, CaseIterable, Codable, Hashable {
     var challenges: [PowerActionType] {
         switch self {
         case .emergency:
-            return [.muteNotifications, .deletePhotos, .unfollowOne]
+            return [.deletePhotos, .unfollowOne, .muteNotifications, .archiveChats, .drinkWater]
         case .withdrawal:
-            return [.deletePhotos, .unfollow, .realityJournaling]
+            return [.unfollow, .realityJournaling, .cleanRoom, .readBook, .walkOutside]
         case .reality:
-            return [.block, .realityJournaling, .standardsList]
+            return [.block, .standardsList, .trashGifts, .changeWallpaper, .cookMeal]
         case .glowUp:
-            return [.newExperience, .socialActivity, .fitnessChallenge]
+            return [.newExperience, .socialActivity, .fitnessChallenge, .dressUp, .listenNewMusic]
         case .unbothered:
-            return [.newExperience, .helpOthers]
+            return [.newExperience, .helpOthers, .deleteNumber]
         }
     }
 }
@@ -113,25 +113,28 @@ enum PowerActionType: String, Codable, Hashable, CaseIterable, Identifiable {
     case socialActivity
     case fitnessChallenge
     case helpOthers
+    case deleteNumber
+    case archiveChats
+    case cleanRoom
+    case trashGifts
+    case changeWallpaper
+    case readBook
+    case walkOutside
+    case dressUp
+    case cookMeal
+    case listenNewMusic
+    case drinkWater
     case custom
     
     var id: String { rawValue }
     
     var bonusDays: Double {
         switch self {
-        case .deletePhotos, .block:
+        case .deletePhotos, .block, .deleteNumber, .trashGifts:
+            return 2.0
+        case .unfollow, .unfollowOne, .helpOthers, .newExperience, .socialActivity, .fitnessChallenge, .archiveChats:
             return 1.0
-        case .unfollow, .unfollowOne:
-            return 0.5
-        case .realityJournaling, .standardsList:
-            return 0.5
-        case .newExperience, .socialActivity, .fitnessChallenge:
-            return 1.0
-        case .muteNotifications:
-            return 0.25
-        case .helpOthers:
-            return 1.5
-        case .custom:
+        case .realityJournaling, .standardsList, .cleanRoom, .readBook, .walkOutside, .dressUp, .cookMeal, .listenNewMusic, .changeWallpaper, .custom, .muteNotifications, .drinkWater:
             return 0.5
         }
     }
@@ -149,6 +152,17 @@ enum PowerActionType: String, Codable, Hashable, CaseIterable, Identifiable {
         case .socialActivity: return "Social Activity"
         case .fitnessChallenge: return "Fitness Challenge"
         case .helpOthers: return "Helped Others Heal"
+        case .deleteNumber: return "Deleted Number"
+        case .archiveChats: return "Archived Chats"
+        case .cleanRoom: return "Cleaned Room"
+        case .trashGifts: return "Trashed Gifts"
+        case .changeWallpaper: return "Changed Wallpaper"
+        case .readBook: return "Read a Book"
+        case .walkOutside: return "Went for a Walk"
+        case .dressUp: return "Dressed Up"
+        case .cookMeal: return "Cooked a Meal"
+        case .listenNewMusic: return "New Music"
+        case .drinkWater: return "Drank Water"
         case .custom: return "Custom Action"
         }
     }
@@ -165,6 +179,17 @@ enum PowerActionType: String, Codable, Hashable, CaseIterable, Identifiable {
         case .socialActivity: return "person.2.fill"
         case .fitnessChallenge: return "figure.run"
         case .helpOthers: return "heart.fill"
+        case .deleteNumber: return "phone.down.fill"
+        case .archiveChats: return "archivebox.fill"
+        case .cleanRoom: return "sparkles"
+        case .trashGifts: return "gift.fill"
+        case .changeWallpaper: return "photo.fill"
+        case .readBook: return "book.closed.fill"
+        case .walkOutside: return "figure.walk"
+        case .dressUp: return "tshirt.fill"
+        case .cookMeal: return "fork.knife"
+        case .listenNewMusic: return "music.note"
+        case .drinkWater: return "drop.fill"
         case .custom: return "sparkles"
         }
     }
@@ -182,7 +207,27 @@ enum PowerActionType: String, Codable, Hashable, CaseIterable, Identifiable {
         case .socialActivity: return "Hang out with friends or meet new people"
         case .fitnessChallenge: return "Complete a workout or physical challenge"
         case .helpOthers: return "Help someone else going through heartbreak"
+        case .deleteNumber: return "Delete their number so you can't text them"
+        case .archiveChats: return "Archive or delete old chat history"
+        case .cleanRoom: return "Clean your space to clear your mind"
+        case .trashGifts: return "Get rid of gifts that remind you of them"
+        case .changeWallpaper: return "Change your wallpaper if it reminds you of them"
+        case .readBook: return "Read a few pages of a book to distract yourself"
+        case .walkOutside: return "Go for a walk and get some fresh air"
+        case .dressUp: return "Put on an outfit that makes you feel confident"
+        case .cookMeal: return "Cook a healthy meal for yourself"
+        case .listenNewMusic: return "Listen to new music, not sad songs"
+        case .drinkWater: return "Stay hydrated and take care of your body"
         case .custom: return "A personal healing action you defined"
+        }
+    }
+    
+    var isRepeatable: Bool {
+        switch self {
+        case .deletePhotos, .unfollow, .block, .muteNotifications, .standardsList, .deleteNumber, .archiveChats, .trashGifts, .changeWallpaper:
+            return false
+        default:
+            return true
         }
     }
 }
@@ -395,6 +440,10 @@ extension TrackingState {
         return max(calendar.dateComponents([.day], from: start, to: now).day ?? 0, 0)
     }
     
+    var totalHealingDays: Int {
+        currentStreakDays + Int(bonusDays)
+    }
+    
     var detoxProgress: Double {
         guard totalProgramDays > 0 else { return 1 }
         let clamped = min(daysSinceProgramStart, totalProgramDays)
@@ -553,6 +602,10 @@ final class TrackingStore: Store<TrackingState> {
         state.currentStreakDays
     }
     
+    var totalHealingDays: Int {
+        state.totalHealingDays
+    }
+    
     var totalProgramDays: Int {
         state.totalProgramDays
     }
@@ -624,6 +677,11 @@ final class TrackingStore: Store<TrackingState> {
     }
     
     func recordPowerAction(_ type: PowerActionType, on date: Date = Date(), note: String? = nil) {
+        // Prevent duplicates for non-repeatable actions
+        if !type.isRepeatable && state.powerActions.contains(where: { $0.type == type }) {
+            return
+        }
+        
         let record = PowerActionRecord(type: type, date: date, note: note)
         state.powerActions.append(record)
         

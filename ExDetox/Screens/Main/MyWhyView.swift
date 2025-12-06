@@ -1,32 +1,33 @@
 import SwiftUI
-
-struct WhyItem: Identifiable {
-    let id = UUID()
-    let title: String
-    let imageName: String?
-    // In a real app we'd store the image data or path. For demo we can store the Image if we want, or just pretend.
-    // Let's modify this to support the demo flow better.
-    let addedImage: Image? 
-    let date: Date
-    
-    // Custom init for backward compatibility with mock data
-    init(title: String, imageName: String? = nil, addedImage: Image? = nil, date: Date = Date()) {
-        self.title = title
-        self.imageName = imageName
-        self.addedImage = addedImage
-        self.date = date
-    }
-}
+import SwiftData
 
 struct MyWhyView: View {
-    // Mock Data
-    @Binding var items: [WhyItem]
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \WhyItemRecord.createdAt, order: .reverse) private var items: [WhyItemRecord]
     @State private var showAddSheet = false
     @State private var showSettings = false
     
-    // Default init for previews/mocking
-    init(items: Binding<[WhyItem]>) {
-        self._items = items
+    private func documentsDirectory() -> URL? {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+    }
+    
+    private func saveImageToDocuments(_ image: UIImage) -> String? {
+        guard let directory = documentsDirectory() else { return nil }
+        let fileName = UUID().uuidString + ".jpg"
+        let url = directory.appendingPathComponent(fileName)
+        guard let data = image.jpegData(compressionQuality: 0.9) else { return nil }
+        do {
+            try data.write(to: url, options: .atomic)
+            return fileName
+        } catch {
+            return nil
+        }
+    }
+    
+    private func loadImage(from fileName: String) -> UIImage? {
+        guard let directory = documentsDirectory() else { return nil }
+        let url = directory.appendingPathComponent(fileName)
+        return UIImage(contentsOfFile: url.path)
     }
     
     var body: some View {
@@ -109,10 +110,13 @@ struct MyWhyView: View {
         .background(Color(hex: "F9F9F9").ignoresSafeArea())
         .sheet(isPresented: $showAddSheet) {
             AddWhyView { title, image in
-                let newItem = WhyItem(title: title, addedImage: image)
-                withAnimation {
-                    items.insert(newItem, at: 0)
+                var fileName: String?
+                if let image {
+                    fileName = saveImageToDocuments(image)
                 }
+                let newItem = WhyItemRecord(title: title, imageFileName: fileName)
+                modelContext.insert(newItem)
+                try? modelContext.save()
             }
         }
         .sheet(isPresented: $showSettings) {
@@ -173,25 +177,13 @@ struct MyWhyView: View {
         VStack(spacing: 16) {
             ForEach(items) { item in
                 VStack(alignment: .leading, spacing: 12) {
-                    if let addedImage = item.addedImage {
-                        // User uploaded image
-                        addedImage
+                    if let fileName = item.imageFileName, let uiImage = loadImage(from: fileName) {
+                        Image(uiImage: uiImage)
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(maxHeight: 250)
                             .clipShape(RoundedRectangle(cornerRadius: 16))
                             .frame(maxWidth: .infinity)
-                    } else if let imageName = item.imageName {
-                        // Mock image
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.1))
-                            .aspectRatio(16/9, contentMode: .fit)
-                            .overlay(
-                                Image(systemName: imageName)
-                                    .font(.largeTitle)
-                                    .foregroundStyle(.gray.opacity(0.5))
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
                     
                     Text(item.title)
@@ -201,7 +193,7 @@ struct MyWhyView: View {
                         .lineLimit(nil) // Allow full text
                         .fixedSize(horizontal: false, vertical: true)
                         
-                    Text(item.date.formatted(date: .abbreviated, time: .shortened))
+                    Text(item.createdAt.formatted(date: .abbreviated, time: .shortened))
                         .font(.caption)
                         .foregroundStyle(.tertiary)
                         .fontWeight(.medium)
@@ -219,15 +211,12 @@ struct MyWhyView: View {
 }
 
 #Preview {
-    MyWhyView(items: .constant([]))
+    MyWhyView()
+        .modelContainer(for: [WhyItemRecord.self], inMemory: true)
 }
 
 #Preview("Filled State") {
-    // Let's create a version with initial items for preview purposes
-    MyWhyView(items: .constant([
-        WhyItem(title: "He never listened to me when I was crying."),
-        WhyItem(title: "Forgot my birthday... again.", imageName: "photo"),
-        WhyItem(title: "Gaslighting 101.")
-    ]))
+    MyWhyView()
+        .modelContainer(for: [WhyItemRecord.self], inMemory: true)
 }
 

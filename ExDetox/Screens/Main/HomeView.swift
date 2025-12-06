@@ -22,12 +22,7 @@ struct HomeView: View {
     @State private var showRelapseConfirm = false
     @State private var showCheckInSheet = false
     @State private var showPowerActionsSheet = false
-    
-    @State private var whyItems: [WhyItem] = [
-        WhyItem(title: "He never listened to me when I was crying."),
-        WhyItem(title: "Forgot my birthday... again.", imageName: "photo"),
-        WhyItem(title: "Gaslighting 101.")
-    ]
+    @State private var stickyQuote: String = ""
     
     private var userName: String {
         let name = userProfileStore.profile.name
@@ -103,24 +98,14 @@ struct HomeView: View {
                     // 5. Other Actions
                     simpleActionsView
                     
-                    // 6. Quote (Minimal)
-                    if !randomQuote.isEmpty {
-                        Text(randomQuote)
+                    // 6. Quote (Sticky per session)
+                    if !stickyQuote.isEmpty {
+                        Text(stickyQuote)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 40)
                             .padding(.top, 10)
-                    }
-                    
-                    // 7. Relapse Button (Subtle)
-                    Button {
-                        showRelapseConfirm = true
-                    } label: {
-                        Text("I broke no-contact")
-                            .font(.caption)
-                            .foregroundStyle(.red.opacity(0.8))
-                            .padding(.top, 20)
                     }
                 }
                 .padding(.top, 10)
@@ -136,6 +121,9 @@ struct HomeView: View {
         .onAppear {
             trackingStore.updateForCurrentDate()
             updateTimer()
+            if stickyQuote.isEmpty {
+                stickyQuote = randomQuote
+            }
         }
         .sheet(isPresented: $showSettings) {
             SettingsView()
@@ -147,7 +135,7 @@ struct HomeView: View {
             MeditateView()
         }
         .sheet(isPresented: $showPanic) {
-            PanicView(whyItems: $whyItems)
+            PanicView()
         }
         .sheet(isPresented: $showCheckInSheet) {
             QuickCheckInSheet()
@@ -355,10 +343,21 @@ struct HomeView: View {
                 Button {
                     showCheckInSheet = true
                 } label: {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 16) {
+                        ZStack {
+                            Circle()
+                                .fill(Color(hex: trackingStore.currentLevel.color).opacity(0.1))
+                                .frame(width: 48, height: 48)
+                            
+                            Image(systemName: "pencil.line")
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundStyle(Color(hex: trackingStore.currentLevel.color))
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 2) {
                             Text("Daily Check-In")
                                 .font(.headline)
+                                .fontWeight(.bold)
                                 .foregroundStyle(.primary)
                             Text("Track your mood & urges")
                                 .font(.caption)
@@ -367,21 +366,17 @@ struct HomeView: View {
                         
                         Spacer()
                         
-                        Text("Log Now")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 10)
-                            .background(Color.blue)
-                            .clipShape(Capsule())
+                        Image(systemName: "arrow.right")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(Color.gray.opacity(0.3))
                     }
-                    .padding(20)
+                    .padding(16)
                     .background(Color.white)
                     .clipShape(RoundedRectangle(cornerRadius: 24))
                     .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
                     .padding(.horizontal, 20)
                 }
+                .buttonStyle(ScaleButtonStyle())
             }
         }
     }
@@ -464,6 +459,7 @@ struct HomeView: View {
             .clipShape(RoundedRectangle(cornerRadius: 20))
             .shadow(color: .red.opacity(0.3), radius: 10, x: 0, y: 5)
         }
+        .buttonStyle(ScaleButtonStyle())
         .padding(.horizontal, 20)
         .padding(.vertical, 10)
         .background(Color(hex: "F9F9F9"))
@@ -471,18 +467,30 @@ struct HomeView: View {
     
     private var simpleActionsView: some View {
         HStack(spacing: 12) {
-            // Power Actions
-            simpleActionButton(title: "Power Actions", icon: "bolt.fill", color: .purple) {
+            // Power Actions (Purple - Withdrawal/Healing)
+            simpleActionButton(
+                title: "Power Actions",
+                icon: "bolt.fill",
+                color: Color(hex: "9B59B6") // Withdrawal Color
+            ) {
                 showPowerActionsSheet = true
             }
             
-            // Meditate
-            simpleActionButton(title: "Meditate", icon: "wind", color: .teal) {
+            // Meditate (Green - Unbothered/Calm)
+            simpleActionButton(
+                title: "Meditate",
+                icon: "wind",
+                color: Color(hex: "2ECC71") // Unbothered Color
+            ) {
                 showMeditate = true
             }
             
-            // Roast Me
-            simpleActionButton(title: "Roast Me", icon: "flame.fill", color: .orange) {
+            // Roast Me (Orange - GlowUp/Fire)
+            simpleActionButton(
+                title: "Roast Me",
+                icon: "flame.fill",
+                color: Color(hex: "F39C12") // GlowUp Color
+            ) {
                 showRoastMe = true
             }
         }
@@ -506,11 +514,12 @@ struct HomeView: View {
                     .multilineTextAlignment(.center)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
+            .padding(.vertical, 16)
             .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
         }
+        .buttonStyle(ScaleButtonStyle())
     }
     
     @ViewBuilder
@@ -576,7 +585,10 @@ struct HomeView: View {
     func updateTimer() {
         let startDate = trackingStore.state.noContactStartDate
         let diff = Calendar.current.dateComponents([.day, .hour, .minute, .second], from: startDate, to: Date())
-        let days = String(diff.day ?? 0)
+        
+        // Use totalHealingDays which includes bonus days
+        let days = String(trackingStore.totalHealingDays)
+        
         let hours = String(format: "%02d", diff.hour ?? 0)
         let minutes = String(format: "%02d", diff.minute ?? 0)
         let seconds = String(format: "%02d", diff.second ?? 0)
@@ -761,124 +773,345 @@ struct PowerActionsSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     
+    @State private var completedAction: PowerActionType?
+    @State private var selectedAction: PowerActionType?
+    @State private var showConfirmation = false
+    
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 24) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Speed Up Your Healing")
-                            .font(.headline)
-                        Text("Complete these actions to earn bonus days and level up faster. Each action you take proves you're moving forward.")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 20)
-                    
-                    VStack(spacing: 12) {
-                        ForEach(trackingStore.currentLevel.challenges, id: \.self) { action in
-                            PowerActionRow(action: action) {
-                                TrackingPersistence.recordPowerAction(store: trackingStore, context: modelContext, type: action)
-                                dismiss()
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                    
-                    if !trackingStore.powerActions.isEmpty {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Completed Actions")
-                                .font(.headline)
-                                .padding(.horizontal, 20)
-                            
-                            ForEach(trackingStore.powerActions.prefix(5)) { action in
-                                HStack(spacing: 12) {
-                                    Image(systemName: action.type.icon)
-                                        .foregroundStyle(.green)
-                                        .frame(width: 24)
-                                    
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(action.type.displayName)
-                                            .font(.subheadline)
-                                            .fontWeight(.medium)
-                                        Text(action.date.formatted(date: .abbreviated, time: .omitted))
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    
-                                    Spacer()
-                                    
-                                    Text("+\(String(format: "%.1f", action.type.bonusDays))d")
-                                        .font(.caption)
-                                        .fontWeight(.semibold)
-                                        .foregroundStyle(.green)
-                                }
-                                .padding(12)
-                                .background(Color.green.opacity(0.05))
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                            }
-                            .padding(.horizontal, 20)
-                        }
-                    }
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                Text("Power Actions")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.primary)
+                
+                Spacer()
+                
+                Button(action: {
+                    dismiss()
+                }) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(.black)
+                        .padding(10)
+                        .background(Color.gray.opacity(0.1))
+                        .clipShape(Circle())
                 }
-                .padding(.vertical, 20)
             }
-            .navigationTitle("Power Actions")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") {
-                        dismiss()
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
+            .padding(.bottom, 20)
+            
+            ZStack {
+                ScrollView {
+                    VStack(spacing: 24) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Speed Up Your Healing")
+                                .font(.headline)
+                            Text("Complete these actions to earn bonus days. Proving to yourself that you're moving on is the biggest flex.")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 20)
+                        
+                        VStack(spacing: 12) {
+                            ForEach(trackingStore.currentLevel.challenges, id: \.self) { action in
+                                let isCompleted = !action.isRepeatable && trackingStore.powerActions.contains(where: { $0.type == action })
+                                
+                                PowerActionRow(action: action, isCompleted: isCompleted) {
+                                    if !isCompleted {
+                                        selectedAction = action
+                                    }
+                                }
+                                .disabled(isCompleted)
+                                .opacity(isCompleted ? 0.6 : 1)
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                        
+                        if !trackingStore.powerActions.isEmpty {
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("History")
+                                    .font(.headline)
+                                    .padding(.horizontal, 20)
+                                
+                                ForEach(trackingStore.powerActions.sorted(by: { $0.date > $1.date }).prefix(5)) { action in
+                                    HStack(spacing: 12) {
+                                        Image(systemName: action.type.icon)
+                                            .foregroundStyle(.green)
+                                            .frame(width: 24)
+                                        
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(action.type.displayName)
+                                                .font(.subheadline)
+                                                .fontWeight(.medium)
+                                            Text(action.date.formatted(date: .abbreviated, time: .omitted))
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                        }
+                                        
+                                        Spacer()
+                                        
+                                        Text("+\(String(format: "%.1f", action.type.bonusDays))d")
+                                            .font(.caption)
+                                            .fontWeight(.semibold)
+                                            .foregroundStyle(.green)
+                                    }
+                                    .padding(12)
+                                    .background(Color.green.opacity(0.05))
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                                }
+                                .padding(.horizontal, 20)
+                            }
+                        }
                     }
+                    .padding(.vertical, 20)
+                }
+                .disabled(completedAction != nil)
+                
+                if let action = completedAction {
+                    Color.black.opacity(0.4).ignoresSafeArea()
+                    
+                    VStack(spacing: 20) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 60))
+                            .foregroundStyle(.green)
+                            .symbolEffect(.bounce, value: completedAction)
+                        
+                        Text("The Universe Aligns...")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.white)
+                        
+                        Text("You chose yourself today.")
+                            .font(.headline)
+                            .foregroundStyle(.white.opacity(0.9))
+                        
+                        Text("+\(String(format: "%.1f", action.bonusDays)) days added to your healing")
+                            .font(.subheadline)
+                            .foregroundStyle(.white.opacity(0.7))
+                            .padding(.top, 4)
+                    }
+                    .padding(40)
+                    .background(Color.black.opacity(0.8))
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .transition(.scale.combined(with: .opacity))
+                    .zIndex(1)
                 }
             }
         }
+        .background(Color(hex: "F9F9F9").ignoresSafeArea())
+        .sheet(item: $selectedAction) { action in
+            PowerActionSignSheet(action: action) {
+                handleCompletion(action: action)
+                selectedAction = nil
+            }
+        }
+    }
+    
+    func handleCompletion(action: PowerActionType) {
+        TrackingPersistence.recordPowerAction(store: trackingStore, context: modelContext, type: action)
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+            completedAction = action
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            dismiss()
+        }
+    }
+}
+
+struct PowerActionSignSheet: View {
+    let action: PowerActionType
+    let onSign: () -> Void
+    @Environment(\.dismiss) private var dismiss
+    
+    @State private var signedName: String = ""
+    @State private var showSignature = false
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                Text("Commitment")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.primary)
+                
+                Spacer()
+                
+                Button(action: {
+                    dismiss()
+                }) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(.black)
+                        .padding(10)
+                        .background(Color.gray.opacity(0.1))
+                        .clipShape(Circle())
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
+            .padding(.bottom, 20)
+            
+            VStack(spacing: 24) {
+                Spacer()
+                
+                Image(systemName: "pencil.and.scribble")
+                    .font(.system(size: 60))
+                    .foregroundStyle(.primary)
+                    .padding(.bottom, 8)
+                
+                Text("Commitment Contract")
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .fontDesign(.serif)
+                
+                VStack(spacing: 16) {
+                    Text("I hereby confirm that I have completed the action:")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                    
+                    Text(action.displayName)
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                    
+                    Text("By signing this, I affirm that I am choosing my own healing over the past. I am taking control of my narrative.")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 32)
+                        .lineSpacing(4)
+                }
+                
+                Spacer()
+                
+                VStack(spacing: 8) {
+                    if showSignature {
+                        Text("Signed: \(signedName.isEmpty ? "Me" : signedName)")
+                            .font(.custom("Zapfino", size: 24))
+                            .foregroundStyle(.blue)
+                            .transition(.scale.combined(with: .opacity))
+                    } else {
+                        TextField("Type your name to sign", text: $signedName)
+                            .font(.headline)
+                            .multilineTextAlignment(.center)
+                            .padding()
+                            .background(Color.gray.opacity(0.1))
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .padding(.horizontal, 40)
+                    }
+                }
+                .frame(height: 80)
+                
+                Button {
+                    if showSignature {
+                        onSign()
+                    } else {
+                        withAnimation {
+                            showSignature = true
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                            onSign()
+                        }
+                    }
+                } label: {
+                    Text(showSignature ? "Sealed & Delivered" : "Sign & Confirm")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.black)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
+                .padding(.horizontal, 20)
+                .disabled(signedName.isEmpty && !showSignature)
+                .opacity(signedName.isEmpty && !showSignature ? 0.5 : 1)
+                
+                Button("Cancel") {
+                    dismiss()
+                }
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .padding(.bottom, 20)
+            }
+        }
+        .background(Color(hex: "F9F9F9"))
+        .presentationCornerRadius(32)
     }
 }
 
 struct PowerActionRow: View {
     let action: PowerActionType
+    let isCompleted: Bool
     let onComplete: () -> Void
     
     var body: some View {
-        HStack(spacing: 16) {
-            Image(systemName: action.icon)
-                .font(.title3)
-                .foregroundStyle(.white)
-                .frame(width: 44, height: 44)
-                .background(Color.purple)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(action.displayName)
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
+        Button {
+            onComplete()
+        } label: {
+            HStack(spacing: 16) {
+                Image(systemName: action.icon)
+                    .font(.title3)
+                    .foregroundStyle(.white)
+                    .frame(width: 44, height: 44)
+                    .background(isCompleted ? Color.green : Color.purple)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                 
-                Text(action.description)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(action.displayName)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .strikethrough(isCompleted)
+                        .foregroundStyle(.primary)
+                        .multilineTextAlignment(.leading)
+                    
+                    Text(action.description)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                }
+                
+                Spacer()
+                
+                if isCompleted {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(.green)
+                } else {
+                    Text("+\(String(format: "%.1f", action.bonusDays))d")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color.purple)
+                        .clipShape(Capsule())
+                }
             }
-            
-            Spacer()
-            
-            Button {
-                onComplete()
-            } label: {
-                Text("+\(String(format: "%.1f", action.bonusDays))d")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color.purple)
-                    .clipShape(Capsule())
-            }
+            .padding(16)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
         }
-        .padding(16)
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
+        .buttonStyle(ScaleButtonStyle())
+        .disabled(isCompleted)
+    }
+}
+
+struct ScaleButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.96 : 1)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
+            .opacity(configuration.isPressed ? 0.9 : 1)
     }
 }
 

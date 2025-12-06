@@ -10,7 +10,8 @@ struct ExDetoxApp: App {
             PowerActionObject.self,
             DailyCheckInRecord.self,
             BadgeRecord.self,
-            UserProfileRecord.self
+            UserProfileRecord.self,
+            WhyItemRecord.self
         ])
         let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         return try! ModelContainer(for: schema, configurations: [configuration])

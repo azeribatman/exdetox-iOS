@@ -9,6 +9,9 @@ struct AnalyticsView: View {
     @State private var animateProgress = false
     @State private var selectedTab: AnalyticsTab = .overview
     @State private var showAllLevels = false
+    @State private var showPowerActionsSheet = false
+    
+    private let weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     
     enum AnalyticsTab: String, CaseIterable {
         case overview = "Overview"
@@ -46,6 +49,9 @@ struct AnalyticsView: View {
         }
         .sheet(isPresented: $showAllLevels) {
             AllLevelsSheet()
+        }
+        .sheet(isPresented: $showPowerActionsSheet) {
+            PowerActionsSheet()
         }
     }
     
@@ -100,8 +106,7 @@ struct AnalyticsView: View {
     
     @ViewBuilder
     private var streaksContent: some View {
-        currentStreakCard
-        weeklyStreakDetailCard
+        mergedStreaksView
         streakHistoryCard
     }
     
@@ -117,33 +122,32 @@ struct AnalyticsView: View {
     }
     
     private var levelProgressCard: some View {
-        VStack(spacing: 16) {
-            HStack(alignment: .center) {
+        VStack(spacing: 20) {
+            HStack(spacing: 16) {
+                Text(trackingStore.currentLevel.emoji)
+                    .font(.system(size: 44))
+                    .padding(12)
+                    .background(Color(hex: trackingStore.currentLevel.color).opacity(0.1))
+                    .clipShape(Circle())
+                
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("CURRENT LEVEL")
-                        .font(.caption)
+                    Text(trackingStore.currentLevel.title)
+                        .font(.title2)
                         .fontWeight(.bold)
-                        .foregroundStyle(.secondary)
                     
-                    HStack(spacing: 8) {
-                        Text(trackingStore.currentLevel.emoji)
-                            .font(.title2)
-                        Text(trackingStore.currentLevel.title)
-                            .font(.title2)
-                            .fontWeight(.bold)
-                    }
+                    Text("Level \(trackingStore.currentLevel.index)")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .fontWeight(.medium)
                 }
                 
                 Spacer()
                 
-                Text("Lvl \(trackingStore.currentLevel.index)")
-                    .font(.subheadline)
-                    .fontWeight(.bold)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 4)
-                    .background(Color(hex: trackingStore.currentLevel.color).opacity(0.1))
-                    .foregroundColor(Color(hex: trackingStore.currentLevel.color))
-                    .clipShape(Capsule())
+                if trackingStore.daysLeftInLevel <= 0 {
+                    Image(systemName: "checkmark.seal.fill")
+                        .foregroundStyle(.green)
+                        .font(.title2)
+                }
             }
             
             VStack(spacing: 8) {
@@ -151,18 +155,18 @@ struct AnalyticsView: View {
                     ZStack(alignment: .leading) {
                         Capsule()
                             .fill(Color.gray.opacity(0.1))
-                            .frame(height: 8)
+                            .frame(height: 12)
                         
                         Capsule()
                             .fill(Color(hex: trackingStore.currentLevel.color))
-                            .frame(width: animateProgress ? geometry.size.width * CGFloat(trackingStore.levelProgress) : 0, height: 8)
+                            .frame(width: animateProgress ? geometry.size.width * CGFloat(trackingStore.levelProgress) : 0, height: 12)
                             .animation(.spring(response: 1, dampingFraction: 0.8), value: animateProgress)
                     }
                 }
-                .frame(height: 8)
+                .frame(height: 12)
                 
                 HStack {
-                    Text("\(Int(trackingStore.levelProgress * 100))%")
+                    Text("\(Int(trackingStore.levelProgress * 100))% Complete")
                         .font(.caption)
                         .fontWeight(.bold)
                         .foregroundStyle(Color(hex: trackingStore.currentLevel.color))
@@ -183,6 +187,10 @@ struct AnalyticsView: View {
                 }
             }
         }
+        .padding(24)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
         .padding(.horizontal, 20)
         .padding(.vertical, 10)
     }
@@ -216,7 +224,7 @@ struct AnalyticsView: View {
                     Text(nextLevel.emoji)
                         .font(.largeTitle)
                         .padding(12)
-                        .background(Color(hex: nextLevel.color).opacity(0.1))
+                        .background(Color.white.opacity(0.5))
                         .clipShape(Circle())
                     
                     VStack(alignment: .leading, spacing: 4) {
@@ -237,9 +245,22 @@ struct AnalyticsView: View {
                 }
             }
             .padding(20)
-            .background(Color.white)
+            .background(
+                LinearGradient(
+                    colors: [
+                        Color(hex: nextLevel.color).opacity(0.15),
+                        Color(hex: nextLevel.color).opacity(0.05)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 24)
+                    .stroke(Color(hex: nextLevel.color).opacity(0.1), lineWidth: 1)
+            )
             .clipShape(RoundedRectangle(cornerRadius: 24))
-            .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
+            .shadow(color: Color(hex: nextLevel.color).opacity(0.05), radius: 10, x: 0, y: 5)
             .padding(.horizontal, 20)
         }
     }
@@ -303,7 +324,7 @@ struct AnalyticsView: View {
                         .foregroundStyle(.secondary)
                 }
                 
-                HStack(spacing: 24) {
+                HStack(spacing: 0) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Avg Mood")
                             .font(.caption)
@@ -317,6 +338,7 @@ struct AnalyticsView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Avg Urge")
@@ -332,6 +354,7 @@ struct AnalyticsView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Check-Ins")
@@ -341,6 +364,7 @@ struct AnalyticsView: View {
                             .font(.title2)
                             .fontWeight(.bold)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
             .padding(24)
@@ -375,59 +399,54 @@ struct AnalyticsView: View {
         .padding(.horizontal, 20)
     }
     
-    private var currentStreakCard: some View {
-        VStack(spacing: 20) {
-            HStack(spacing: 8) {
-                Text("🔥")
-                Text("CURRENT STREAK")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            
-            HStack(alignment: .lastTextBaseline, spacing: 8) {
-                Text("\(trackingStore.currentStreakDays)")
-                    .font(.system(size: 72, weight: .bold, design: .rounded))
-                Text("days")
-                    .font(.title2)
-                    .fontWeight(.medium)
-                    .foregroundStyle(.secondary)
-            }
-            
-            if trackingStore.currentStreakDays > 0 {
-                Text(streakEncouragement)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-            
-            Divider()
-            
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Longest Streak")
+    private var mergedStreaksView: some View {
+        VStack(spacing: 24) {
+            HStack(alignment: .bottom) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("CURRENT STREAK")
                         .font(.caption)
+                        .fontWeight(.bold)
                         .foregroundStyle(.secondary)
-                    HStack(spacing: 4) {
-                        Image(systemName: "trophy.fill")
-                            .foregroundStyle(.yellow)
-                        Text("\(trackingStore.maxStreak) days")
+                    
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                        Text("\(trackingStore.currentStreakDays)")
+                            .font(.system(size: 48, weight: .bold, design: .rounded))
+                        Text("days")
                             .font(.headline)
-                            .fontWeight(.bold)
+                            .foregroundStyle(.secondary)
+                            .fontWeight(.medium)
                     }
                 }
                 
                 Spacer()
                 
-                if let lastRelapse = trackingStore.state.lastRelapseDate {
-                    VStack(alignment: .trailing, spacing: 4) {
-                        Text("Last Relapse")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Text(lastRelapse.formatted(date: .abbreviated, time: .omitted))
-                            .font(.subheadline)
-                            .fontWeight(.medium)
+                HStack(spacing: 4) {
+                    Image(systemName: "trophy.fill")
+                        .font(.caption)
+                    Text("Best: \(trackingStore.maxStreak)")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                }
+                .foregroundStyle(.orange)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Color.orange.opacity(0.1))
+                .clipShape(Capsule())
+                .padding(.bottom, 8)
+            }
+            
+            VStack(spacing: 12) {
+                HStack(spacing: 0) {
+                    ForEach(0..<7, id: \.self) { index in
+                        VStack(spacing: 8) {
+                            Text(weekDays[index].prefix(1))
+                                .font(.caption2)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.secondary)
+                            
+                            weekDayCircle(status: trackingStore.weekStatuses[index], size: 36)
+                        }
+                        .frame(maxWidth: .infinity)
                     }
                 }
             }
@@ -439,96 +458,10 @@ struct AnalyticsView: View {
         .padding(.horizontal, 20)
     }
     
-    private var streakEncouragement: String {
-        switch trackingStore.currentStreakDays {
-        case 1...3: return "Great start! Every day counts 💪"
-        case 4...7: return "Almost a full week! You're doing amazing 🌟"
-        case 8...14: return "Two weeks of growth! You're unstoppable 🚀"
-        case 15...30: return "A whole month of healing! You're a legend ✨"
-        case 31...60: return "You're in the glow-up zone now 🔥"
-        case 61...90: return "Three months strong! Main character energy 🎬"
-        default: return "Absolutely legendary. You've transcended 👑"
-        }
-    }
     
-    private var weeklyStreakDetailCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 8) {
-                Text("📅")
-                Text("THIS WEEK")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.secondary)
-            }
-            
-            let weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-            
-            HStack(spacing: 0) {
-                ForEach(0..<7, id: \.self) { index in
-                    VStack(spacing: 8) {
-                        Text(weekDays[index])
-                            .font(.caption)
-                            .fontWeight(.medium)
-                            .foregroundStyle(.secondary)
-                        
-                        weekDayCircle(status: trackingStore.weekStatuses[index])
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-            }
-            
-            Divider()
-            
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Success Days")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    HStack(spacing: 4) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(.green)
-                        Text("\(trackingStore.state.successfulDaysThisWeek)")
-                            .font(.headline)
-                            .fontWeight(.bold)
-                    }
-                }
-                
-                Spacer()
-                
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text("Relapse Days")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    HStack(spacing: 4) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(.red)
-                        Text("\(trackingStore.state.relapsesDaysThisWeek)")
-                            .font(.headline)
-                            .fontWeight(.bold)
-                    }
-                }
-            }
-            
-            if trackingStore.state.relapsesDaysThisWeek > 0 {
-                Text("You slipped, but you didn't go back to zero as a person. Just the streak. Let's rebuild. 💪")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .padding(12)
-                    .background(Color.orange.opacity(0.1))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-            }
-        }
-        .padding(24)
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 24))
-        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
-        .padding(.horizontal, 20)
-    }
     
     @ViewBuilder
-    private func weekDayCircle(status: Int) -> some View {
-        let size: CGFloat = 40
-        
+    private func weekDayCircle(status: Int, size: CGFloat = 40) -> some View {
         switch status {
         case 1:
             Circle()
@@ -536,7 +469,7 @@ struct AnalyticsView: View {
                 .frame(width: size, height: size)
                 .overlay(
                     Image(systemName: "checkmark")
-                        .font(.subheadline.bold())
+                        .font(.system(size: size * 0.4, weight: .bold))
                         .foregroundColor(.white)
                 )
         case 2:
@@ -545,7 +478,7 @@ struct AnalyticsView: View {
                 .frame(width: size, height: size)
                 .overlay(
                     Image(systemName: "xmark")
-                        .font(.subheadline.bold())
+                        .font(.system(size: size * 0.4, weight: .bold))
                         .foregroundColor(.white)
                 )
         default:
@@ -665,19 +598,24 @@ struct AnalyticsView: View {
     }
     
     private var powerActionsListCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 20) {
             HStack(spacing: 8) {
                 Text("💪")
-                Text("COMPLETED ACTIONS")
+                Text("YOUR ACTIONS")
                     .font(.caption)
                     .fontWeight(.bold)
                     .foregroundStyle(.secondary)
                 
                 Spacer()
                 
-                Text("\(trackingStore.powerActions.count) total")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                Button {
+                    showPowerActionsSheet = true
+                } label: {
+                    Text("Add New")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.blue)
+                }
             }
             
             if trackingStore.powerActions.isEmpty {
@@ -692,42 +630,100 @@ struct AnalyticsView: View {
                         .font(.caption)
                         .foregroundStyle(.tertiary)
                         .multilineTextAlignment(.center)
+                    
+                    Button {
+                        showPowerActionsSheet = true
+                    } label: {
+                        Text("Start an Action")
+                            .font(.subheadline)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .background(Color.blue)
+                            .clipShape(Capsule())
+                    }
+                    .padding(.top, 8)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 24)
             } else {
-                ForEach(trackingStore.powerActions.sorted(by: { $0.date > $1.date }).prefix(10)) { action in
-                    HStack(spacing: 12) {
-                        Image(systemName: action.type.icon)
-                            .font(.body)
-                            .foregroundStyle(.white)
-                            .frame(width: 36, height: 36)
-                            .background(Color.purple)
-                            .clipShape(Circle())
+                // 1. Milestones (Non-repeatable actions completed)
+                let milestones = trackingStore.powerActions.filter { !$0.type.isRepeatable }
+                if !milestones.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Milestones Unlocked")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
                         
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(action.type.displayName)
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                            Text(action.date.formatted(date: .abbreviated, time: .omitted))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        
-                        Spacer()
-                        
-                        Text("+\(String(format: "%.1f", action.type.bonusDays))d")
-                            .font(.caption)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.green)
-                            .padding(.horizontal, 8)
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 16) {
+                                ForEach(milestones) { action in
+                                    VStack(spacing: 8) {
+                                        Image(systemName: action.type.icon)
+                                            .font(.title2)
+                                            .foregroundStyle(.white)
+                                            .frame(width: 44, height: 44)
+                                            .background(Color.green)
+                                            .clipShape(Circle())
+                                            .shadow(color: .green.opacity(0.3), radius: 4, x: 0, y: 2)
+                                        
+                                        Text(action.type.displayName)
+                                            .font(.caption)
+                                            .fontWeight(.medium)
+                                            .multilineTextAlignment(.center)
+                                            .lineLimit(2)
+                                            .frame(width: 70)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                            }
                             .padding(.vertical, 4)
-                            .background(Color.green.opacity(0.1))
-                            .clipShape(Capsule())
+                        }
                     }
-                    .padding(12)
-                    .background(Color.gray.opacity(0.03))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    
+                    Divider()
+                }
+                
+                // 2. Recent History
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Recent Activity")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                    
+                    ForEach(trackingStore.powerActions.sorted(by: { $0.date > $1.date }).prefix(5)) { action in
+                        HStack(spacing: 12) {
+                            Image(systemName: action.type.icon)
+                                .font(.body)
+                                .foregroundStyle(.white)
+                                .frame(width: 36, height: 36)
+                                .background(action.type.isRepeatable ? Color.purple : Color.green)
+                                .clipShape(Circle())
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(action.type.displayName)
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                Text(action.date.formatted(date: .abbreviated, time: .omitted))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            
+                            Spacer()
+                            
+                            Text("+\(String(format: "%.1f", action.type.bonusDays))d")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.green)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.green.opacity(0.1))
+                                .clipShape(Capsule())
+                        }
+                        .padding(12)
+                        .background(Color.gray.opacity(0.03))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
                 }
             }
         }

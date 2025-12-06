@@ -7,11 +7,6 @@ struct MainView: View {
     @Environment(\.modelContext) private var modelContext
     
     @State private var selectedTab: Tab = .home
-    @State private var whyItems: [WhyItem] = [
-        WhyItem(title: "He never listened to me when I was crying."),
-        WhyItem(title: "Forgot my birthday... again.", imageName: "photo"),
-        WhyItem(title: "Gaslighting 101.")
-    ]
     private let tabBarHeight: CGFloat = 72
     
     init() {
@@ -30,7 +25,7 @@ struct MainView: View {
                 AiAgentView()
                     .tag(Tab.aiAgent)
                 
-                MyWhyView(items: $whyItems)
+                MyWhyView()
                     .tag(Tab.myWhy)
                 
                 LearningView()
@@ -127,7 +122,8 @@ struct MainView_Previews: PreviewProvider {
                     PowerActionObject.self,
                     DailyCheckInRecord.self,
                     BadgeRecord.self,
-                    UserProfileRecord.self
+                    UserProfileRecord.self,
+                    WhyItemRecord.self
                 ], inMemory: true)
                 .previewDisplayName("New User")
             
@@ -141,7 +137,8 @@ struct MainView_Previews: PreviewProvider {
                     PowerActionObject.self,
                     DailyCheckInRecord.self,
                     BadgeRecord.self,
-                    UserProfileRecord.self
+                    UserProfileRecord.self,
+                    WhyItemRecord.self
                 ], inMemory: true)
                 .previewDisplayName("Level 2 Progress")
             
@@ -155,7 +152,8 @@ struct MainView_Previews: PreviewProvider {
                     PowerActionObject.self,
                     DailyCheckInRecord.self,
                     BadgeRecord.self,
-                    UserProfileRecord.self
+                    UserProfileRecord.self,
+                    WhyItemRecord.self
                 ], inMemory: true)
                 .previewDisplayName("Level 3 With Relapses")
             
@@ -169,7 +167,8 @@ struct MainView_Previews: PreviewProvider {
                     PowerActionObject.self,
                     DailyCheckInRecord.self,
                     BadgeRecord.self,
-                    UserProfileRecord.self
+                    UserProfileRecord.self,
+                    WhyItemRecord.self
                 ], inMemory: true)
                 .previewDisplayName("Level 5 Unbothered")
         }
