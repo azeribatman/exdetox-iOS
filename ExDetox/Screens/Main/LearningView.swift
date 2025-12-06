@@ -1,90 +1,25 @@
 import SwiftUI
 
 struct LearningView: View {
-    // Mock Data
-    let sounds = [
-        ("Rain", "cloud.rain.fill", Color.blue),
-        ("Ocean", "water.waves", Color.teal),
-        ("Forest", "tree.fill", Color.green),
-        ("Fire", "flame.fill", Color.orange)
-    ]
-    
-    let articles = [
-        Article(
-            title: "The Science of No Contact",
-            subtitle: "Why silence speaks louder than words",
-            category: "Psychology",
-            readTime: "5 min",
-            imageColor: .indigo,
-            content: [
-                "No contact is not just a strategy to get your ex back. It is a powerful tool for your own healing and reclaiming your self-worth.",
-                "When you silence the noise of the relationship, you can finally hear your own thoughts. Use this time to rediscover who you are.",
-                "It sends a message that you respect yourself enough to walk away from what no longer serves you."
-            ]
-        ),
-        Article(
-            title: "Rebuilding Your Identity",
-            subtitle: "Who are you without them?",
-            category: "Self Growth",
-            readTime: "7 min",
-            imageColor: .purple,
-            content: [
-                "It's easy to lose yourself in a relationship. Now is the time to pick up the pieces and build something even more beautiful.",
-                "Start by revisiting old hobbies, reconnecting with friends, and setting new goals for yourself.",
-                "You are the architect of your own life. Design a future that excites you."
-            ]
-        ),
-        Article(
-            title: "Red Flags You Missed",
-            subtitle: "Learning from the past",
-            category: "Reflection",
-            readTime: "4 min",
-            imageColor: .red,
-            content: [
-                "Hindsight is 20/20. Looking back, you might see signs that you ignored in the name of love.",
-                "Acknowledge them, not to blame yourself, but to learn. This knowledge is your armor for the future.",
-                "Never settle for less than you deserve again."
-            ]
-        ),
-        Article(
-            title: "The Dopamine Detox",
-            subtitle: "Resetting your brain chemistry",
-            category: "Health",
-            readTime: "6 min",
-            imageColor: .mint,
-            content: [
-                "Breakups can feel like withdrawal because love activates the same reward centers in the brain as addiction.",
-                "By detoxing from constant contact and reminders, you allow your brain to reset and find balance.",
-                "Embrace the calm. It's the first step towards true freedom."
-            ]
-        )
-    ]
-    
-    @ObservedObject private var audioManager = AudioManager.shared
     @State private var showSettings = false
     @State private var selectedArticle: Article?
-    @State private var streakCount = 3
-    @State private var igniteAnimationTrigger = false
+    @State private var learningSections: [LearningSection] = []
+    @State private var selectedSectionId: String?
+    @State private var selectedLessonId: String?
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header
             headerView
                 .background(Color(hex: "F9F9F9"))
             
             ScrollView {
                 VStack(spacing: 24) {
-                    // Learning Streak
-                    streakSection
-                    
-                    // Relaxing Sounds
-                    soundsSection
-                    
-                    // Articles
-                    articlesSection
+                    ForEach(learningSections.indices, id: \.self) { index in
+                        sectionCard(section: $learningSections[index])
+                    }
                 }
-                .padding(.bottom, 40)
                 .padding(.top, 24)
+                .padding(.bottom, 40)
             }
         }
         .background(Color(hex: "F9F9F9").ignoresSafeArea())
@@ -93,22 +28,11 @@ struct LearningView: View {
         }
         .sheet(item: $selectedArticle) { article in
             ArticleDetailView(article: article, onComplete: {
-                igniteStreak()
+                markCurrentLessonCompleted()
             })
         }
-    }
-    
-    func igniteStreak() {
-        withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) {
-            if streakCount < 5 {
-                streakCount += 1
-                igniteAnimationTrigger = true
-            }
-        }
-        
-        // Reset animation trigger
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            igniteAnimationTrigger = false
+        .onAppear {
+            loadLearningSectionsIfNeeded()
         }
     }
     
@@ -139,57 +63,48 @@ struct LearningView: View {
         .padding(.horizontal, 20)
     }
     
-    var streakSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+    func sectionCard(section: Binding<LearningSection>) -> some View {
+        let completed = section.wrappedValue.completedCount
+        let total = section.wrappedValue.totalCount
+        let accent = section.wrappedValue.accentColor
+        
+        return VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 8) {
-                Text("🔥")
+                Text(emojiForSection(id: section.wrappedValue.id))
                     .font(.title3)
-                Text("LEARNING STREAK")
+                Text(section.wrappedValue.title.uppercased())
                     .font(.caption)
                     .fontWeight(.bold)
                     .foregroundStyle(.secondary)
             }
-            .padding(.horizontal, 4)
+            .padding(.horizontal, 20)
             
-            VStack(spacing: 20) {
-                // Fire Icons Row (Article Based)
+            VStack(spacing: 16) {
                 HStack(spacing: 12) {
-                    ForEach(0..<5) { index in
-                        VStack(spacing: 8) {
+                    ForEach(0..<total, id: \.self) { index in
+                        VStack(spacing: 6) {
                             Image(systemName: "flame.fill")
-                                .font(.system(size: 24))
-                                .foregroundStyle(index < streakCount ? Color.orange : Color.gray.opacity(0.2))
-                                .shadow(color: index < streakCount ? .orange.opacity(0.3) : .clear, radius: 4, x: 0, y: 2)
-                                .scaleEffect(index == streakCount - 1 && igniteAnimationTrigger ? 1.5 : 1.0)
+                                .font(.system(size: 20))
+                                .foregroundStyle(index < completed ? accent : Color.gray.opacity(0.2))
+                                .shadow(color: index < completed ? accent.opacity(0.3) : .clear, radius: 4, x: 0, y: 2)
                             
-                            // Article Count Labels
-                            if index < streakCount {
-                                Text("#\(index + 1)")
-                                    .font(.caption2)
-                                    .fontWeight(.bold)
-                                    .foregroundStyle(.orange)
-                            } else {
-                                Text("#\(index + 1)")
-                                    .font(.caption2)
-                                    .fontWeight(.medium)
-                                    .foregroundStyle(.secondary.opacity(0.5))
-                            }
+                            Text("#\(index + 1)")
+                                .font(.caption2)
+                                .fontWeight(index < completed ? .bold : .medium)
+                                .foregroundStyle(index < completed ? accent : .secondary.opacity(0.5))
                         }
                         .frame(maxWidth: .infinity)
                     }
                 }
                 
-                Divider()
-                    .overlay(Color.primary.opacity(0.1))
-                
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("\(streakCount) Articles Read")
+                        Text("\(completed) of \(total) lessons completed")
                             .font(.headline)
                             .fontWeight(.bold)
                             .foregroundStyle(.primary)
                         
-                        Text(streakCount < 5 ? "Read \(5 - streakCount) more to complete your goal!" : "Goal completed! Great job!")
+                        Text(completed < total ? "Tap a lesson below to keep your streak going." : "Section complete. This is healed behavior.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -197,8 +112,8 @@ struct LearningView: View {
                     Spacer()
                     
                     Circle()
-                        .trim(from: 0, to: CGFloat(streakCount) / 5.0)
-                        .stroke(Color.orange, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                        .trim(from: 0, to: CGFloat(total == 0 ? 0 : Double(completed) / Double(total)))
+                        .stroke(accent, style: StrokeStyle(lineWidth: 4, lineCap: .round))
                         .frame(width: 40, height: 40)
                         .rotationEffect(.degrees(-90))
                         .background(
@@ -206,153 +121,181 @@ struct LearningView: View {
                                 .stroke(Color.gray.opacity(0.1), lineWidth: 4)
                         )
                         .overlay(
-                            Text("\(streakCount)/5")
+                            Text("\(completed)/\(total)")
                                 .font(.system(size: 10, weight: .bold))
                                 .foregroundStyle(.primary)
                         )
-                        .animation(.easeInOut, value: streakCount)
+                        .animation(.easeInOut, value: completed)
+                }
+                
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(section.wrappedValue.lessons.indices, id: \.self) { lessonIndex in
+                            let lesson = section.wrappedValue.lessons[lessonIndex]
+                            
+                            Button {
+                                openLesson(sectionId: section.wrappedValue.id, lessonId: lesson.id)
+                            } label: {
+                                VStack(alignment: .leading, spacing: 10) {
+                                    HStack(spacing: 10) {
+                                        Circle()
+                                            .fill(accent.opacity(0.15))
+                                            .frame(width: 38, height: 38)
+                                            .overlay(
+                                                Image(systemName: lesson.isCompleted ? "checkmark.seal.fill" : "sparkles")
+                                                    .font(.system(size: 17, weight: .semibold))
+                                                    .foregroundStyle(accent)
+                                            )
+                                        
+                                        Spacer()
+                                        
+                                        Text(lesson.isCompleted ? "Done" : "New")
+                                            .font(.caption2.weight(.bold))
+                                            .foregroundStyle(lesson.isCompleted ? accent : .secondary)
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 4)
+                                            .background((lesson.isCompleted ? accent : Color.gray.opacity(0.12)).opacity(0.12))
+                                            .clipShape(Capsule())
+                                    }
+                                    
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(lesson.title)
+                                            .font(.subheadline.weight(.bold))
+                                            .foregroundStyle(.primary)
+                                            .lineLimit(2)
+                                        
+                                        Text(lesson.subtitle)
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                            .lineLimit(2)
+                                    }
+                                    
+                                    Spacer(minLength: 0)
+                                    
+                                    HStack {
+                                        Text("3–5 min")
+                                            .font(.caption2)
+                                            .foregroundStyle(.secondary)
+                                        
+                                        Spacer()
+                                        
+                                        Image(systemName: "chevron.right")
+                                            .font(.caption2.weight(.bold))
+                                            .foregroundStyle(.secondary.opacity(0.6))
+                                    }
+                                }
+                                .padding(12)
+                                .frame(width: 220, alignment: .leading)
+                                .background(Color.white)
+                                .clipShape(RoundedRectangle(cornerRadius: 18))
+                                .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 4)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                    }
                 }
             }
-            .padding(20)
+            .padding(16)
             .background(Color.white)
             .clipShape(RoundedRectangle(cornerRadius: 20))
-            .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
-        }
-        .padding(.horizontal, 20)
-    }
-    
-    var soundsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 8) {
-                Text("🎧")
-                    .font(.title3)
-                Text("RELAXING SOUNDS")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, 24)
-            
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 16) {
-                    ForEach(sounds, id: \.0) { sound in
-                        Button(action: {
-                            audioManager.playSound(named: sound.0)
-                        }) {
-                            HStack(spacing: 16) {
-                                Circle()
-                                    .fill(sound.2.opacity(0.1))
-                                    .frame(width: 48, height: 48)
-                                    .overlay(
-                                        Image(systemName: sound.1)
-                                            .font(.title3)
-                                            .foregroundStyle(sound.2)
-                                    )
-                                
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(sound.0)
-                                        .font(.headline)
-                                        .fontWeight(.bold)
-                                        .foregroundStyle(.primary)
-                                        .fixedSize(horizontal: true, vertical: false)
-                                    
-                                    Text(audioManager.currentSound == sound.0 && audioManager.isPlaying ? "Playing..." : "Tap to play")
-                                        .font(.caption2)
-                                        .fontWeight(.medium)
-                                        .foregroundStyle(audioManager.currentSound == sound.0 && audioManager.isPlaying ? .orange : .secondary)
-                                }
-                                
-                                Spacer(minLength: 0)
-                                
-                                Image(systemName: audioManager.currentSound == sound.0 && audioManager.isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                                    .font(.title2)
-                                    .foregroundStyle(audioManager.currentSound == sound.0 && audioManager.isPlaying ? .orange : Color.gray.opacity(0.3))
-                            }
-                            .padding(16)
-                            .background(Color.white)
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
-                            .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 20)
-                                    .stroke(audioManager.currentSound == sound.0 && audioManager.isPlaying ? Color.orange.opacity(0.5) : Color.clear, lineWidth: 2)
-                            )
-                        }
-                    }
-                }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 2) // Add padding for shadow
-            }
+            .shadow(color: .black.opacity(0.06), radius: 16, x: 0, y: 8)
         }
     }
     
-    var articlesSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 8) {
-                Text("📚")
-                    .font(.title3)
-                Text("ARTICLES")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, 24) // Match alignment
+    func loadLearningSectionsIfNeeded() {
+        guard learningSections.isEmpty else { return }
+        
+        guard let url = Bundle.main.url(forResource: "learnings", withExtension: "json") else {
+            print("learnings.json not found in bundle")
+            return
+        }
+        
+        do {
+            let data = try Data(contentsOf: url)
+            let dto = try JSONDecoder().decode(LearningsDTO.self, from: data)
             
-            VStack(spacing: 16) {
-                ForEach(articles) { article in
-                    Button(action: {
-                        selectedArticle = article
-                    }) {
-                        HStack(spacing: 16) {
-                            // Article Image Placeholder
-                            Rectangle()
-                                .fill(article.imageColor.opacity(0.2))
-                                .frame(width: 80, height: 80)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                                .overlay(
-                                    Image(systemName: "doc.text.fill")
-                                        .foregroundStyle(article.imageColor)
-                                )
-                            
-                            VStack(alignment: .leading, spacing: 6) {
-                                HStack {
-                                    Text(article.category.uppercased())
-                                        .font(.system(size: 10, weight: .bold))
-                                        .foregroundStyle(article.imageColor)
-                                        .padding(.horizontal, 6)
-                                        .padding(.vertical, 2)
-                                        .background(article.imageColor.opacity(0.1))
-                                        .clipShape(Capsule())
-                                    
-                                    Spacer()
-                                    
-                                    Text(article.readTime)
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
-                                }
-                                
-                                Text(article.title)
-                                    .font(.subheadline)
-                                    .fontWeight(.bold)
-                                    .foregroundStyle(.primary)
-                                    .lineLimit(2)
-                                    .multilineTextAlignment(.leading)
-                                
-                                Text(article.subtitle)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
-                                    .multilineTextAlignment(.leading)
-                            }
-                        }
-                        .padding(12)
-                        .background(Color.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                        .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+            learningSections = dto.sections.map { section in
+                let accent = colorForSection(id: section.id)
+                return LearningSection(
+                    id: section.id,
+                    title: section.header,
+                    accentColor: accent,
+                    lessons: section.lessons.map { lesson in
+                        LearningLesson(
+                            id: lesson.id,
+                            title: lesson.title,
+                            subtitle: lesson.subtitle ?? "",
+                            content: lesson.content ?? [],
+                            isCompleted: false
+                        )
                     }
-                    .buttonStyle(PlainButtonStyle()) // Prevent default button style effect
-                }
+                )
             }
-            .padding(.horizontal, 20)
+        } catch {
+            print("Failed to load learnings.json: \(error)")
+        }
+    }
+    
+    func openLesson(sectionId: String, lessonId: String) {
+        guard let sectionIndex = learningSections.firstIndex(where: { $0.id == sectionId }),
+              let lessonIndex = learningSections[sectionIndex].lessons.firstIndex(where: { $0.id == lessonId }) else {
+            return
+        }
+        
+        let section = learningSections[sectionIndex]
+        let lesson = section.lessons[lessonIndex]
+        let article = Article(
+            title: lesson.title,
+            subtitle: lesson.subtitle,
+            category: section.title,
+            readTime: "3–5 min",
+            imageColor: section.accentColor,
+            content: lesson.content
+        )
+        
+        selectedSectionId = sectionId
+        selectedLessonId = lessonId
+        selectedArticle = article
+    }
+    
+    func markCurrentLessonCompleted() {
+        guard let sectionId = selectedSectionId,
+              let lessonId = selectedLessonId,
+              let sectionIndex = learningSections.firstIndex(where: { $0.id == sectionId }),
+              let lessonIndex = learningSections[sectionIndex].lessons.firstIndex(where: { $0.id == lessonId }) else {
+            return
+        }
+        
+        learningSections[sectionIndex].lessons[lessonIndex].isCompleted = true
+    }
+    
+    func colorForSection(id: String) -> Color {
+        switch id {
+        case "detox-your-ex":
+            return .orange
+        case "main-character-energy":
+            return .purple
+        case "red-flag-radar":
+            return .red
+        case "soft-life-reset":
+            return .mint
+        default:
+            return .indigo
+        }
+    }
+    
+    func emojiForSection(id: String) -> String {
+        switch id {
+        case "detox-your-ex":
+            return "🧼"
+        case "main-character-energy":
+            return "🌟"
+        case "red-flag-radar":
+            return "🚩"
+        case "soft-life-reset":
+            return "🌸"
+        default:
+            return "📚"
         }
     }
 }
@@ -367,6 +310,46 @@ struct Article: Identifiable {
     let readTime: String
     let imageColor: Color
     var content: [String] = [] // Added content property
+}
+
+struct LearningSection: Identifiable {
+    let id: String
+    let title: String
+    let accentColor: Color
+    var lessons: [LearningLesson]
+    
+    var completedCount: Int {
+        lessons.filter { $0.isCompleted }.count
+    }
+    
+    var totalCount: Int {
+        lessons.count
+    }
+}
+
+struct LearningLesson: Identifiable {
+    let id: String
+    let title: String
+    let subtitle: String
+    let content: [String]
+    var isCompleted: Bool
+}
+
+struct LearningsDTO: Decodable {
+    let sections: [LearningSectionDTO]
+}
+
+struct LearningSectionDTO: Decodable {
+    let id: String
+    let header: String
+    let lessons: [LearningLessonDTO]
+}
+
+struct LearningLessonDTO: Decodable {
+    let id: String
+    let title: String
+    let subtitle: String?
+    let content: [String]?
 }
 
 #Preview {
