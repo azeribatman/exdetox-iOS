@@ -9,6 +9,7 @@ import Foundation
 
 enum AppConfig: String {
     case baseHost = "BASE_HOST"
+    case openapikey = "OPENAPI_KEY"
     
     func value<T: LosslessStringConvertible>() -> T? {
         guard
