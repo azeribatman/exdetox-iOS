@@ -1,25 +1,24 @@
 import SwiftUI
+import SwiftData
 
 struct AiAgentView: View {
-    // MARK: - State
-    @State private var messages: [ChatMessage] = [
-        ChatMessage(text: "Hi there! I'm here to listen. How are you feeling today?", isUser: false)
-    ]
-    @State private var inputText: String = ""
+    @Environment(TrackingStore.self) private var trackingStore
+    @Environment(UserProfileStore.self) private var userProfileStore
+    @Query(sort: \WhyItemRecord.createdAt, order: .reverse) private var whyItems: [WhyItemRecord]
+    
+    @StateObject private var viewModel = AiAgentViewModel()
     @FocusState private var isInputFocused: Bool
     @State private var showSettings = false
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header
             headerView
                 .background(Color(hex: "F9F9F9"))
             
-            // Chat History
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(spacing: 16) {
-                        ForEach(messages) { message in
+                        ForEach(viewModel.messages) { message in
                             messageBubble(for: message)
                                 .id(message.id)
                         }
@@ -29,8 +28,8 @@ struct AiAgentView: View {
                     .padding(.bottom, 20)
                 }
                 .background(Color(hex: "F9F9F9"))
-                .onChange(of: messages) { _ in
-                    if let lastId = messages.last?.id {
+                .onChange(of: viewModel.messages) { _ in
+                    if let lastId = viewModel.messages.last?.id {
                         withAnimation {
                             proxy.scrollTo(lastId, anchor: .bottom)
                         }
@@ -41,16 +40,45 @@ struct AiAgentView: View {
                 isInputFocused = false
             }
             
-            // Input Area
             chatInputBar
+            
+            if viewModel.isStreaming {
+                HStack {
+                    ProgressView()
+                        .progressViewStyle(.circular)
+                    Text("ExDetox is thinking...")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.bottom, 8)
+            }
         }
         .background(Color(hex: "F9F9F9").ignoresSafeArea())
         .sheet(isPresented: $showSettings) {
             SettingsView()
         }
+        .alert(
+            "Something went wrong",
+            isPresented: Binding(
+                get: { viewModel.errorMessage != nil },
+                set: { newValue in
+                    if !newValue {
+                        viewModel.errorMessage = nil
+                    }
+                }
+            ),
+            actions: {
+                Button("OK", role: .cancel) {
+                    viewModel.errorMessage = nil
+                }
+            },
+            message: {
+                if let message = viewModel.errorMessage {
+                    Text(message)
+                }
+            }
+        )
     }
-    
-    // MARK: - Subviews
     
     var headerView: some View {
         HStack {
@@ -108,7 +136,7 @@ struct AiAgentView: View {
     
     var chatInputBar: some View {
         HStack(spacing: 12) {
-            TextField("Type a message...", text: $inputText)
+            TextField("Type a message...", text: $viewModel.inputText)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
                 .background(Color.white)
@@ -121,10 +149,10 @@ struct AiAgentView: View {
                     .font(.system(size: 20, weight: .bold))
                     .foregroundStyle(.white)
                     .frame(width: 44, height: 44)
-                    .background(inputText.isEmpty ? Color.gray.opacity(0.3) : Color.black)
+                    .background(viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? Color.gray.opacity(0.3) : Color.black)
                     .clipShape(Circle())
             }
-            .disabled(inputText.isEmpty)
+            .disabled(viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || viewModel.isStreaming)
         }
         .padding(.horizontal, 20)
         .padding(.top, 12)
@@ -132,44 +160,18 @@ struct AiAgentView: View {
         .background(Color(hex: "F9F9F9"))
     }
     
-    // MARK: - Actions
-    
     func sendMessage() {
-        guard !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-        
-        let userMsg = ChatMessage(text: inputText, isUser: true)
-        messages.append(userMsg)
-        
-        let sentText = inputText
-        inputText = ""
-        
-        // Mock Reply
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            let replyText = generateMockReply(for: sentText)
-            let aiMsg = ChatMessage(text: replyText, isUser: false)
-            withAnimation {
-                messages.append(aiMsg)
-            }
-        }
-    }
-    
-    func generateMockReply(for input: String) -> String {
-        let responses = [
-            "I hear you. It takes time to heal, but you're doing great.",
-            "That sounds tough. Remember to be gentle with yourself today.",
-            "You are stronger than you know. Keep focusing on your growth.",
-            "I'm here for you. Tell me more about how that makes you feel.",
-            "Sending you virtual hugs. You've got this! ✨"
-        ]
-        return responses.randomElement() ?? "I'm listening."
+        viewModel.sendMessage(
+            trackingStore: trackingStore,
+            userProfileStore: userProfileStore,
+            whyItems: whyItems
+        )
     }
 }
 
-// MARK: - Models
-
 struct ChatMessage: Identifiable, Equatable {
     let id = UUID()
-    let text: String
+    var text: String
     let isUser: Bool
     let timestamp = Date()
 }
