@@ -13,13 +13,18 @@ struct LearningView: View {
                 .background(Color(hex: "F9F9F9"))
             
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: 16) {
+                    if let spotlight = nextLessonHighlight() {
+                        forYouCard(section: spotlight.section, lesson: spotlight.lesson)
+                            .padding(.horizontal, 20)
+                    }
+                    
                     ForEach(learningSections.indices, id: \.self) { index in
                         sectionCard(section: $learningSections[index])
                     }
                 }
-                .padding(.top, 24)
-                .padding(.bottom, 40)
+                .padding(.top, 20)
+                .padding(.bottom, 32)
             }
         }
         .background(Color(hex: "F9F9F9").ignoresSafeArea())
@@ -41,8 +46,7 @@ struct LearningView: View {
     var headerView: some View {
         HStack {
             Text("Learning")
-                .font(.title2)
-                .fontWeight(.bold)
+                .font(.system(size: 26, weight: .bold, design: .serif))
                 .foregroundStyle(.primary)
             
             Spacer()
@@ -67,139 +71,76 @@ struct LearningView: View {
         let completed = section.wrappedValue.completedCount
         let total = section.wrappedValue.totalCount
         let accent = section.wrappedValue.accentColor
+        let progress = total == 0 ? 0 : Double(completed) / Double(total)
         
-        return VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 8) {
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
                 Text(emojiForSection(id: section.wrappedValue.id))
                     .font(.title3)
-                Text(section.wrappedValue.title.uppercased())
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(section.wrappedValue.title)
+                        .font(.headline.weight(.bold))
+                        .foregroundStyle(.primary)
+                    Text("\(completed) of \(total) done")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
             }
-            .padding(.horizontal, 20)
             
-            VStack(spacing: 16) {
-                HStack(spacing: 12) {
-                    ForEach(0..<total, id: \.self) { index in
-                        VStack(spacing: 6) {
-                            Image(systemName: "flame.fill")
-                                .font(.system(size: 20))
-                                .foregroundStyle(index < completed ? accent : Color.gray.opacity(0.2))
-                                .shadow(color: index < completed ? accent.opacity(0.3) : .clear, radius: 4, x: 0, y: 2)
-                            
-                            Text("#\(index + 1)")
-                                .font(.caption2)
-                                .fontWeight(index < completed ? .bold : .medium)
-                                .foregroundStyle(index < completed ? accent : .secondary.opacity(0.5))
-                        }
-                        .frame(maxWidth: .infinity)
-                    }
-                }
-                
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("\(completed) of \(total) lessons completed")
-                            .font(.headline)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.primary)
-                        
-                        Text(completed < total ? "Tap a lesson below to keep your streak going." : "Section complete. This is healed behavior.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    
-                    Spacer()
-                    
-                    Circle()
-                        .trim(from: 0, to: CGFloat(total == 0 ? 0 : Double(completed) / Double(total)))
-                        .stroke(accent, style: StrokeStyle(lineWidth: 4, lineCap: .round))
-                        .frame(width: 40, height: 40)
-                        .rotationEffect(.degrees(-90))
-                        .background(
-                            Circle()
-                                .stroke(Color.gray.opacity(0.1), lineWidth: 4)
-                        )
-                        .overlay(
-                            Text("\(completed)/\(total)")
-                                .font(.system(size: 10, weight: .bold))
-                                .foregroundStyle(.primary)
-                        )
-                        .animation(.easeInOut, value: completed)
-                }
-                
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
-                        ForEach(section.wrappedValue.lessons.indices, id: \.self) { lessonIndex in
-                            let lesson = section.wrappedValue.lessons[lessonIndex]
-                            
-                            Button {
-                                openLesson(sectionId: section.wrappedValue.id, lessonId: lesson.id)
-                            } label: {
-                                VStack(alignment: .leading, spacing: 10) {
-                                    HStack(spacing: 10) {
-                                        Circle()
-                                            .fill(accent.opacity(0.15))
-                                            .frame(width: 38, height: 38)
-                                            .overlay(
-                                                Image(systemName: lesson.isCompleted ? "checkmark.seal.fill" : "sparkles")
-                                                    .font(.system(size: 17, weight: .semibold))
-                                                    .foregroundStyle(accent)
-                                            )
-                                        
-                                        Spacer()
-                                        
-                                        Text(lesson.isCompleted ? "Done" : "New")
-                                            .font(.caption2.weight(.bold))
-                                            .foregroundStyle(lesson.isCompleted ? accent : .secondary)
-                                            .padding(.horizontal, 8)
-                                            .padding(.vertical, 4)
-                                            .background((lesson.isCompleted ? accent : Color.gray.opacity(0.12)).opacity(0.12))
-                                            .clipShape(Capsule())
-                                    }
-                                    
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text(lesson.title)
-                                            .font(.subheadline.weight(.bold))
-                                            .foregroundStyle(.primary)
-                                            .lineLimit(2)
-                                        
-                                        Text(lesson.subtitle)
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                            .lineLimit(2)
-                                    }
-                                    
-                                    Spacer(minLength: 0)
-                                    
-                                    HStack {
-                                        Text("3–5 min")
-                                            .font(.caption2)
-                                            .foregroundStyle(.secondary)
-                                        
-                                        Spacer()
-                                        
-                                        Image(systemName: "chevron.right")
-                                            .font(.caption2.weight(.bold))
-                                            .foregroundStyle(.secondary.opacity(0.6))
-                                    }
-                                }
-                                .padding(12)
-                                .frame(width: 220, alignment: .leading)
-                                .background(Color.white)
-                                .clipShape(RoundedRectangle(cornerRadius: 18))
-                                .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 4)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        }
-                    }
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.gray.opacity(0.12))
+                        .frame(height: 8)
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(accent)
+                        .frame(width: geo.size.width * progress, height: 8)
+                        .animation(.easeInOut(duration: 0.25), value: progress)
                 }
             }
-            .padding(16)
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-            .shadow(color: .black.opacity(0.06), radius: 16, x: 0, y: 8)
+            .frame(height: 8)
+            
+            VStack(spacing: 10) {
+                ForEach(section.wrappedValue.lessons.prefix(4)) { lesson in
+                    Button {
+                        openLesson(sectionId: section.wrappedValue.id, lessonId: lesson.id)
+                    } label: {
+                        HStack(spacing: 12) {
+                            Circle()
+                                .fill(lesson.isCompleted ? accent : Color.gray.opacity(0.2))
+                                .frame(width: 10, height: 10)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(lesson.title)
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(.primary)
+                                    .lineLimit(2)
+                                Text(lesson.subtitle)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(3)
+                                    .multilineTextAlignment(.leading)
+                            }
+                            Spacer()
+                            Text("3–5 min")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.vertical, 10)
+                        .padding(.horizontal, 12)
+                        .background(Color.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
         }
+        .padding(16)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 6)
+        .padding(.horizontal, 20)
     }
     
     func loadLearningSectionsIfNeeded() {
@@ -225,6 +166,10 @@ struct LearningView: View {
                             id: lesson.id,
                             title: lesson.title,
                             subtitle: lesson.subtitle ?? "",
+                            tldr: lesson.tldr ?? "",
+                            action: lesson.action ?? "",
+                            quote: lesson.quote,
+                            quiz: lesson.quiz ?? [],
                             content: lesson.content ?? [],
                             isCompleted: false
                         )
@@ -250,6 +195,10 @@ struct LearningView: View {
             category: section.title,
             readTime: "3–5 min",
             imageColor: section.accentColor,
+            tldr: lesson.tldr,
+            action: lesson.action,
+            quote: lesson.quote,
+            quiz: lesson.quiz,
             content: lesson.content
         )
         
@@ -298,6 +247,74 @@ struct LearningView: View {
             return "📚"
         }
     }
+    
+    func nextLessonHighlight() -> (section: LearningSection, lesson: LearningLesson)? {
+        if let pending = learningSections.first(where: { $0.lessons.contains(where: { !$0.isCompleted }) }) {
+            if let lesson = pending.lessons.first(where: { !$0.isCompleted }) {
+                return (pending, lesson)
+            }
+        }
+        if let firstSection = learningSections.first, let firstLesson = firstSection.lessons.first {
+            return (firstSection, firstLesson)
+        }
+        return nil
+    }
+    
+    func forYouCard(section: LearningSection, lesson: LearningLesson) -> some View {
+        let accent = section.accentColor
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 10) {
+                Text("For you today")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.white.opacity(0.9))
+                Spacer()
+                Text(emojiForSection(id: section.id))
+                    .font(.title3)
+            }
+            
+            Text(lesson.title)
+                .font(.headline.weight(.bold))
+                .foregroundStyle(.white)
+                .lineLimit(2)
+            
+            Text(lesson.tldr.isEmpty ? lesson.subtitle : lesson.tldr)
+                .font(.callout)
+                .foregroundStyle(.white.opacity(0.9))
+                .lineLimit(3)
+                .multilineTextAlignment(.leading)
+            
+            Button {
+                openLesson(sectionId: section.id, lessonId: lesson.id)
+            } label: {
+                HStack {
+                    Text("Start")
+                        .font(.subheadline.weight(.bold))
+                    Spacer()
+                    Image(systemName: "arrow.right")
+                        .font(.subheadline.weight(.bold))
+                }
+                .foregroundStyle(accent)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.orange.opacity(0.85),
+                    accent.opacity(0.65)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .shadow(color: accent.opacity(0.25), radius: 12, x: 0, y: 6)
+    }
 }
 
 // MARK: - Models
@@ -309,7 +326,11 @@ struct Article: Identifiable {
     let category: String
     let readTime: String
     let imageColor: Color
-    var content: [String] = [] // Added content property
+    let tldr: String
+    let action: String
+    let quote: LessonQuote?
+    let quiz: [QuizQuestion]
+    var content: [String] = []
 }
 
 struct LearningSection: Identifiable {
@@ -331,6 +352,10 @@ struct LearningLesson: Identifiable {
     let id: String
     let title: String
     let subtitle: String
+    let tldr: String
+    let action: String
+    let quote: LessonQuote?
+    let quiz: [QuizQuestion]
     let content: [String]
     var isCompleted: Bool
 }
@@ -349,7 +374,29 @@ struct LearningLessonDTO: Decodable {
     let id: String
     let title: String
     let subtitle: String?
+    let tldr: String?
+    let action: String?
+    let quote: LessonQuote?
+    let quiz: [QuizQuestion]?
     let content: [String]?
+}
+
+struct LessonQuote: Decodable {
+    let persona: String
+    let text: String
+}
+
+struct QuizQuestion: Decodable, Identifiable {
+    var id: String { question }
+    let question: String
+    let options: [QuizOption]
+    let correctOptionId: String
+    let explanation: String
+}
+
+struct QuizOption: Decodable, Identifiable {
+    let id: String
+    let text: String
 }
 
 #Preview {

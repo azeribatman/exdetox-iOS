@@ -8,6 +8,34 @@
           "id": "detox-1",
           "title": "Your Brain On Breakup: Why It Feels Like Withdrawal",
           "subtitle": "This is not you being dramatic, this is your nervous system freaking out.",
+          "tldr": "Breakup cravings are a dopamine crash, not proof you should go back.",
+          "action": "When the urge hits, drink cold water, take 6 slow exhales, and name the feeling.",
+          "quote": {
+            "persona": "20, college student",
+            "text": "I thought missing them meant we were meant to be. Turns out my brain just wanted the hit."
+          },
+          "quiz": [
+            {
+              "question": "You wake up craving their text. What’s the first move?",
+              "options": [
+                { "id": "a", "text": "Scroll their socials to see if they posted" },
+                { "id": "b", "text": "Label the craving and take slow breaths" },
+                { "id": "c", "text": "Send a long paragraph to get closure" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "Naming the craving and regulating your breath lowers the urge without relapsing."
+            },
+            {
+              "question": "Why does heartbreak feel like withdrawal?",
+              "options": [
+                { "id": "a", "text": "Your reward circuits are crashing after losing consistent dopamine" },
+                { "id": "b", "text": "You are weak at handling emotions" },
+                { "id": "c", "text": "Because they were your soulmate" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Dopamine pathways are adjusting to no longer receiving the old hits of attention."
+            }
+          ],
           "content": [
             "Romantic love lights up the same reward circuits in your brain as addictive apps, sugar, and substances, so when the relationship ends it literally feels like losing your favorite drug.",
             "Your body starts searching for the old hits of validation and attention, which is why you catch yourself stalking, rereading chats, or waiting for their name to pop up on your screen.",
@@ -18,6 +46,34 @@
           "id": "detox-2",
           "title": "No-Contact, But Make It Powerful (Not Petty)",
           "subtitle": "No contact is not a mind game, it is a self-respect move.",
+          "tldr": "No-contact is a quiet room for your brain to heal, not a revenge play.",
+          "action": "Write your no-contact contract: duration, rules, and who you text instead when urges hit.",
+          "quote": {
+            "persona": "22, barista",
+            "text": "The minute I muted them, my head stopped spinning long enough to actually feel calm."
+          },
+          "quiz": [
+            {
+              "question": "You get a dry “hey” from them during no-contact. Best response?",
+              "options": [
+                { "id": "a", "text": "Reply to stay polite" },
+                { "id": "b", "text": "Screenshot to friends, then keep no-contact" },
+                { "id": "c", "text": "Write a long message explaining boundaries" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "Keep the boundary. Share with trusted friends if you need support, but don’t re-open the loop."
+            },
+            {
+              "question": "What is the point of no-contact?",
+              "options": [
+                { "id": "a", "text": "To make them chase you" },
+                { "id": "b", "text": "To get quiet so your mind stops negotiating your worth" },
+                { "id": "c", "text": "To punish them" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "It is a healing buffer that protects your nervous system from constant re-triggering."
+            }
+          ],
           "content": [
             "Going no-contact is less about punishing them and more about finally giving your mind the quiet it needs to heal, think clearly, and stop negotiating your own worth.",
             "Every time you reply to a dry text, check if they watched your story, or keep the streak alive, you are feeding the same loop that broke you in the first place.",
@@ -28,6 +84,34 @@
           "id": "detox-3",
           "title": "Block, Mute, Archive: Digital Rules For A Real Reset",
           "subtitle": "If your phone is a trigger, you need boundaries, not more willpower.",
+          "tldr": "Your feed trains your brain; clean it so you are not fighting triggers every scroll.",
+          "action": "Block or mute their accounts for 30 days and follow 5 calming, growthy creators instead.",
+          "quote": {
+            "persona": "19, design student",
+            "text": "Once I muted them, my screen stopped dragging me back into the past every two minutes."
+          },
+          "quiz": [
+            {
+              "question": "Why block or mute during healing?",
+              "options": [
+                { "id": "a", "text": "To be dramatic" },
+                { "id": "b", "text": "To reduce constant triggers and cravings" },
+                { "id": "c", "text": "To make them jealous" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "Removing triggers lowers the intensity of cravings so you can heal faster."
+            },
+            {
+              "question": "Best digital reset move tonight?",
+              "options": [
+                { "id": "a", "text": "Re-read old chats to remember the good parts" },
+                { "id": "b", "text": "Archive the chat and follow accounts that make you feel grounded" },
+                { "id": "c", "text": "Leave notifications on just in case" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "Curating your feed toward calm and growth keeps your brain from looping."
+            }
+          ],
           "content": [
             "Your brain cannot heal if every scroll shows their face, their new posts, or old memories sitting in your chat list waiting to be reopened at 1 a.m.",
             "Blocking, muting, or archiving is not overreacting, it is clearing the mental clutter so you are not fighting a boss-level temptation every time you unlock your phone.",
@@ -38,6 +122,34 @@
           "id": "detox-4",
           "title": "Catching Yourself Before The \"Just One Text\" Relapse",
           "subtitle": "The urge to send a long paragraph is usually a sign you need closure from you, not from them.",
+          "tldr": "The fantasy text keeps you hooked; a pause and a body reset break the loop.",
+          "action": "Write the message in Notes, set a 5-minute timer, then do a 60-second body reset.",
+          "quote": {
+            "persona": "19, uni student",
+            "text": "I typed the whole paragraph, left it in Notes, and avoided a three-day spiral."
+          },
+          "quiz": [
+            {
+              "question": "You want to send a long text at 1 a.m. What’s step one?",
+              "options": [
+                { "id": "a", "text": "Send it so you can sleep" },
+                { "id": "b", "text": "Type it in Notes and pause" },
+                { "id": "c", "text": "Ask friends to text them for you" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "Getting it out without sending defuses the craving and protects your progress."
+            },
+            {
+              "question": "After writing it down, what helps the urge pass?",
+              "options": [
+                { "id": "a", "text": "Scroll their profile to feel something" },
+                { "id": "b", "text": "Do a 60-second body reset (shake, breathe, step outside)" },
+                { "id": "c", "text": "Re-read the chat history" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "Regulating your body lowers the emotional spike so you can choose, not react."
+            }
+          ],
           "content": [
             "The 'just one text' fantasy usually sounds like you explaining everything perfectly and them finally getting it, apologizing, and fixing the past.",
             "In reality, that text often leads to another confusing reply, another fight, or another wave of disappointment that sets your healing back days or weeks.",
@@ -48,6 +160,34 @@
           "id": "detox-5",
           "title": "Turning Heartbreak Into Main-Character Plot Fuel",
           "subtitle": "If this is your villain origin story, you also get to write the comeback arc.",
+          "tldr": "Heartbreak is data: use it to raise standards and build your next season.",
+          "action": "List 3 non-negotiables you ignored and 3 micro-moves you’ll start this week.",
+          "quote": {
+            "persona": "23, first job",
+            "text": "Plot twist: the breakup became the season where I built a life I actually like."
+          },
+          "quiz": [
+            {
+              "question": "What’s the goal after heartbreak?",
+              "options": [
+                { "id": "a", "text": "Prove to them you’re fine" },
+                { "id": "b", "text": "Use the energy to upgrade your standards and routines" },
+                { "id": "c", "text": "Wait until they come back" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "Directing the energy toward your standards and habits builds your next chapter."
+            },
+            {
+              "question": "Best first step tonight?",
+              "options": [
+                { "id": "a", "text": "Write a list of what you refuse to tolerate again" },
+                { "id": "b", "text": "Scroll old photos to feel motivated" },
+                { "id": "c", "text": "Text them you’re working on yourself" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Clarifying non-negotiables teaches your brain what safe love should look like."
+            }
+          ],
           "content": [
             "Every breakup exposes where you abandoned yourself, ignored your needs, or accepted crumbs, which makes this the perfect moment to upgrade your standards.",
             "Instead of only asking why they did what they did, start asking what this version of you refuses to tolerate ever again and what future you actually deserves.",
@@ -64,6 +204,34 @@
           "id": "mce-1",
           "title": "You Are Not Their Opinion: Reclaiming Your Self-Image",
           "subtitle": "The breakup did not downgrade your value, it just removed the wrong mirror.",
+          "tldr": "Their projection is not your identity; collect proof of who you are now.",
+          "action": "Write three receipts of your strengths today and screenshot them for later dips.",
+          "quote": {
+            "persona": "21, med student",
+            "text": "Their version of me was tiny. My friends’ version reminded me I wasn’t."
+          },
+          "quiz": [
+            {
+              "question": "Why isn’t their opinion the truth about you?",
+              "options": [
+                { "id": "a", "text": "Because they saw you on your worst day" },
+                { "id": "b", "text": "Because their view was filtered through their own wounds" },
+                { "id": "c", "text": "Because opinions never matter" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "People project their fears and immaturity; it is not an accurate mirror."
+            },
+            {
+              "question": "Quick way to rebuild self-image tonight?",
+              "options": [
+                { "id": "a", "text": "List three strengths and when you used them recently" },
+                { "id": "b", "text": "Stalk their new relationship" },
+                { "id": "c", "text": "Ask them to rate you again" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Collecting receipts of your strengths trains your brain toward self-trust."
+            }
+          ],
           "content": [
             "When someone pulls away, cheats, or treats you like an option, your brain quickly starts building a story that you were not enough, even if their behavior had nothing to do with your worth.",
             "Their version of you was filtered through their own wounds, immaturity, and fears, which means it was never an accurate reflection, just a projection they put on you.",
@@ -74,6 +242,34 @@
           "id": "mce-2",
           "title": "From \"We\" To \"Me\": Rewriting Your Daily Routine",
           "subtitle": "If your whole day was built around them, it is time to redesign the schedule around you.",
+          "tldr": "Empty time slots are space to build your own rituals, not to panic-fill with them.",
+          "action": "Swap one ex-related time slot with a 15-minute micro-win (walk, learn, stretch).",
+          "quote": {
+            "persona": "24, recent grad",
+            "text": "My evenings were ghost-town quiet until I made them my workout-and-music hour."
+          },
+          "quiz": [
+            {
+              "question": "Why redesign your routine after a breakup?",
+              "options": [
+                { "id": "a", "text": "To stay busy so you never think" },
+                { "id": "b", "text": "To plug in habits that recharge you instead of orbiting them" },
+                { "id": "c", "text": "To make them jealous" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "Intentional routines make your energy less dependent on their presence."
+            },
+            {
+              "question": "Good first swap?",
+              "options": [
+                { "id": "a", "text": "Replace nightly texting with a 15-minute walk + music" },
+                { "id": "b", "text": "Keep the old calls but shorter" },
+                { "id": "c", "text": "Scroll late to feel sleepy" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "A small, repeatable habit gives your brain a new anchor at that time."
+            }
+          ],
           "content": [
             "Breakups feel extra empty when your habits, calls, and check-ins used to orbit around another person and suddenly there is just silence in those time slots.",
             "Instead of trying to fill that silence with random distractions or rebound conversations, intentionally plug in routines that recharge you: movement, learning, journaling, or small wins for your goals.",
@@ -84,6 +280,34 @@
           "id": "mce-3",
           "title": "Hobbies, Side Quests, And Finding Your Thing Again",
           "subtitle": "Main characters have side quests, not just side characters.",
+          "tldr": "Side quests make your story bigger than dating; pick ones that feel like play.",
+          "action": "Try one 30-minute throwback hobby this week and note how it felt before/after.",
+          "quote": {
+            "persona": "18, gap year",
+            "text": "Painting for 20 minutes beat doomscrolling every time once I actually started."
+          },
+          "quiz": [
+            {
+              "question": "Why add side quests?",
+              "options": [
+                { "id": "a", "text": "To look busy online" },
+                { "id": "b", "text": "To expand your identity beyond dating" },
+                { "id": "c", "text": "To brag to your ex" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "Hobbies remind you who you are when no one else is defining you."
+            },
+            {
+              "question": "Best way to pick a hobby?",
+              "options": [
+                { "id": "a", "text": "Return to something you loved as a kid and try it for 30 minutes" },
+                { "id": "b", "text": "Wait for motivation to appear" },
+                { "id": "c", "text": "Choose whatever your ex liked" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Revisiting low-pressure interests makes it easier to start and enjoy."
+            }
+          ],
           "content": [
             "Relationships can make you slowly drop the hobbies, interests, and weird little passions that used to make you feel alive before you met them.",
             "Start by revisiting things you liked as a kid or teen before you cared what anyone thought—art, games, music, sports, writing, building something, anything that makes you lose track of time.",
@@ -94,6 +318,34 @@
           "id": "mce-4",
           "title": "Social Glow-Up: Curating A Circle That Actually Sees You",
           "subtitle": "You don’t just need people around you, you need people who are for you.",
+          "tldr": "Notice who steps up and who drains you; invest where you feel safe to be real.",
+          "action": "Text one friend who made you feel seen this week and plan a low-key hang.",
+          "quote": {
+            "persona": "23, intern",
+            "text": "I realized the friends who checked on me without drama were the ones I wanted to grow with."
+          },
+          "quiz": [
+            {
+              "question": "What’s a green flag in your circle?",
+              "options": [
+                { "id": "a", "text": "They hype you when you set boundaries" },
+                { "id": "b", "text": "They only call when they need a favor" },
+                { "id": "c", "text": "They joke about your feelings" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Friends who celebrate your boundaries keep you aligned with your growth."
+            },
+            {
+              "question": "Quick social reset move?",
+              "options": [
+                { "id": "a", "text": "Plan a small hang with a friend who made you feel seen" },
+                { "id": "b", "text": "DM your ex’s circle to stay in the loop" },
+                { "id": "c", "text": "Isolate until you feel better" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Quality connection boosts regulation and reminds you who you are."
+            }
+          ],
           "content": [
             "After a breakup, some people disappear, some stay neutral, and a few quietly step up for you—pay attention to who lands in which category.",
             "Start giving more time and emotional access to the friends who hype your growth, hold you accountable, and make you feel safe to be honest instead of judged.",
@@ -104,6 +356,34 @@
           "id": "mce-5",
           "title": "Future You Would Be Proud: Designing Your Next Chapter",
           "subtitle": "If your life is a series, this breakup is just the end of one season, not the show.",
+          "tldr": "Script future you in 6–12 months and back it up with tiny weekly moves.",
+          "action": "Write a 6-month mini-vision and pick two tiny steps you can do this week.",
+          "quote": {
+            "persona": "25, junior dev",
+            "text": "Once I wrote what future-me was doing, texting my ex felt off-script."
+          },
+          "quiz": [
+            {
+              "question": "Why script future you?",
+              "options": [
+                { "id": "a", "text": "To control every detail" },
+                { "id": "b", "text": "To aim your energy at what you want instead of the past" },
+                { "id": "c", "text": "To make your ex jealous" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "A clear direction reduces the pull to revisit old storylines."
+            },
+            {
+              "question": "Solid first step?",
+              "options": [
+                { "id": "a", "text": "Write a 6-month vision and two tiny steps for this week" },
+                { "id": "b", "text": "Wait for motivation to appear" },
+                { "id": "c", "text": "Ask your ex what you should work on" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Small, immediate steps make the vision feel real and build momentum."
+            }
+          ],
           "content": [
             "Instead of obsessing over what you lost, start scripting what future you wants to be feeling, doing, and surrounded by six to twelve months from now.",
             "Break that vision down into tiny, realistic moves you can start this week: a new skill, a healthier habit, a money goal, a boundary you finally enforce.",
@@ -120,6 +400,34 @@
           "id": "rfr-1",
           "title": "Love Bombing vs. Real Effort: Spotting The Difference",
           "subtitle": "Not every intense connection is healthy—some are just fast-tracked chaos.",
+          "tldr": "Love bombing is fast and flashy; real effort is steady and paced.",
+          "action": "Pause fast escalations for 72 hours before agreeing to big plans or labels.",
+          "quote": {
+            "persona": "20, nursing student",
+            "text": "He planned a future in week one. The ones who took it slow felt safer."
+          },
+          "quiz": [
+            {
+              "question": "Which is love bombing?",
+              "options": [
+                { "id": "a", "text": "Week-one future plans and constant intense messages" },
+                { "id": "b", "text": "Consistent check-ins over weeks at your pace" },
+                { "id": "c", "text": "Respecting your boundaries when you say no" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Fast intensity without history can be manufactured chemistry."
+            },
+            {
+              "question": "How to respond to fast escalation?",
+              "options": [
+                { "id": "a", "text": "Match their speed to keep them interested" },
+                { "id": "b", "text": "Pause for 72 hours and see if actions stay consistent" },
+                { "id": "c", "text": "Ghost them immediately" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "Time reveals if the intensity is backed by steady respect."
+            }
+          ],
           "content": [
             "Love bombing feels like a movie montage at the start: constant compliments, long calls, big promises, and a rush that makes you ignore how little time you actually know this person.",
             "Real effort builds slowly and consistently over time, with actions that match words and a pace that respects your comfort instead of pushing you to commit before you even feel grounded.",
@@ -130,6 +438,34 @@
           "id": "rfr-2",
           "title": "Mixed Signals Are Still A Signal (And It’s Not Green)",
           "subtitle": "If you have to decode their behavior like it is a puzzle, the answer is already no.",
+          "tldr": "Mixed signals equal unclear interest; clarity feels obvious and steady.",
+          "action": "Ask one direct question about intention; if the answer is foggy, step back.",
+          "quote": {
+            "persona": "22, product intern",
+            "text": "I stopped being their translator. If it was unclear twice, I exited."
+          },
+          "quiz": [
+            {
+              "question": "Mixed signals usually mean?",
+              "options": [
+                { "id": "a", "text": "They are shy but obsessed" },
+                { "id": "b", "text": "They enjoy your energy but avoid commitment" },
+                { "id": "c", "text": "They test your patience so you’ll prove love" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "Inconsistency often signals low readiness, not hidden devotion."
+            },
+            {
+              "question": "Best move when you feel confused twice?",
+              "options": [
+                { "id": "a", "text": "Decode harder with friends" },
+                { "id": "b", "text": "Ask directly, then step back if it stays vague" },
+                { "id": "c", "text": "Accept crumbs to keep them around" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "Directness plus distance protects your peace when clarity is missing."
+            }
+          ],
           "content": [
             "Mixed signals look like heavy flirting one day and cold distance the next, sweet words with zero follow-through, or someone who wants your energy but avoids real commitment.",
             "When you care, it is tempting to become their personal therapist, excuse-maker, and translator, constantly telling yourself they are just \"busy,\" \"confused,\" or \"not ready.\"",
@@ -140,6 +476,34 @@
           "id": "rfr-3",
           "title": "When Chemistry Made You Ignore Compatibility",
           "subtitle": "The spark was real, but so were the reasons it couldn’t work.",
+          "tldr": "Chemistry is a vibe; compatibility is the foundation. You need both.",
+          "action": "List three non-negotiable values and check them before date three.",
+          "quote": {
+            "persona": "24, law student",
+            "text": "The spark was 🔥 but he didn’t want the same future. That was the whole answer."
+          },
+          "quiz": [
+            {
+              "question": "Why isn’t chemistry enough?",
+              "options": [
+                { "id": "a", "text": "It guarantees loyalty" },
+                { "id": "b", "text": "It can hide value clashes that matter long term" },
+                { "id": "c", "text": "It means the relationship will be boring" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "Shared values and maturity sustain a relationship after the spark settles."
+            },
+            {
+              "question": "Smart move after a high-spark first date?",
+              "options": [
+                { "id": "a", "text": "Check your values list before date three" },
+                { "id": "b", "text": "Ignore differences if the chemistry is insane" },
+                { "id": "c", "text": "Assume it will work out because it feels special" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Using your values as a filter keeps you from excusing red flags."
+            }
+          ],
           "content": [
             "Chemistry can make you feel like you have found your person on the first date, but long-term relationships are built on boring-sounding things like values, goals, communication, and emotional maturity.",
             "You can be insanely attracted to someone who is not ready for commitment, doesn’t want the same future, or cannot show up consistently, and that is not something you can fix with more love.",
@@ -150,6 +514,34 @@
           "id": "rfr-4",
           "title": "Bare Minimum Energy: Why You Kept Accepting Less",
           "subtitle": "Answering your texts is not a personality trait or a grand gesture.",
+          "tldr": "Bare minimum is the floor, not the prize; raise the bar to normal.",
+          "action": "Write four basics you expect (honesty, consistency, respect, time) and treat them as default.",
+          "quote": {
+            "persona": "20, marketing student",
+            "text": "I was calling basic decency a ‘green flag.’ Never again."
+          },
+          "quiz": [
+            {
+              "question": "What counts as bare minimum?",
+              "options": [
+                { "id": "a", "text": "Honesty, consistency, respect, time" },
+                { "id": "b", "text": "Buying gifts monthly" },
+                { "id": "c", "text": "Reading your mind" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "These are baseline requirements, not bonuses."
+            },
+            {
+              "question": "Why do people accept less?",
+              "options": [
+                { "id": "a", "text": "Fear of being alone or thinking they won’t find better" },
+                { "id": "b", "text": "Because they have too many options" },
+                { "id": "c", "text": "Because high standards are rude" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Low self-worth and scarcity mindset keep you tolerating crumbs."
+            }
+          ],
           "content": [
             "When your self-worth quietly slips, you start treating basic decency—like replying, not lying, or spending time with you—as if it is elite behavior you should be grateful for.",
             "You might have stayed because you were scared of being alone, thought you would never find better, or believed that if you just loved them right, they would finally step up.",
@@ -160,6 +552,34 @@
           "id": "rfr-5",
           "title": "Building Non-Negotiables So You Don’t Repeat The Past",
           "subtitle": "Standards are not you being picky; they are you protecting your peace.",
+          "tldr": "Non-negotiables are your safety rails; use them as a filter, not a wishlist.",
+          "action": "Pick 3 non-negotiables and one dealbreaker; exit early when they are crossed.",
+          "quote": {
+            "persona": "21, UX intern",
+            "text": "Writing my non-negotiables made it way easier to leave when they failed basics."
+          },
+          "quiz": [
+            {
+              "question": "How should you use non-negotiables?",
+              "options": [
+                { "id": "a", "text": "As a cute list you ignore when chemistry hits" },
+                { "id": "b", "text": "As a filter you act on early" },
+                { "id": "c", "text": "As a way to test people secretly" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "They are meant to guide decisions, not decorate notes."
+            },
+            {
+              "question": "Good first move when a non-negotiable is broken?",
+              "options": [
+                { "id": "a", "text": "Hope it changes with time" },
+                { "id": "b", "text": "Address it once, then exit if it repeats" },
+                { "id": "c", "text": "Lower the standard" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "Protecting your peace means leaving when core needs are dismissed."
+            }
+          ],
           "content": [
             "Non-negotiables are the few core things you refuse to compromise on again, like emotional availability, communication style, or how conflict is handled.",
             "Instead of making the list aesthetic and then ignoring it when someone attractive shows up, use it as an actual filter: if they fail the basics early, you exit early.",
@@ -176,6 +596,34 @@
           "id": "slr-1",
           "title": "Overthinking At 2AM: Getting Out Of The Thought Spiral",
           "subtitle": "Your brain loves drama at night; you don’t have to attend every mental argument.",
+          "tldr": "Night brain is dramatic; park thoughts for daylight and calm your body.",
+          "action": "Write worries in Notes labeled “tomorrow,” then do 10 slow breaths before sleep.",
+          "quote": {
+            "persona": "20, student athlete",
+            "text": "Parking the thoughts till morning stopped the 2 a.m. courtroom in my head."
+          },
+          "quiz": [
+            {
+              "question": "Why do problems feel bigger at night?",
+              "options": [
+                { "id": "a", "text": "Your brain has fewer distractions so worries get louder" },
+                { "id": "b", "text": "You are secretly dramatic" },
+                { "id": "c", "text": "The problems grow at night" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Quiet hours give rumination more space; daylight brings perspective."
+            },
+            {
+              "question": "Best 2 a.m. move?",
+              "options": [
+                { "id": "a", "text": "Decide your life plan immediately" },
+                { "id": "b", "text": "Dump worries into Notes and breathe slowly" },
+                { "id": "c", "text": "Text your ex for answers" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "Externalizing the thoughts and calming your body reduces the spiral."
+            }
+          ],
           "content": [
             "Nighttime makes small problems feel massive because your brain has fewer distractions and more space to replay every conversation, text, and red flag on loop.",
             "Instead of trying to \"think your way\" out of the spiral, give your mind a different job: write down the worries in a note, label them as \"tomorrow problems,\" and gently bring your focus back to your body or your breath.",
@@ -186,6 +634,34 @@
           "id": "slr-2",
           "title": "Body First, Feelings Second: Simple Nervous System Hacks",
           "subtitle": "You can’t mindset your way out of a dysregulated body.",
+          "tldr": "Regulate your body before you debate your feelings; calm first, analyze second.",
+          "action": "Pick one reset: cold splash, slow exhale breathing, or 5-4-3-2-1 grounding.",
+          "quote": {
+            "persona": "23, retail",
+            "text": "My thoughts went from ‘panic’ to ‘okay’ after I just did the cold water trick."
+          },
+          "quiz": [
+            {
+              "question": "Why start with the body?",
+              "options": [
+                { "id": "a", "text": "Feelings aren’t real" },
+                { "id": "b", "text": "A regulated body makes thoughts less extreme" },
+                { "id": "c", "text": "Breathing is trendy" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "Calming the nervous system lowers the fight-or-flight response."
+            },
+            {
+              "question": "Which is a fast reset?",
+              "options": [
+                { "id": "a", "text": "Cold water on face + long exhales" },
+                { "id": "b", "text": "Argue in your head for an hour" },
+                { "id": "c", "text": "Post a rant story" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Physical grounding interrupts the panic loop quickly."
+            }
+          ],
           "content": [
             "When your heart is racing, your chest is tight, or your stomach drops after a trigger, your nervous system is in survival mode, and no amount of \"just don’t care\" talk will fix it.",
             "Start with simple grounding moves: cold water on your face, slow exhale-focused breathing, pressing your feet into the floor, or naming five things you can see in the room.",
@@ -196,6 +672,34 @@
           "id": "slr-3",
           "title": "Trading Drama For Peace (Without Feeling Boring)",
           "subtitle": "Peace is not boring; you’re just detoxing from emotional rollercoasters.",
+          "tldr": "Calm can feel weird at first; give your body time to adjust from chaos.",
+          "action": "Schedule one ‘quiet block’ daily where you do something low-drama and notice the calm.",
+          "quote": {
+            "persona": "21, film student",
+            "text": "Silence felt empty until week two—then it felt like actual peace."
+          },
+          "quiz": [
+            {
+              "question": "Why can peace feel boring?",
+              "options": [
+                { "id": "a", "text": "You are meant for chaos" },
+                { "id": "b", "text": "Your body is detoxing from adrenaline highs" },
+                { "id": "c", "text": "Peace means you lost your spark" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "Your system is used to spikes; stability takes adjustment."
+            },
+            {
+              "question": "How to get used to calm?",
+              "options": [
+                { "id": "a", "text": "Add a daily quiet block with a low-drama activity" },
+                { "id": "b", "text": "Pick a fight to feel alive" },
+                { "id": "c", "text": "Scroll arguments online" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Practicing calm teaches your body that peace is safe, not dull."
+            }
+          ],
           "content": [
             "If you grew used to chaotic relationships, stable connections and quiet days can feel uncomfortable, empty, or even wrong at first.",
             "Your brain might miss the highs and lows because they created adrenaline and intensity, but that doesn’t mean those dynamics were good for you.",
@@ -206,6 +710,34 @@
           "id": "slr-4",
           "title": "Micro-Habits That Quiet Anxiety After A Text Or Trigger",
           "subtitle": "You don’t need a full routine; sometimes you just need a 30-second reset.",
+          "tldr": "Build tiny automatic resets so triggers don’t hijack your whole day.",
+          "action": "Pick one go-to move when triggered: stand, shake, sip water, and 10-count breathe.",
+          "quote": {
+            "persona": "22, barista",
+            "text": "A 30-second shake + water stopped me from doom-texting more than once."
+          },
+          "quiz": [
+            {
+              "question": "What’s a micro-reset?",
+              "options": [
+                { "id": "a", "text": "A 30–60s action that calms your body" },
+                { "id": "b", "text": "A three-hour spa day" },
+                { "id": "c", "text": "Posting about your ex" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Short, repeatable moves keep triggers from spiraling."
+            },
+            {
+              "question": "You see their name pop up. Best first move?",
+              "options": [
+                { "id": "a", "text": "Stand up, shake out, sip water, slow breathe" },
+                { "id": "b", "text": "Reply fast to stop anxiety" },
+                { "id": "c", "text": "Scroll their profile" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Resetting your body first keeps you in control of the next choice."
+            }
+          ],
           "content": [
             "Anxiety spikes fast when you see their name pop up, spot a reminder, or hear a song that takes you straight back to them.",
             "Instead of spiraling, build tiny go-to habits: stand up and shake out your body, step outside for fresh air, drink some water, or put your phone face down and breathe slowly for ten counts.",
@@ -216,6 +748,34 @@
           "id": "slr-5",
           "title": "Soft Life Standards: What You Will And Won’t Tolerate Now",
           "subtitle": "Soft life is not laziness; it’s intentional protection of your energy.",
+          "tldr": "Soft life means guarding your peace with clear yes/no lists.",
+          "action": "Write 3 things you refuse now (arguing in DMs, unclear situationships, repeats of broken trust) and 3 things you welcome.",
+          "quote": {
+            "persona": "24, stylist",
+            "text": "Once I priced my peace higher, messy people disqualified themselves fast."
+          },
+          "quiz": [
+            {
+              "question": "What is soft life here?",
+              "options": [
+                { "id": "a", "text": "Avoiding all effort" },
+                { "id": "b", "text": "Choosing environments and relationships that feel safe and supportive" },
+                { "id": "c", "text": "Never leaving bed" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "It is intentional protection of your energy, not laziness."
+            },
+            {
+              "question": "First step to set soft-life standards?",
+              "options": [
+                { "id": "a", "text": "List 3 nos and 3 yeses for your energy" },
+                { "id": "b", "text": "Let others decide for you" },
+                { "id": "c", "text": "Say yes to every invite" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Clarity on your yes/no list guides quick, peaceful decisions."
+            }
+          ],
           "content": [
             "Soft life after heartbreak means choosing environments, conversations, and relationships that feel safe and supportive instead of loud and draining.",
             "Make a short list of what you refuse to entertain now—arguing in DMs, second chances for the same behavior, situationships with no clarity—and what you welcome instead.",

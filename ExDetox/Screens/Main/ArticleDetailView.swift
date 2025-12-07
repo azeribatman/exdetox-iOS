@@ -1,18 +1,14 @@
 import SwiftUI
-import AVKit
-
 struct ArticleDetailView: View {
     let article: Article
     var onComplete: () -> Void
     @Environment(\.dismiss) var dismiss
     
-    @State private var currentPage = 0
-    @State private var showVideoPlayer = false
-    @State private var isPlayingMusic = true
-    @State private var audioPlayer: AVAudioPlayer?
+    @State private var selections: [String: String] = [:]
+    @State private var showCompletion = false
+    @State private var celebratePulse = false
     
-    // Mock story content if article content is missing
-    var pages: [String] {
+    var storyContent: [String] {
         if !article.content.isEmpty {
             return article.content
         }
@@ -24,201 +20,292 @@ struct ArticleDetailView: View {
         ]
     }
     
+    var allQuestionsAnswered: Bool {
+        article.quiz.isEmpty || article.quiz.allSatisfy { selections[$0.id] != nil }
+    }
+    
     var body: some View {
         ZStack {
             Color(hex: "F9F9F9").ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Header
-                HStack {
-                    Button(action: {
-                        dismiss()
-                    }) {
-                        Image(systemName: "chevron.down")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundStyle(.black)
-                            .padding(10)
-                            .background(Color.white)
-                            .clipShape(Circle())
-                            .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+                ZStack {
+                    HStack {
+                        Button(action: {
+                            dismiss()
+                        }) {
+                            Image(systemName: "chevron.down")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundStyle(.black)
+                                .padding(10)
+                                .background(Color.white)
+                                .clipShape(Circle())
+                                .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+                        }
+                        
+                        Spacer()
                     }
-                    
-                    Spacer()
                     
                     Text("Reading")
-                        .font(.headline)
+                        .font(.system(.headline, design: .serif))
                         .foregroundStyle(.primary)
-                    
-                    Spacer()
-                    
-                    // Music Toggle
-                    Button(action: {
-                        isPlayingMusic.toggle()
-                        if isPlayingMusic {
-                            playMusic()
-                        } else {
-                            audioPlayer?.pause()
-                        }
-                    }) {
-                        Image(systemName: isPlayingMusic ? "speaker.wave.2.fill" : "speaker.slash.fill")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundStyle(isPlayingMusic ? .orange : .gray)
-                            .padding(10)
-                            .background(Color.white)
-                            .clipShape(Circle())
-                            .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
-                    }
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 20)
                 
-                // Story Content
-                TabView(selection: $currentPage) {
-                    ForEach(0..<pages.count, id: \.self) { index in
-                        VStack(spacing: 24) {
-                            Spacer()
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        HStack(spacing: 12) {
+                            Text(article.category.uppercased())
+                                .font(.caption.weight(.bold))
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(article.imageColor.opacity(0.12))
+                                .foregroundStyle(article.imageColor)
+                                .clipShape(Capsule())
                             
-                            // Article Image/Icon for the page
-                            Circle()
-                                .fill(article.imageColor.opacity(0.1))
-                                .frame(width: 120, height: 120)
-                                .overlay(
-                                    Image(systemName: "book.fill")
-                                        .font(.system(size: 48))
-                                        .foregroundStyle(article.imageColor)
-                                )
-                                .padding(.bottom, 20)
-                            
-                            Text(pages[index])
-                                .font(.system(size: 20, weight: .medium, design: .serif))
-                                .foregroundStyle(.primary)
-                                .multilineTextAlignment(.center)
-                                .lineSpacing(8)
-                                .padding(.horizontal, 32)
-                            
-                            if index == 1 { // Show video button on 2nd page as example
-                                Button(action: {
-                                    showVideoPlayer = true
-                                }) {
-                                    HStack {
-                                        Image(systemName: "play.circle.fill")
-                                        Text("Watch Video")
-                                    }
-                                    .font(.headline)
-                                    .foregroundColor(.white)
-                                    .padding(.horizontal, 24)
-                                    .padding(.vertical, 12)
-                                    .background(Color.black)
-                                    .clipShape(Capsule())
-                                }
-                                .padding(.top, 20)
-                            }
+                            Text(article.readTime)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                             
                             Spacer()
-                            
-                            if index == pages.count - 1 {
-                                Button(action: {
-                                    onComplete()
-                                    dismiss()
-                                }) {
-                                    Text("Finish & Ignite 🔥")
-                                        .font(.headline)
-                                        .foregroundColor(.white)
-                                        .frame(maxWidth: .infinity)
-                                        .padding()
-                                        .background(Color.orange)
-                                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                                        .shadow(color: .orange.opacity(0.3), radius: 8, x: 0, y: 4)
-                                }
-                                .padding(.horizontal, 40)
-                                .padding(.bottom, 40)
-                            } else {
-                                Text("Swipe to continue")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                    .padding(.bottom, 40)
-                            }
                         }
-                        .tag(index)
-                    }
-                }
-                .tabViewStyle(.page(indexDisplayMode: .always))
-                .indexViewStyle(.page(backgroundDisplayMode: .always))
-            }
-            
-            // Video Player Overlay
-            if showVideoPlayer {
-                Color.black.opacity(0.8)
-                    .ignoresSafeArea()
-                    .onTapGesture {
-                        showVideoPlayer = false
-                    }
-                
-                VStack {
-                    HStack {
-                        Spacer()
-                        Button(action: {
-                            showVideoPlayer = false
-                        }) {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 20, weight: .bold))
-                                .foregroundStyle(.white)
+                        
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(article.title)
+                                .font(.system(size: 28, weight: .bold, design: .serif))
+                                .foregroundStyle(.primary)
+                            
+                            Text(article.subtitle)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("TL;DR")
+                                .font(.caption.weight(.bold))
+                                .foregroundStyle(.secondary)
+                            Text(article.tldr)
+                                .font(.body.weight(.medium))
+                                .foregroundStyle(.primary)
                                 .padding()
-                                .background(Color.black.opacity(0.5))
-                                .clipShape(Circle())
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color.white)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
+                        }
+                        
+                        if let quote = article.quote {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text(quote.persona)
+                                    .font(.caption.weight(.bold))
+                                    .foregroundStyle(article.imageColor)
+                                Text("“\(quote.text)”")
+                                    .font(.body)
+                                    .foregroundStyle(.primary)
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(article.imageColor.opacity(0.12))
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Image(systemName: "sparkles")
+                                Text("Try this now")
+                                    .font(.subheadline.weight(.bold))
+                                Spacer()
+                            }
+                            Text(article.action)
+                                .font(.body.weight(.semibold))
+                                .multilineTextAlignment(.leading)
+                        }
+                        .foregroundStyle(.white)
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(article.imageColor)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .shadow(color: article.imageColor.opacity(0.25), radius: 8, x: 0, y: 4)
+                        
+                        VStack(alignment: .leading, spacing: 12) {
+                            ForEach(storyContent, id: \.self) { paragraph in
+                                Text(paragraph)
+                                    .font(.body)
+                                    .foregroundStyle(.primary)
+                                    .lineSpacing(6)
+                            }
                         }
                         .padding()
-                    }
-                    
-                    // Video Player placeholder
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.black)
-                            .aspectRatio(16/9, contentMode: .fit)
+                        .background(Color.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 18))
+                        .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 6)
                         
-                        Text("Video Player")
+                        if !article.quiz.isEmpty {
+                            VStack(alignment: .leading, spacing: 16) {
+                                Text("Quick check: What would you do?")
+                                    .font(.headline.weight(.bold))
+                                    .foregroundStyle(.primary)
+                                
+                                ForEach(article.quiz) { question in
+                                    VStack(alignment: .leading, spacing: 12) {
+                                        Text(question.question)
+                                            .font(.subheadline.weight(.semibold))
+                                            .foregroundStyle(.primary)
+                                        
+                                        VStack(alignment: .leading, spacing: 10) {
+                                            ForEach(question.options) { option in
+                                                let selected = selections[question.id]
+                                                let isSelected = selected == option.id
+                                                let isCorrect = question.correctOptionId == option.id
+                                                Button {
+                                                    selections[question.id] = option.id
+                                                } label: {
+                                                    HStack(alignment: .top, spacing: 12) {
+                                                        Text(option.text)
+                                                            .font(.body)
+                                                            .multilineTextAlignment(.leading)
+                                                            .foregroundStyle(isSelected ? .white : .primary)
+                                                        Spacer()
+                                                        if isSelected {
+                                                            Image(systemName: isCorrect ? "checkmark.seal.fill" : "xmark.seal.fill")
+                                                                .foregroundStyle(.white)
+                                                        }
+                                                    }
+                                                    .padding()
+                                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                                    .background(isSelected ? (isCorrect ? Color.green : Color.red) : Color.white)
+                                                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                                                    .shadow(color: .black.opacity(0.03), radius: 6, x: 0, y: 3)
+                                                }
+                                                .buttonStyle(.plain)
+                                            }
+                                        }
+                                        
+                                        if let choice = selections[question.id] {
+                                            let isCorrect = choice == question.correctOptionId
+                                            Text(question.explanation)
+                                                .font(.caption)
+                                                .foregroundStyle(isCorrect ? Color.green : Color.red)
+                                                .padding(.top, 4)
+                                        }
+                                    }
+                                    .padding()
+                                    .background(Color.white)
+                                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                                    .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
+                                }
+                            }
+                        }
+                        
+                        Button(action: {
+                            finishAndCelebrate()
+                        }) {
+                            HStack {
+                                Text(allQuestionsAnswered ? "Finish & celebrate" : "Answer the quick check")
+                                    .font(.headline.weight(.bold))
+                                Spacer()
+                                Image(systemName: "arrow.right")
+                            }
                             .foregroundStyle(.white)
-                        
-                        Image(systemName: "play.circle")
-                            .font(.system(size: 50))
-                            .foregroundStyle(.white.opacity(0.5))
+                            .padding()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(allQuestionsAnswered ? Color.black : Color.gray)
+                            .clipShape(RoundedRectangle(cornerRadius: 18))
+                            .opacity(allQuestionsAnswered ? 1 : 0.6)
+                        }
+                        .disabled(!allQuestionsAnswered)
+                        .padding(.bottom, 32)
                     }
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                    )
-                    .padding()
-                    
-                    Spacer()
+                    .padding(.horizontal, 20)
+                    .padding(.top, 10)
                 }
             }
-        }
-        .onAppear {
-            playMusic()
-        }
-        .onDisappear {
-            audioPlayer?.stop()
+            
+            if showCompletion {
+                ZStack {
+                    LinearGradient(
+                        colors: [
+                            article.imageColor.opacity(0.25),
+                            Color.black.opacity(0.6)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    .ignoresSafeArea()
+                    
+                    Circle()
+                        .fill(article.imageColor.opacity(0.25))
+                        .frame(width: 240, height: 240)
+                        .blur(radius: 40)
+                        .scaleEffect(celebratePulse ? 1.05 : 0.95)
+                        .animation(.easeInOut(duration: 1).repeatForever(autoreverses: true), value: celebratePulse)
+                    
+                    VStack(spacing: 14) {
+                        Image(systemName: "party.popper.fill")
+                            .font(.system(size: 52, weight: .bold))
+                            .foregroundStyle(.white)
+                            .scaleEffect(celebratePulse ? 1.05 : 0.95)
+                            .animation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true), value: celebratePulse)
+                        
+                        Text("You did it!")
+                            .font(.title2.weight(.bold))
+                            .foregroundStyle(.white)
+                        
+                        Text("Nice, that’s one more tool in your mental health toolkit.")
+                            .font(.subheadline.weight(.medium))
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(.white.opacity(0.9))
+                            .padding(.horizontal, 32)
+                        
+                        HStack(spacing: 12) {
+                            Button {
+                                showCompletion = false
+                                dismiss()
+                            } label: {
+                                Text("Keep going")
+                                    .font(.headline.weight(.bold))
+                                    .foregroundStyle(article.imageColor)
+                                    .padding(.horizontal, 20)
+                                    .padding(.vertical, 12)
+                                    .background(Color.white)
+                                    .clipShape(Capsule())
+                            }
+                        }
+                        .padding(.top, 6)
+                    }
+                    .padding()
+                }
+                .onAppear {
+                    celebratePulse = true
+                }
+                .onDisappear {
+                    celebratePulse = false
+                }
+                .transition(.opacity)
+            }
         }
     }
     
-    func playMusic() {
-        // Mock music playing logic
-        // In a real app, you would load a URL here
-        print("Playing soothing background music...")
+    func finishAndCelebrate() {
+        withAnimation(.spring()) {
+            showCompletion = true
+        }
+        onComplete()
     }
 }
 
-#Preview {
-    ArticleDetailView(
-        article: Article(
-            title: "Test",
-            subtitle: "Subtitle",
-            category: "Test",
-            readTime: "5m",
-            imageColor: .blue
-        ),
-        onComplete: {}
-    )
-}
+//#Preview {
+//    ArticleDetailView(
+//        article: Article(
+//            title: "Test",
+//            subtitle: "Subtitle",
+//            category: "Test",
+//            readTime: "5m",
+//            imageColor: .blue
+//        ),
+//        onComplete: {}
+//    )
+//}
 
 
