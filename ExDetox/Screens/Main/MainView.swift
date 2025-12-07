@@ -91,7 +91,7 @@ struct MainView: View {
             switch self {
             case .home: return "Home"
             case .analytics: return "Analytics"
-            case .aiAgent: return "AI Agent"
+            case .aiAgent: return "Your Friend"
             case .myWhy: return "My Why"
             case .learning: return "Learning"
             }
