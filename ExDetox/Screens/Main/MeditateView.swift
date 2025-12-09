@@ -6,174 +6,186 @@ struct MeditateView: View {
     @State private var showBurnAnimation = false
     @State private var showBreathingGame = false
     
+    private let creamBg = Color(hex: "F5F0E8")
+    private let cardBg = Color(hex: "FFFDF9")
+    
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                // Custom Header
-                HStack {
-                    Text("Pause & Breathe")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.primary)
-                    
-                    Spacer()
-                    
-                    Button(action: {
-                        dismiss()
-                    }) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundStyle(.black)
-                            .padding(10)
-                            .background(Color.gray.opacity(0.1))
-                            .clipShape(Circle())
-                    }
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 20)
-                .padding(.bottom, 10)
-                .background(Color(hex: "F9F9F9"))
+        VStack(spacing: 0) {
+            HStack {
+                Text("Pause & Breathe")
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
                 
-                ScrollView {
-                    VStack(spacing: 24) {
-                        // Hero Section
-                        VStack(spacing: 12) {
+                Spacer()
+                
+                Button(action: { dismiss() }) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(.primary.opacity(0.5))
+                        .frame(width: 32, height: 32)
+                        .background(cardBg)
+                        .clipShape(Circle())
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 16)
+            .padding(.bottom, 12)
+            
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 16) {
+                    VStack(spacing: 14) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.teal.opacity(0.12))
+                                .frame(width: 80, height: 80)
+                            
                             Image(systemName: "brain.head.profile")
-                                .font(.system(size: 60))
+                                .font(.system(size: 36, weight: .medium))
                                 .foregroundStyle(.teal)
-                                .padding()
-                                .background(Color.teal.opacity(0.1))
-                                .clipShape(Circle())
-                            
-                            Text("Center Yourself")
-                                .font(.title3)
-                                .fontWeight(.bold)
-                            
-                            Text("Before you send that text, let's take a moment to breathe.")
-                                .font(.body)
-                                .multilineTextAlignment(.center)
-                                .foregroundStyle(.secondary)
-                                .padding(.horizontal)
                         }
-                        .padding(.top, 10)
                         
-                        // Quick Breathing Exercise
-                        VStack(alignment: .leading, spacing: 16) {
-                            HStack {
-                                Label("The 4-7-8 Breathing", systemImage: "wind")
-                                    .font(.headline)
-                                    .foregroundStyle(.teal)
-                                Spacer()
-                            }
+                        Text("Center Yourself")
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                        
+                        Text("Before you send that text, let's take a moment to breathe.")
+                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 20)
+                    }
+                    .padding(.vertical, 20)
+                    .frame(maxWidth: .infinity)
+                    .background(cardBg)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    
+                    VStack(alignment: .leading, spacing: 16) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "wind")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(.teal)
                             
-                            HStack(spacing: 20) {
-                                BreathingStep(count: "4s", label: "Inhale")
-                                BreathingStep(count: "7s", label: "Hold")
-                                BreathingStep(count: "8s", label: "Exhale")
-                            }
-                            .frame(maxWidth: .infinity)
-                            
-                            Button(action: {
-                                showBreathingGame = true
-                            }) {
+                            Text("The 4-7-8 Breathing")
+                                .font(.system(size: 16, weight: .bold, design: .rounded))
+                        }
+                        
+                        HStack(spacing: 10) {
+                            BreathingStep(count: "4s", label: "Inhale", color: .teal)
+                            BreathingStep(count: "7s", label: "Hold", color: .teal)
+                            BreathingStep(count: "8s", label: "Exhale", color: .teal)
+                        }
+                        
+                        Button(action: { showBreathingGame = true }) {
+                            HStack(spacing: 10) {
+                                Image(systemName: "play.fill")
+                                    .font(.system(size: 14, weight: .bold))
                                 Text("Start Breathing Session")
-                                    .fontWeight(.bold)
-                                    .foregroundStyle(.white)
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(Color.teal)
-                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                                    .font(.system(size: 15, weight: .bold, design: .rounded))
                             }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(Color.teal)
+                            .clipShape(RoundedRectangle(cornerRadius: 14))
                         }
-                        .padding(20)
-                        .background(Color.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
-                        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
-                        
-                        // Write & Burn (Moved Up)
-                        VStack(alignment: .leading, spacing: 16) {
-                            Label("Write & Burn", systemImage: "flame.fill")
-                                .font(.headline)
-                                .foregroundStyle(.red)
-                            
-                            Text("Type out what you want to say to them below, then burn it.")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            
-                            if !showBurnAnimation {
-                                TextEditor(text: $textBuffer)
-                                    .frame(height: 100)
-                                    .padding(8)
-                                    .scrollContentBackground(.hidden) // Removes default background
-                                    .background(Color(hex: "F2F2F7")) // Distinct background
-                                    .cornerRadius(12)
-                                
-                                Button(action: {
-                                    withAnimation(.easeInOut(duration: 0.5)) {
-                                        showBurnAnimation = true
-                                    }
-                                    // Reset after animation
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                        textBuffer = ""
-                                        withAnimation {
-                                            showBurnAnimation = false
-                                        }
-                                    }
-                                }) {
-                                    Text("Burn This Text 🔥")
-                                        .fontWeight(.bold)
-                                        .foregroundStyle(.white)
-                                        .frame(maxWidth: .infinity)
-                                        .padding()
-                                        .background(textBuffer.isEmpty ? Color.gray : Color.red)
-                                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                                }
-                                .disabled(textBuffer.isEmpty)
-                            } else {
-                                VStack {
-                                    Image(systemName: "flame.fill")
-                                        .font(.system(size: 50))
-                                        .foregroundStyle(.orange)
-                                        .symbolEffect(.bounce, options: .repeating)
-                                    
-                                    Text("Burning away the urge...")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                                .frame(height: 160)
-                                .frame(maxWidth: .infinity)
-                            }
-                        }
-                        .padding(20)
-                        .background(Color.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
-                        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
-                        
-                        // Reality Check
-                        VStack(alignment: .leading, spacing: 12) {
-                            Label("Reality Check", systemImage: "checkmark.shield.fill")
-                                .font(.headline)
+                        .buttonStyle(ScaleButtonStyle())
+                    }
+                    .padding(18)
+                    .background(cardBg)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    
+                    VStack(alignment: .leading, spacing: 14) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "flame.fill")
+                                .font(.system(size: 16, weight: .semibold))
                                 .foregroundStyle(.orange)
                             
-                            Text("Remember why you're here. Breaking no contact resets your healing process. Is a 2-minute conversation worth resetting 3 days of progress?")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                            Text("Write & Burn")
+                                .font(.system(size: 16, weight: .bold, design: .rounded))
                         }
-                        .padding(20)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
-                        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
                         
-                        Spacer()
+                        Text("Type what you want to say to them, then burn it away.")
+                            .font(.system(size: 13, weight: .medium, design: .rounded))
+                            .foregroundStyle(.secondary)
+                        
+                        if !showBurnAnimation {
+                            TextEditor(text: $textBuffer)
+                                .font(.system(size: 15, weight: .regular, design: .rounded))
+                                .frame(height: 100)
+                                .padding(12)
+                                .scrollContentBackground(.hidden)
+                                .background(creamBg)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                            
+                            Button(action: {
+                                withAnimation(.easeInOut(duration: 0.5)) {
+                                    showBurnAnimation = true
+                                }
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                    textBuffer = ""
+                                    withAnimation {
+                                        showBurnAnimation = false
+                                    }
+                                }
+                            }) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "flame.fill")
+                                        .font(.system(size: 14, weight: .bold))
+                                    Text("Burn This Text")
+                                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                                }
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(textBuffer.isEmpty ? Color.primary.opacity(0.2) : Color.orange)
+                                .clipShape(RoundedRectangle(cornerRadius: 14))
+                            }
+                            .buttonStyle(ScaleButtonStyle())
+                            .disabled(textBuffer.isEmpty)
+                        } else {
+                            VStack(spacing: 12) {
+                                Image(systemName: "flame.fill")
+                                    .font(.system(size: 48))
+                                    .foregroundStyle(.orange)
+                                    .symbolEffect(.bounce, options: .repeating)
+                                
+                                Text("Burning away the urge...")
+                                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                                    .foregroundStyle(.secondary)
+                            }
+                            .frame(height: 150)
+                            .frame(maxWidth: .infinity)
+                        }
                     }
-                    .padding()
+                    .padding(18)
+                    .background(cardBg)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "checkmark.shield.fill")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(.purple)
+                            
+                            Text("Reality Check")
+                                .font(.system(size: 16, weight: .bold, design: .rounded))
+                        }
+                        
+                        Text("Breaking no contact resets your healing. Is a 2-minute conversation worth days of progress?")
+                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(18)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(cardBg)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
                 }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .padding(.bottom, 24)
             }
-            .background(Color(hex: "F9F9F9").ignoresSafeArea())
-            .sheet(isPresented: $showBreathingGame) {
-                BreathingGameView()
-            }
+        }
+        .background(creamBg.ignoresSafeArea())
+        .sheet(isPresented: $showBreathingGame) {
+            BreathingGameView()
         }
     }
 }
@@ -181,22 +193,21 @@ struct MeditateView: View {
 struct BreathingStep: View {
     let count: String
     let label: String
+    var color: Color = .teal
     
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 6) {
             Text(count)
-                .font(.title2)
-                .fontWeight(.bold)
-                .foregroundStyle(.teal)
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundStyle(color)
             
             Text(label)
-                .font(.caption)
-                .fontWeight(.medium)
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 12)
-        .background(Color.teal.opacity(0.1))
+        .padding(.vertical, 14)
+        .background(color.opacity(0.1))
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }

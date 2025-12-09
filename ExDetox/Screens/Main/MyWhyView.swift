@@ -7,6 +7,9 @@ struct MyWhyView: View {
     @State private var showAddSheet = false
     @State private var showSettings = false
     
+    private let creamBg = Color(hex: "F5F0E8")
+    private let cardBg = Color(hex: "FFFDF9")
+    
     private func documentsDirectory() -> URL? {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
     }
@@ -32,82 +35,39 @@ struct MyWhyView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header
-            HStack {
-                Text("My Why")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.primary)
-                
-                Spacer()
-                
-                // Add Button
-                Button(action: {
-                    showAddSheet = true
-                }) {
-                    Image(systemName: "plus")
-                        .font(.system(size: 20))
-                        .foregroundStyle(.black)
-                        .padding(10)
-                        .background(Color.white)
-                        .clipShape(Circle())
-                        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
-                }
-                .padding(.trailing, 8)
-                
-                // Settings Button
-                Button(action: {
-                    showSettings = true
-                }) {
-                    Image(systemName: "gearshape.fill")
-                        .font(.system(size: 20))
-                        .foregroundStyle(.black)
-                        .padding(10)
-                        .background(Color.white)
-                        .clipShape(Circle())
-                        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
-                }
-            }
-            .frame(height: 62)
-            .padding(.horizontal, 20)
-            .background(Color(hex: "F9F9F9"))
+            headerView
             
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 ZStack(alignment: .top) {
-                    // Easter Egg
                     GeometryReader { geometry in
                         let minY = geometry.frame(in: .global).minY
-                        if minY > 150 { // Threshold for showing the easter egg
-                            HStack(spacing: 8) {
-                                Text("I see you looking back... 👀")
-                                    .font(.caption)
-                                    .fontWeight(.bold)
-                                    .foregroundStyle(.secondary)
-                                Text("Don't do it!")
-                                    .font(.caption)
-                                    .fontWeight(.bold)
+                        if minY > 150 {
+                            HStack(spacing: 6) {
+                                Text("👀")
+                                Text("Don't look back!")
+                                    .font(.system(size: 12, weight: .bold, design: .rounded))
                                     .foregroundStyle(.red)
                             }
                             .frame(maxWidth: .infinity)
-                            .offset(y: -minY + 60) // Keep it positioned visibly
-                            .opacity(min(1.0, (Double(minY) - 150.0) / 50.0)) // Fade in
+                            .offset(y: -minY + 60)
+                            .opacity(min(1.0, (Double(minY) - 150.0) / 50.0))
                         }
                     }
-                    .frame(height: 0) // Don't take up space in layout
+                    .frame(height: 0)
                     .zIndex(1)
                     
-                    VStack(spacing: 24) {
+                    VStack(spacing: 16) {
                         if items.isEmpty {
                             emptyStateView
                         } else {
                             filledStateView
                         }
                     }
-                    .padding(.top, 24)
+                    .padding(.top, 8)
                 }
             }
         }
-        .background(Color(hex: "F9F9F9").ignoresSafeArea())
+        .background(creamBg.ignoresSafeArea())
         .sheet(isPresented: $showAddSheet) {
             AddWhyView { title, image in
                 var fileName: String?
@@ -124,89 +84,116 @@ struct MyWhyView: View {
         }
     }
     
-    var emptyStateView: some View {
+    private var headerView: some View {
+        HStack(alignment: .center) {
+            Text("My Why")
+                .font(.system(size: 28, weight: .black, design: .rounded))
+                .foregroundStyle(.primary)
+            
+            Spacer()
+            
+            Button(action: {
+                showAddSheet = true
+                Haptics.feedback(style: .light)
+            }) {
+                Image(systemName: "plus")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundStyle(.black)
+                    .frame(width: 40, height: 40)
+                    .background(cardBg)
+                    .clipShape(Circle())
+            }
+            
+            Button(action: { showSettings = true }) {
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(.black)
+                    .frame(width: 40, height: 40)
+                    .background(cardBg)
+                    .clipShape(Circle())
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+    }
+    
+    private var emptyStateView: some View {
         VStack(spacing: 20) {
             Spacer()
-                .frame(height: 40)
+                .frame(height: 60)
             
-            ZStack {
-                Circle()
-                    .fill(Color.gray.opacity(0.1))
-                    .frame(width: 160, height: 160)
-                
-                Image(systemName: "heart.slash.fill")
-                    .font(.system(size: 60))
-                    .foregroundStyle(.gray.opacity(0.5))
-            }
-            .padding(.bottom, 10)
+            Text("🚩")
+                .font(.system(size: 56))
+                .frame(width: 100, height: 100)
+                .background(Color.red.opacity(0.1))
+                .clipShape(Circle())
             
-            VStack(spacing: 12) {
+            VStack(spacing: 10) {
                 Text("Why did it end?")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.primary)
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
                 
-                Text("Document the red flags, the bad moments, and the reasons you left. Read this when you're feeling weak.")
-                    .font(.body)
+                Text("Document the red flags and reasons.\nRead this when you're feeling weak.")
+                    .font(.system(size: 15, weight: .medium, design: .rounded))
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
-                    .padding(.horizontal, 40)
+                    .lineSpacing(3)
             }
             
             Button(action: {
                 showAddSheet = true
+                Haptics.feedback(style: .medium)
             }) {
                 Text("Add Your First Reason")
-                    .font(.headline)
-                    .fontWeight(.bold)
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
                     .background(Color.black)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                    .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
             }
             .padding(.horizontal, 40)
-            .padding(.top, 20)
+            .padding(.top, 8)
             
             Spacer()
         }
+        .padding(.horizontal, 24)
     }
     
-    var filledStateView: some View {
-        VStack(spacing: 16) {
+    private var filledStateView: some View {
+        VStack(spacing: 12) {
             ForEach(items) { item in
-                VStack(alignment: .leading, spacing: 12) {
-                    if let fileName = item.imageFileName, let uiImage = loadImage(from: fileName) {
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(maxHeight: 250)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
-                            .frame(maxWidth: .infinity)
-                    }
-                    
-                    Text(item.title)
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.primary)
-                        .lineLimit(nil) // Allow full text
-                        .fixedSize(horizontal: false, vertical: true)
-                        
-                    Text(item.createdAt.formatted(date: .abbreviated, time: .shortened))
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                        .fontWeight(.medium)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading) // Fill width
-                .padding(16)
-                .background(Color.white)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+                whyItemCard(item)
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.bottom, 20)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 24)
+    }
+    
+    private func whyItemCard(_ item: WhyItemRecord) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            if let fileName = item.imageFileName, let uiImage = loadImage(from: fileName) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(height: 180)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .frame(maxWidth: .infinity)
+            }
+            
+            Text(item.title)
+                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .foregroundStyle(.primary)
+                .lineLimit(nil)
+                .fixedSize(horizontal: false, vertical: true)
+                
+            Text(item.createdAt.formatted(date: .abbreviated, time: .omitted))
+                .font(.system(size: 11, weight: .medium, design: .rounded))
+                .foregroundStyle(.tertiary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(cardBg)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 }
 

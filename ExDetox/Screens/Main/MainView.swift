@@ -7,14 +7,13 @@ struct MainView: View {
     @Environment(\.modelContext) private var modelContext
     
     @State private var selectedTab: Tab = .home
-    private let tabBarHeight: CGFloat = 72
     
     init() {
         UITabBar.appearance().isHidden = true
     }
     
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: .zero) {
             TabView(selection: $selectedTab) {
                 HomeView()
                     .tag(Tab.home)
@@ -31,78 +30,68 @@ struct MainView: View {
                 LearningView()
                     .tag(Tab.learning)
             }
-            .padding(.bottom, tabBarHeight)
-            .overlay(alignment: .bottom) {
-                tabBar()
-            }
-        }
-        .overlay(alignment: .top) {
-            NotificationBannerView()
-                .padding(.top, 4)
+            
+            tabBarView()
         }
         .navigationBarBackButtonHidden()
+        .disableSwipeGesture(id: "MainView")
         .onAppear {
             TrackingPersistence.bootstrap(store: trackingStore, context: modelContext)
         }
     }
     
-    private func tabBar() -> some View {
+    private func tabBarView() -> some View {
         HStack(spacing: 0) {
             ForEach(Tab.allCases, id: \.self) { tab in
-                Button {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        selectedTab = tab
-                    }
-                } label: {
-                    VStack(spacing: 4) {
-                        Image(systemName: tab.iconName)
-                            .font(.system(size: 24))
-                            .symbolVariant(selectedTab == tab ? .fill : .none)
-                            .foregroundStyle(selectedTab == tab ? .black : Color.gray.opacity(0.5))
-                        
-                        Text(tab.title)
-                            .font(.system(size: 10, weight: .semibold))
-                            .foregroundStyle(selectedTab == tab ? .black : Color.gray.opacity(0.5))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 12)
-                    .padding(.bottom, 4)
-                }
+                tabItemView(for: tab)
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.bottom, 0)
-        .background(Color.white.ignoresSafeArea(edges: .bottom))
-        .overlay(alignment: .top) {
-            Rectangle()
-                .frame(height: 1)
-                .foregroundStyle(Color.gray.opacity(0.1))
-        }
+        .padding(.top, 12)
+        .padding(.bottom, 8)
+        .background(Color(hex: "F5F0E8"))
     }
     
-    enum Tab: String, CaseIterable {
+    private func tabItemView(for tab: Tab) -> some View {
+        Button {
+            selectedTab = tab
+            Haptics.feedback(style: .light)
+        } label: {
+            VStack(spacing: 4) {
+                Image(systemName: selectedTab == tab ? tab.selectedIcon : tab.unselectedIcon)
+                    .font(.system(size: 22, weight: .medium))
+                    .foregroundStyle(selectedTab == tab ? Color.primary : Color.primary.opacity(0.35))
+            }
+            .frame(maxWidth: .infinity)
+        }
+    }
+}
+
+extension MainView {
+    enum Tab: String, CaseIterable, Identifiable {
+        var id: String { rawValue }
+        
         case home
         case analytics
         case aiAgent
         case myWhy
         case learning
         
-        var title: String {
+        var selectedIcon: String {
             switch self {
-            case .home: return "Home"
-            case .analytics: return "Analytics"
-            case .aiAgent: return "Your Friend"
-            case .myWhy: return "My Why"
-            case .learning: return "Learning"
+            case .home: return "house.fill"
+            case .analytics: return "chart.bar.fill"
+            case .aiAgent: return "message.fill"
+            case .myWhy: return "heart.fill"
+            case .learning: return "book.fill"
             }
         }
         
-        var iconName: String {
+        var unselectedIcon: String {
             switch self {
             case .home: return "house"
             case .analytics: return "chart.bar"
-            case .aiAgent: return "brain.head.profile"
-            case .myWhy: return "heart.slash"
+            case .aiAgent: return "message"
+            case .myWhy: return "heart"
             case .learning: return "book"
             }
         }

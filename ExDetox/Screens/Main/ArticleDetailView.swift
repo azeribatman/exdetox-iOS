@@ -1,4 +1,5 @@
 import SwiftUI
+
 struct ArticleDetailView: View {
     let article: Article
     var onComplete: () -> Void
@@ -7,6 +8,9 @@ struct ArticleDetailView: View {
     @State private var selections: [String: String] = [:]
     @State private var showCompletion = false
     @State private var celebratePulse = false
+    
+    private let creamBg = Color(hex: "F5F0E8")
+    private let cardBg = Color(hex: "FFFDF9")
     
     var storyContent: [String] {
         if !article.content.isEmpty {
@@ -26,286 +30,343 @@ struct ArticleDetailView: View {
     
     var body: some View {
         ZStack {
-            Color(hex: "F9F9F9").ignoresSafeArea()
+            creamBg.ignoresSafeArea()
             
             VStack(spacing: 0) {
-                ZStack {
-                    HStack {
-                        Button(action: {
-                            dismiss()
-                        }) {
-                            Image(systemName: "chevron.down")
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundStyle(.black)
-                                .padding(10)
-                                .background(Color.white)
-                                .clipShape(Circle())
-                                .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
-                        }
-                        
-                        Spacer()
-                    }
-                    
-                    Text("Reading")
-                        .font(.system(.headline, design: .serif))
-                        .foregroundStyle(.primary)
-                }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 20)
+                headerView
                 
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
-                        HStack(spacing: 12) {
-                            Text(article.category.uppercased())
-                                .font(.caption.weight(.bold))
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(article.imageColor.opacity(0.12))
-                                .foregroundStyle(article.imageColor)
-                                .clipShape(Capsule())
-                            
-                            Text(article.readTime)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            
-                            Spacer()
-                        }
-                        
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(article.title)
-                                .font(.system(size: 28, weight: .bold, design: .serif))
-                                .foregroundStyle(.primary)
-                            
-                            Text(article.subtitle)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
-                        
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("TL;DR")
-                                .font(.caption.weight(.bold))
-                                .foregroundStyle(.secondary)
-                            Text(article.tldr)
-                                .font(.body.weight(.medium))
-                                .foregroundStyle(.primary)
-                                .padding()
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(Color.white)
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
-                                .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
-                        }
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 16) {
+                        categoryAndTime
+                        titleSection
+                        tldrCard
                         
                         if let quote = article.quote {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text(quote.persona)
-                                    .font(.caption.weight(.bold))
-                                    .foregroundStyle(article.imageColor)
-                                Text("“\(quote.text)”")
-                                    .font(.body)
-                                    .foregroundStyle(.primary)
-                            }
-                            .padding()
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(article.imageColor.opacity(0.12))
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            quoteCard(quote)
                         }
                         
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Image(systemName: "sparkles")
-                                Text("Try this now")
-                                    .font(.subheadline.weight(.bold))
-                                Spacer()
-                            }
-                            Text(article.action)
-                                .font(.body.weight(.semibold))
-                                .multilineTextAlignment(.leading)
-                        }
-                        .foregroundStyle(.white)
-                        .padding()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(article.imageColor)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                        .shadow(color: article.imageColor.opacity(0.25), radius: 8, x: 0, y: 4)
-                        
-                        VStack(alignment: .leading, spacing: 12) {
-                            ForEach(storyContent, id: \.self) { paragraph in
-                                Text(paragraph)
-                                    .font(.body)
-                                    .foregroundStyle(.primary)
-                                    .lineSpacing(6)
-                            }
-                        }
-                        .padding()
-                        .background(Color.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 18))
-                        .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 6)
+                        actionCard
+                        contentCard
                         
                         if !article.quiz.isEmpty {
-                            VStack(alignment: .leading, spacing: 16) {
-                                Text("Quick check: What would you do?")
-                                    .font(.headline.weight(.bold))
-                                    .foregroundStyle(.primary)
-                                
-                                ForEach(article.quiz) { question in
-                                    VStack(alignment: .leading, spacing: 12) {
-                                        Text(question.question)
-                                            .font(.subheadline.weight(.semibold))
-                                            .foregroundStyle(.primary)
-                                        
-                                        VStack(alignment: .leading, spacing: 10) {
-                                            ForEach(question.options) { option in
-                                                let selected = selections[question.id]
-                                                let isSelected = selected == option.id
-                                                let isCorrect = question.correctOptionId == option.id
-                                                Button {
-                                                    selections[question.id] = option.id
-                                                } label: {
-                                                    HStack(alignment: .top, spacing: 12) {
-                                                        Text(option.text)
-                                                            .font(.body)
-                                                            .multilineTextAlignment(.leading)
-                                                            .foregroundStyle(isSelected ? .white : .primary)
-                                                        Spacer()
-                                                        if isSelected {
-                                                            Image(systemName: isCorrect ? "checkmark.seal.fill" : "xmark.seal.fill")
-                                                                .foregroundStyle(.white)
-                                                        }
-                                                    }
-                                                    .padding()
-                                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                                    .background(isSelected ? (isCorrect ? Color.green : Color.red) : Color.white)
-                                                    .clipShape(RoundedRectangle(cornerRadius: 14))
-                                                    .shadow(color: .black.opacity(0.03), radius: 6, x: 0, y: 3)
-                                                }
-                                                .buttonStyle(.plain)
-                                            }
-                                        }
-                                        
-                                        if let choice = selections[question.id] {
-                                            let isCorrect = choice == question.correctOptionId
-                                            Text(question.explanation)
-                                                .font(.caption)
-                                                .foregroundStyle(isCorrect ? Color.green : Color.red)
-                                                .padding(.top, 4)
-                                        }
-                                    }
-                                    .padding()
-                                    .background(Color.white)
-                                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                                    .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
-                                }
-                            }
+                            quizSection
                         }
                         
-                        Button(action: {
-                            finishAndCelebrate()
-                        }) {
-                            HStack {
-                                Text(allQuestionsAnswered ? "Finish & celebrate" : "Answer the quick check")
-                                    .font(.headline.weight(.bold))
-                                Spacer()
-                                Image(systemName: "arrow.right")
-                            }
-                            .foregroundStyle(.white)
-                            .padding()
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(allQuestionsAnswered ? Color.black : Color.gray)
-                            .clipShape(RoundedRectangle(cornerRadius: 18))
-                            .opacity(allQuestionsAnswered ? 1 : 0.6)
-                        }
-                        .disabled(!allQuestionsAnswered)
-                        .padding(.bottom, 32)
+                        finishButton
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 10)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .padding(.bottom, 32)
                 }
             }
             
             if showCompletion {
-                ZStack {
-                    LinearGradient(
-                        colors: [
-                            article.imageColor.opacity(0.25),
-                            Color.black.opacity(0.6)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    .ignoresSafeArea()
-                    
-                    Circle()
-                        .fill(article.imageColor.opacity(0.25))
-                        .frame(width: 240, height: 240)
-                        .blur(radius: 40)
-                        .scaleEffect(celebratePulse ? 1.05 : 0.95)
-                        .animation(.easeInOut(duration: 1).repeatForever(autoreverses: true), value: celebratePulse)
-                    
-                    VStack(spacing: 14) {
-                        Image(systemName: "party.popper.fill")
-                            .font(.system(size: 52, weight: .bold))
-                            .foregroundStyle(.white)
-                            .scaleEffect(celebratePulse ? 1.05 : 0.95)
-                            .animation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true), value: celebratePulse)
-                        
-                        Text("You did it!")
-                            .font(.title2.weight(.bold))
-                            .foregroundStyle(.white)
-                        
-                        Text("Nice, that’s one more tool in your mental health toolkit.")
-                            .font(.subheadline.weight(.medium))
-                            .multilineTextAlignment(.center)
-                            .foregroundStyle(.white.opacity(0.9))
-                            .padding(.horizontal, 32)
-                        
-                        HStack(spacing: 12) {
-                            Button {
-                                showCompletion = false
-                                dismiss()
-                            } label: {
-                                Text("Keep going")
-                                    .font(.headline.weight(.bold))
-                                    .foregroundStyle(article.imageColor)
-                                    .padding(.horizontal, 20)
-                                    .padding(.vertical, 12)
-                                    .background(Color.white)
-                                    .clipShape(Capsule())
-                            }
-                        }
-                        .padding(.top, 6)
-                    }
-                    .padding()
-                }
-                .onAppear {
-                    celebratePulse = true
-                }
-                .onDisappear {
-                    celebratePulse = false
-                }
-                .transition(.opacity)
+                completionOverlay
             }
         }
     }
     
+    // MARK: - Header
+    
+    private var headerView: some View {
+        HStack {
+            Button(action: { dismiss() }) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(.primary.opacity(0.5))
+                    .frame(width: 32, height: 32)
+                    .background(cardBg)
+                    .clipShape(Circle())
+            }
+            
+            Spacer()
+            
+            Text("Reading")
+                .font(.system(size: 16, weight: .bold, design: .rounded))
+            
+            Spacer()
+            
+            Color.clear.frame(width: 32, height: 32)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+    }
+    
+    // MARK: - Category & Time
+    
+    private var categoryAndTime: some View {
+        HStack(spacing: 10) {
+            Text(article.category)
+                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(article.imageColor.opacity(0.12))
+                .foregroundStyle(article.imageColor)
+                .clipShape(Capsule())
+            
+            Text(article.readTime)
+                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .foregroundStyle(.secondary)
+            
+            Spacer()
+        }
+    }
+    
+    // MARK: - Title
+    
+    private var titleSection: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(article.title)
+                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .foregroundStyle(.primary)
+            
+            Text(article.subtitle)
+                .font(.system(size: 14, weight: .medium, design: .rounded))
+                .foregroundStyle(.secondary)
+        }
+    }
+    
+    // MARK: - TL;DR Card
+    
+    private var tldrCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("TL;DR")
+                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .foregroundStyle(.secondary)
+            Text(article.tldr)
+                .font(.system(size: 15, weight: .medium, design: .rounded))
+                .foregroundStyle(.primary)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(cardBg)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+    
+    // MARK: - Quote Card
+    
+    private func quoteCard(_ quote: LessonQuote) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(quote.persona)
+                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .foregroundStyle(article.imageColor)
+            Text("\(quote.text)")
+                .font(.system(size: 15, weight: .medium, design: .rounded))
+                .foregroundStyle(.primary)
+                .italic()
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(article.imageColor.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+    
+    // MARK: - Action Card
+    
+    private var actionCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 14, weight: .semibold))
+                Text("Try this now")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+            }
+            Text(article.action)
+                .font(.system(size: 14, weight: .semibold, design: .rounded))
+        }
+        .foregroundStyle(.white)
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(article.imageColor)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+    
+    // MARK: - Content Card
+    
+    private var contentCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            ForEach(storyContent, id: \.self) { paragraph in
+                Text(paragraph)
+                    .font(.system(size: 15, weight: .regular, design: .rounded))
+                    .foregroundStyle(.primary)
+                    .lineSpacing(5)
+            }
+        }
+        .padding(14)
+        .background(cardBg)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+    
+    // MARK: - Quiz Section
+    
+    private var quizSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Quick Check")
+                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .foregroundStyle(.primary)
+            
+            ForEach(article.quiz) { question in
+                quizQuestionCard(question)
+            }
+        }
+    }
+    
+    private func quizQuestionCard(_ question: QuizQuestion) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(question.question)
+                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                .foregroundStyle(.primary)
+            
+            VStack(spacing: 8) {
+                ForEach(question.options) { option in
+                    quizOptionButton(question: question, option: option)
+                }
+            }
+            
+            if let choice = selections[question.id] {
+                let isCorrect = choice == question.correctOptionId
+                HStack(spacing: 6) {
+                    Image(systemName: isCorrect ? "checkmark.circle.fill" : "info.circle.fill")
+                        .font(.system(size: 12))
+                    Text(question.explanation)
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                }
+                .foregroundStyle(isCorrect ? .green : .orange)
+                .padding(.top, 4)
+            }
+        }
+        .padding(14)
+        .background(cardBg)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+    
+    private func quizOptionButton(question: QuizQuestion, option: QuizOption) -> some View {
+        let selected = selections[question.id]
+        let isSelected = selected == option.id
+        let isCorrect = question.correctOptionId == option.id
+        let hasAnswered = selected != nil
+        
+        return Button {
+            if !hasAnswered {
+                withAnimation(.spring(response: 0.3)) {
+                    selections[question.id] = option.id
+                }
+                Haptics.feedback(style: .light)
+            }
+        } label: {
+            HStack(spacing: 10) {
+                ZStack {
+                    Circle()
+                        .stroke(isSelected ? Color.clear : Color.primary.opacity(0.2), lineWidth: 2)
+                        .frame(width: 22, height: 22)
+                    
+                    if isSelected {
+                        Circle()
+                            .fill(isCorrect ? Color.green : Color.red)
+                            .frame(width: 22, height: 22)
+                        
+                        Image(systemName: isCorrect ? "checkmark" : "xmark")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(.white)
+                    }
+                }
+                
+                Text(option.text)
+                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                    .foregroundStyle(.primary)
+                    .multilineTextAlignment(.leading)
+                
+                Spacer()
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(
+                isSelected
+                    ? (isCorrect ? Color.green.opacity(0.1) : Color.red.opacity(0.1))
+                    : creamBg
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(
+                        isSelected
+                            ? (isCorrect ? Color.green.opacity(0.3) : Color.red.opacity(0.3))
+                            : Color.clear,
+                        lineWidth: 1.5
+                    )
+            )
+        }
+        .buttonStyle(.plain)
+        .disabled(hasAnswered)
+    }
+    
+    // MARK: - Finish Button
+    
+    private var finishButton: some View {
+        Button(action: { finishAndCelebrate() }) {
+            HStack {
+                Text(allQuestionsAnswered ? "Finish & Celebrate" : "Answer the quiz first")
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .bold))
+            }
+            .foregroundStyle(.white)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .frame(maxWidth: .infinity)
+            .background(allQuestionsAnswered ? Color.black : Color.black.opacity(0.3))
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+        }
+        .disabled(!allQuestionsAnswered)
+    }
+    
+    // MARK: - Completion Overlay
+    
+    private var completionOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.7).ignoresSafeArea()
+            
+            VStack(spacing: 16) {
+                Text("🎉")
+                    .font(.system(size: 64))
+                    .scaleEffect(celebratePulse ? 1.1 : 1.0)
+                    .animation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true), value: celebratePulse)
+                
+                Text("You did it!")
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                
+                Text("One more tool in your toolkit.")
+                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.8))
+                
+                Button {
+                    showCompletion = false
+                    dismiss()
+                } label: {
+                    Text("Keep Going")
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .foregroundStyle(.black)
+                        .padding(.horizontal, 32)
+                        .padding(.vertical, 14)
+                        .background(Color.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                }
+                .padding(.top, 8)
+            }
+            .padding(32)
+        }
+        .onAppear { celebratePulse = true }
+        .onDisappear { celebratePulse = false }
+        .transition(.opacity)
+    }
+    
     func finishAndCelebrate() {
+        Haptics.notification(type: .success)
         withAnimation(.spring()) {
             showCompletion = true
         }
         onComplete()
     }
 }
-
-//#Preview {
-//    ArticleDetailView(
-//        article: Article(
-//            title: "Test",
-//            subtitle: "Subtitle",
-//            category: "Test",
-//            readTime: "5m",
-//            imageColor: .blue
-//        ),
-//        onComplete: {}
-//    )
-//}
-
-

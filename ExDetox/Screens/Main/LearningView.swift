@@ -1,71 +1,72 @@
 import SwiftUI
 
 struct LearningView: View {
-    @State private var showSettings = false
     @State private var selectedArticle: Article?
     @State private var learningSections: [LearningSection] = []
     @State private var selectedSectionId: String?
     @State private var selectedLessonId: String?
+    @State private var showSettings = false
+    
+    private let creamBg = Color(hex: "F5F0E8")
+    private let cardBg = Color(hex: "FFFDF9")
     
     var body: some View {
         VStack(spacing: 0) {
             headerView
-                .background(Color(hex: "F9F9F9"))
             
-            ScrollView {
-                VStack(spacing: 16) {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 14) {
                     if let spotlight = nextLessonHighlight() {
                         forYouCard(section: spotlight.section, lesson: spotlight.lesson)
-                            .padding(.horizontal, 20)
+                            .padding(.horizontal, 16)
                     }
                     
                     ForEach(learningSections.indices, id: \.self) { index in
                         sectionCard(section: $learningSections[index])
                     }
                 }
-                .padding(.top, 20)
-                .padding(.bottom, 32)
+                .padding(.top, 8)
+                .padding(.bottom, 24)
             }
         }
-        .background(Color(hex: "F9F9F9").ignoresSafeArea())
-        .sheet(isPresented: $showSettings) {
-            SettingsView()
-        }
+        .background(creamBg.ignoresSafeArea())
         .sheet(item: $selectedArticle) { article in
             ArticleDetailView(article: article, onComplete: {
                 markCurrentLessonCompleted()
             })
+        }
+        .sheet(isPresented: $showSettings) {
+            SettingsView()
         }
         .onAppear {
             loadLearningSectionsIfNeeded()
         }
     }
     
-    // MARK: - Subviews
+    // MARK: - Header
     
-    var headerView: some View {
-        HStack {
+    private var headerView: some View {
+        HStack(alignment: .center) {
             Text("Learning")
-                .font(.system(size: 26, weight: .bold, design: .serif))
+                .font(.system(size: 28, weight: .black, design: .rounded))
                 .foregroundStyle(.primary)
             
             Spacer()
             
-            Button(action: {
-                showSettings = true
-            }) {
+            Button(action: { showSettings = true }) {
                 Image(systemName: "gearshape.fill")
-                    .font(.system(size: 20))
+                    .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(.black)
-                    .padding(10)
-                    .background(Color.white)
+                    .frame(width: 40, height: 40)
+                    .background(cardBg)
                     .clipShape(Circle())
-                    .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
             }
         }
-        .frame(height: 62)
         .padding(.horizontal, 20)
+        .padding(.vertical, 12)
     }
+    
+    // MARK: - Section Card
     
     func sectionCard(section: Binding<LearningSection>) -> some View {
         let completed = section.wrappedValue.completedCount
@@ -73,16 +74,20 @@ struct LearningView: View {
         let accent = section.wrappedValue.accentColor
         let progress = total == 0 ? 0 : Double(completed) / Double(total)
         
-        return VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 10) {
+        return VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 12) {
                 Text(emojiForSection(id: section.wrappedValue.id))
-                    .font(.title3)
-                VStack(alignment: .leading, spacing: 4) {
+                    .font(.system(size: 24))
+                    .frame(width: 44, height: 44)
+                    .background(accent.opacity(0.12))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                
+                VStack(alignment: .leading, spacing: 3) {
                     Text(section.wrappedValue.title)
-                        .font(.headline.weight(.bold))
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
                         .foregroundStyle(.primary)
-                    Text("\(completed) of \(total) done")
-                        .font(.caption)
+                    Text("\(completed)/\(total) complete")
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
@@ -90,57 +95,67 @@ struct LearningView: View {
             
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.gray.opacity(0.12))
-                        .frame(height: 8)
-                    RoundedRectangle(cornerRadius: 8)
+                    Capsule()
+                        .fill(Color.primary.opacity(0.08))
+                        .frame(height: 5)
+                    Capsule()
                         .fill(accent)
-                        .frame(width: geo.size.width * progress, height: 8)
-                        .animation(.easeInOut(duration: 0.25), value: progress)
+                        .frame(width: geo.size.width * progress, height: 5)
+                        .animation(.spring(response: 0.5), value: progress)
                 }
             }
-            .frame(height: 8)
+            .frame(height: 5)
             
-            VStack(spacing: 10) {
+            VStack(spacing: 8) {
                 ForEach(section.wrappedValue.lessons.prefix(4)) { lesson in
                     Button {
                         openLesson(sectionId: section.wrappedValue.id, lessonId: lesson.id)
+                        Haptics.feedback(style: .light)
                     } label: {
-                        HStack(spacing: 12) {
-                            Circle()
-                                .fill(lesson.isCompleted ? accent : Color.gray.opacity(0.2))
-                                .frame(width: 10, height: 10)
-                            VStack(alignment: .leading, spacing: 4) {
+                        HStack(spacing: 10) {
+                            ZStack {
+                                Circle()
+                                    .fill(lesson.isCompleted ? accent : Color.primary.opacity(0.08))
+                                    .frame(width: 26, height: 26)
+                                
+                                if lesson.isCompleted {
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 10, weight: .bold))
+                                        .foregroundStyle(.white)
+                                }
+                            }
+                            
+                            VStack(alignment: .leading, spacing: 2) {
                                 Text(lesson.title)
-                                    .font(.subheadline.weight(.semibold))
+                                    .font(.system(size: 14, weight: .semibold, design: .rounded))
                                     .foregroundStyle(.primary)
-                                    .lineLimit(2)
+                                    .lineLimit(1)
+                                    .multilineTextAlignment(.leading)
                                 Text(lesson.subtitle)
-                                    .font(.caption)
+                                    .font(.system(size: 11, weight: .medium, design: .rounded))
                                     .foregroundStyle(.secondary)
-                                    .lineLimit(3)
+                                    .lineLimit(1)
                                     .multilineTextAlignment(.leading)
                             }
                             Spacer()
-                            Text("3–5 min")
-                                .font(.caption2)
+                            
+                            Text("3-5m")
+                                .font(.system(size: 10, weight: .semibold, design: .rounded))
                                 .foregroundStyle(.secondary)
                         }
                         .padding(.vertical, 10)
                         .padding(.horizontal, 12)
-                        .background(Color.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
-                        .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
+                        .background(creamBg)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(ScaleButtonStyle())
                 }
             }
         }
         .padding(16)
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 18))
-        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 6)
-        .padding(.horizontal, 20)
+        .background(cardBg)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .padding(.horizontal, 16)
     }
     
     func loadLearningSectionsIfNeeded() {
@@ -262,58 +277,50 @@ struct LearningView: View {
     
     func forYouCard(section: LearningSection, lesson: LearningLesson) -> some View {
         let accent = section.accentColor
-        return VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 10) {
-                Text("For you today")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(.white.opacity(0.9))
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Text("Up Next")
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.85))
                 Spacer()
                 Text(emojiForSection(id: section.id))
-                    .font(.title3)
+                    .font(.system(size: 22))
             }
             
             Text(lesson.title)
-                .font(.headline.weight(.bold))
+                .font(.system(size: 18, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
                 .lineLimit(2)
             
             Text(lesson.tldr.isEmpty ? lesson.subtitle : lesson.tldr)
-                .font(.callout)
-                .foregroundStyle(.white.opacity(0.9))
-                .lineLimit(3)
-                .multilineTextAlignment(.leading)
+                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .foregroundStyle(.white.opacity(0.85))
+                .lineLimit(2)
+                .lineSpacing(2)
             
             Button {
                 openLesson(sectionId: section.id, lessonId: lesson.id)
+                Haptics.feedback(style: .medium)
             } label: {
                 HStack {
-                    Text("Start")
-                        .font(.subheadline.weight(.bold))
+                    Text("Start Learning")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
                     Spacer()
-                    Image(systemName: "arrow.right")
-                        .font(.subheadline.weight(.bold))
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .bold))
                 }
-                .foregroundStyle(accent)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
+                .foregroundStyle(.primary)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
                 .background(Color.white)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
+            .padding(.top, 4)
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            LinearGradient(
-                colors: [
-                    Color.orange.opacity(0.85),
-                    accent.opacity(0.65)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 18))
-        .shadow(color: accent.opacity(0.25), radius: 12, x: 0, y: 6)
+        .background(accent)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 }
 

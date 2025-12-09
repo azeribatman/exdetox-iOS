@@ -10,11 +10,9 @@ struct HomeView: View {
     
     let weekDays = ["M", "T", "W", "T", "F", "S", "S"]
     
-    // Timer state
     @State private var timeComponents: (days: String, hours: String, minutes: String, seconds: String) = ("00", "00", "00", "00")
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
-    // Sheets state
     @State private var showSettings = false
     @State private var showRoastMe = false
     @State private var showMeditate = false
@@ -23,6 +21,9 @@ struct HomeView: View {
     @State private var showCheckInSheet = false
     @State private var showPowerActionsSheet = false
     @State private var stickyQuote: String = ""
+    
+    private let creamBg = Color(hex: "F5F0E8")
+    private let cardBg = Color(hex: "FFFDF9")
     
     private var userName: String {
         let name = userProfileStore.profile.name
@@ -81,40 +82,32 @@ struct HomeView: View {
         VStack(spacing: 0) {
             headerView
             
-            ScrollView {
-                VStack(spacing: 20) {
-                    // 2. Timer (The "Streak")
-                    timerCard
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 16) {
+                    streakHeroCard
                     
-                    // 1. Weekly Streak
-                    weeklyStreakCard
+                    actionsRow
                     
-                    // 3. Level (Separate)
-                    levelCard
+                    weeklyCard
                     
-                    // 4. Simplified Check-in
-                    simpleCheckInCard
+                    levelProgressCard
                     
-                    // 5. Other Actions
-                    simpleActionsView
+                    if !trackingStore.hasCheckedInToday {
+                        checkInPromptCard
+                    }
                     
-                    // 6. Quote (Sticky per session)
                     if !stickyQuote.isEmpty {
-                        Text(stickyQuote)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 40)
-                            .padding(.top, 10)
+                        quoteCard
                     }
                 }
-                .padding(.top, 10)
-                .padding(.bottom, 20)
+                .padding(.top, 8)
+                .padding(.bottom, 24)
             }
-            
+        }
+        .background(creamBg.ignoresSafeArea())
+        .safeAreaInset(edge: .bottom) {
             panicButtonView
         }
-        .background(Color(hex: "F9F9F9").ignoresSafeArea())
         .onReceive(timer) { _ in
             updateTimer()
         }
@@ -160,275 +153,341 @@ struct HomeView: View {
         }
     }
     
+    // MARK: - Header
+    
     private var headerView: some View {
-        HStack {
-            Text("Hey, \(userName) 👋")
-                .font(.title2)
-                .fontWeight(.bold)
+        HStack(alignment: .center) {
+            Text("exdetox")
+                .font(.system(size: 28, weight: .black, design: .rounded))
                 .foregroundStyle(.primary)
             
             Spacer()
             
             Button(action: { showSettings = true }) {
                 Image(systemName: "gearshape.fill")
-                    .font(.system(size: 20))
+                    .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(.black)
-                    .padding(10)
-                    .background(Color.white)
+                    .frame(width: 40, height: 40)
+                    .background(cardBg)
                     .clipShape(Circle())
-                    .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+            }
+            
+            Button(action: { showCheckInSheet = true }) {
+                if let todayMood = trackingStore.todayCheckIn?.mood {
+                    Text(moodEmoji(todayMood))
+                        .font(.system(size: 22))
+                        .frame(width: 40, height: 40)
+                        .background(cardBg)
+                        .clipShape(Circle())
+                } else {
+                    Image(systemName: "face.smiling")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(.black)
+                        .frame(width: 40, height: 40)
+                        .background(cardBg)
+                        .clipShape(Circle())
+                }
             }
         }
-        .frame(height: 62)
         .padding(.horizontal, 20)
-        .background(Color(hex: "F9F9F9"))
+        .padding(.vertical, 12)
     }
     
-    private var timerCard: some View {
+    // MARK: - Streak Hero Card
+    
+    private var streakHeroCard: some View {
         VStack(spacing: 8) {
-            Text(timeComponents.days)
-                .font(.system(size: 96, weight: .bold, design: .rounded))
-                .foregroundStyle(.primary)
-                .contentTransition(.numericText(value: Double(timeComponents.days) ?? 0))
-                .lineLimit(1)
-                .minimumScaleFactor(0.5)
-                .frame(height: 80)
-            
-            Text("DAYS SINCE THE ICK")
-                .font(.caption)
-                .fontWeight(.bold)
-                .foregroundStyle(.secondary)
-                .tracking(1)
-            
-            HStack(spacing: 12) {
-                timeUnit(value: timeComponents.hours, unit: "h")
-                timeUnit(value: timeComponents.minutes, unit: "m")
-                timeUnit(value: timeComponents.seconds, unit: "s")
-            }
-            .padding(.top, 4)
-        }
-        .padding(.vertical, 24)
-        .padding(.horizontal, 20)
-    }
-    
-    private var levelCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 8) {
-                Text("CURRENT LEVEL")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.secondary)
-                
-                Spacer()
-                
-                Text("Level \(trackingStore.currentLevel.index)")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundStyle(Color(hex: trackingStore.currentLevel.color))
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 4)
-                    .background(Color(hex: trackingStore.currentLevel.color).opacity(0.1))
-                    .clipShape(Capsule())
-            }
-            .padding(.horizontal, 4)
-            
-            HStack(spacing: 16) {
-                Text(trackingStore.currentLevel.emoji)
-                    .font(.title)
-                    .padding(12)
-                    .background(Color(hex: trackingStore.currentLevel.color).opacity(0.1))
-                    .clipShape(Circle())
-                
+            HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text(trackingStore.currentLevel.title)
-                            .font(.headline)
-                            .fontWeight(.bold)
-                        
-                        Spacer()
-                        
-                        Text("\(Int(trackingStore.levelProgress * 100))%")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.secondary)
-                    }
+                    Text("🔥 \(trackingStore.currentStreakDays) day streak")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundStyle(.orange)
                     
-                    GeometryReader { geometry in
-                        ZStack(alignment: .leading) {
-                            Capsule()
-                                .fill(Color.gray.opacity(0.1))
-                                .frame(height: 6)
-                            
-                            Capsule()
-                                .fill(Color(hex: trackingStore.currentLevel.color))
-                                .frame(width: geometry.size.width * CGFloat(trackingStore.levelProgress), height: 6)
-                        }
-                    }
-                    .frame(height: 6)
-                    
-                    if trackingStore.daysLeftInLevel > 0 {
-                        Text("\(trackingStore.daysLeftInLevel) days to next level")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                    }
+                    Text("Hey \(userName),")
+                        .font(.system(size: 15, weight: .medium, design: .rounded))
+                        .foregroundStyle(.secondary)
                 }
-            }
-            .padding(20)
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 24))
-            .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
-        }
-        .padding(.horizontal, 20)
-    }
-    
-    // Kept for backward compatibility if needed, but not used in body
-    private var heroStatusCard: some View {
-        EmptyView()
-    }
-    
-    private var weeklyStreakCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 8) {
-                Text("THIS WEEK")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.secondary)
                 
                 Spacer()
                 
-                HStack(spacing: 4) {
-                    Image(systemName: "flame.fill")
-                        .font(.caption)
-                        .foregroundStyle(.orange)
-                    Text("\(trackingStore.currentStreakDays)d streak")
-                        .font(.caption)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.orange)
-                }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
-                .background(Color.orange.opacity(0.1))
-                .clipShape(Capsule())
+                Text(trackingStore.currentLevel.emoji)
+                    .font(.system(size: 36))
             }
-            .padding(.horizontal, 4)
             
-            VStack(spacing: 16) {
-                HStack(spacing: 0) {
-                    ForEach(0..<weekDays.count, id: \.self) { index in
-                        VStack(spacing: 12) {
-                            Text(weekDays[index])
-                                .font(.caption)
-                                .fontWeight(.medium)
-                                .foregroundColor(.secondary)
-                            
-                            streakCircle(status: trackingStore.weekStatuses[index])
-                        }
-                        .frame(maxWidth: .infinity)
-                    }
-                }
-            }
-            .padding(20)
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 24))
-            .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
-        }
-        .padding(.horizontal, 20)
-    }
-    
-    private var simpleCheckInCard: some View {
-        Group {
-            if trackingStore.hasCheckedInToday {
-                weeklyMoodTrackerCard
-            } else {
-                Button {
-                    showCheckInSheet = true
-                } label: {
-                    HStack(spacing: 16) {
-                        ZStack {
-                            Circle()
-                                .fill(Color(hex: trackingStore.currentLevel.color).opacity(0.1))
-                                .frame(width: 48, height: 48)
-                            
-                            Image(systemName: "pencil.line")
-                                .font(.system(size: 20, weight: .semibold))
-                                .foregroundStyle(Color(hex: trackingStore.currentLevel.color))
-                        }
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Daily Check-In")
-                                .font(.headline)
-                                .fontWeight(.bold)
-                                .foregroundStyle(.primary)
-                            Text("Track your mood & urges")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        
-                        Spacer()
-                        
-                        Image(systemName: "arrow.right")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundStyle(Color.gray.opacity(0.3))
-                    }
-                    .padding(16)
-                    .background(Color.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 24))
-                    .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
-                    .padding(.horizontal, 20)
-                }
-                .buttonStyle(ScaleButtonStyle())
-            }
-        }
-    }
-    
-    private var weeklyMoodTrackerCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 8) {
-                Text("WEEKLY MOOD")
-                    .font(.caption)
-                    .fontWeight(.bold)
+            HStack(alignment: .lastTextBaseline, spacing: 4) {
+                Text(timeComponents.days)
+                    .font(.system(size: 72, weight: .black, design: .rounded))
+                    .foregroundStyle(.primary)
+                    .contentTransition(.numericText(value: Double(timeComponents.days) ?? 0))
+                
+                Text("days free")
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundStyle(.secondary)
+                    .padding(.bottom, 12)
+                
+                Spacer()
+            }
+            
+            HStack(spacing: 20) {
+                timerUnit(value: timeComponents.hours, label: "hrs")
+                timerUnit(value: timeComponents.minutes, label: "min")
+                timerUnit(value: timeComponents.seconds, label: "sec")
+                Spacer()
+            }
+        }
+        .padding(20)
+        .background(cardBg)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .padding(.horizontal, 16)
+    }
+    
+    private func timerUnit(value: String, label: String) -> some View {
+        HStack(alignment: .lastTextBaseline, spacing: 3) {
+            Text(value)
+                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .monospacedDigit()
+                .contentTransition(.numericText(value: Double(value) ?? 0))
+            Text(label)
+                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .foregroundStyle(.secondary)
+        }
+    }
+    
+    // MARK: - Actions Row
+    
+    private var actionsRow: some View {
+        HStack(spacing: 10) {
+            actionCard(icon: "bolt.fill", title: "Power Actions", color: .primary) {
+                showPowerActionsSheet = true
+            }
+            actionCard(icon: "wind", title: "Breathe", color: .green) {
+                showMeditate = true
+            }
+            actionCard(icon: "flame.fill", title: "Roast Me", color: .orange) {
+                showRoastMe = true
+            }
+        }
+        .padding(.horizontal, 16)
+    }
+    
+    private func actionCard(icon: String, title: String, color: Color, action: @escaping () -> Void) -> some View {
+        Button(action: {
+            Haptics.feedback(style: .light)
+            action()
+        }) {
+            VStack(spacing: 10) {
+                Image(systemName: icon)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(color)
+                
+                Text(title)
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .foregroundStyle(.primary)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(.vertical, 16)
+            .background(cardBg)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+        }
+        .buttonStyle(ScaleButtonStyle())
+    }
+    
+    // MARK: - Weekly Card
+    
+    private var weeklyCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Text("This Week")
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
                 
                 Spacer()
                 
-                Button {
-                    showCheckInSheet = true
-                } label: {
-                    Image(systemName: "pencil.circle.fill")
-                        .font(.title3)
-                        .foregroundStyle(.blue.opacity(0.8))
+                if trackingStore.hasCheckedInToday {
+                    Text("✓ checked in")
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.green)
                 }
             }
-            .padding(.horizontal, 4)
             
             HStack(spacing: 0) {
                 ForEach(0..<weekDays.count, id: \.self) { index in
-                    VStack(spacing: 12) {
+                    VStack(spacing: 8) {
                         Text(weekDays[index])
-                            .font(.caption)
-                            .fontWeight(.medium)
+                            .font(.system(size: 11, weight: .semibold, design: .rounded))
                             .foregroundColor(.secondary)
                         
-                        if let checkIn = trackingStore.weeklyCheckIns[index] {
-                            Text(moodEmoji(checkIn.mood))
-                                .font(.title3)
-                                .frame(width: 32, height: 32)
-                        } else {
-                            Circle()
-                                .fill(Color.gray.opacity(0.1))
-                                .frame(width: 32, height: 32)
-                        }
+                        weekDayCircle(status: trackingStore.weekStatuses[index], checkIn: trackingStore.weeklyCheckIns[index])
                     }
                     .frame(maxWidth: .infinity)
                 }
             }
-            .padding(20)
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 24))
-            .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
         }
-        .padding(.horizontal, 20)
+        .padding(18)
+        .background(cardBg)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .padding(.horizontal, 16)
     }
+    
+    @ViewBuilder
+    private func weekDayCircle(status: Int, checkIn: DailyCheckIn?) -> some View {
+        let size: CGFloat = 32
+        
+        ZStack {
+            if let checkIn = checkIn {
+                Circle()
+                    .fill(status == 1 ? Color.green.opacity(0.15) : Color.red.opacity(0.15))
+                    .frame(width: size, height: size)
+                
+                Text(moodEmoji(checkIn.mood))
+                    .font(.system(size: 14))
+            } else {
+                switch status {
+                case 1:
+                    Circle()
+                        .fill(Color.green.opacity(0.15))
+                        .frame(width: size, height: size)
+                        .overlay(
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundColor(.green)
+                        )
+                case 2:
+                    Circle()
+                        .fill(Color.red.opacity(0.15))
+                        .frame(width: size, height: size)
+                        .overlay(
+                            Image(systemName: "xmark")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundColor(.red)
+                        )
+                default:
+                    Circle()
+                        .stroke(Color.primary.opacity(0.1), lineWidth: 1.5)
+                        .frame(width: size, height: size)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Level Progress Card
+    
+    private var levelProgressCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(trackingStore.currentLevel.title)
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                    
+                    Text("Level \(trackingStore.currentLevel.index) • \(trackingStore.daysLeftInLevel)d to next")
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .foregroundStyle(.secondary)
+                }
+                
+                Spacer()
+                
+                Text("\(Int(trackingStore.levelProgress * 100))%")
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(hex: trackingStore.currentLevel.color))
+            }
+            
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color.primary.opacity(0.08))
+                        .frame(height: 8)
+                    
+                    Capsule()
+                        .fill(Color(hex: trackingStore.currentLevel.color))
+                        .frame(width: geometry.size.width * CGFloat(trackingStore.levelProgress), height: 8)
+                        .animation(.spring(response: 0.5), value: trackingStore.levelProgress)
+                }
+            }
+            .frame(height: 8)
+        }
+        .padding(18)
+        .background(cardBg)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .padding(.horizontal, 16)
+    }
+    
+    // MARK: - Check-In Prompt Card
+    
+    private var checkInPromptCard: some View {
+        Button {
+            showCheckInSheet = true
+        } label: {
+            HStack(spacing: 14) {
+                ZStack {
+                    Circle()
+                        .fill(Color.blue.opacity(0.1))
+                        .frame(width: 44, height: 44)
+                    
+                    Image(systemName: "pencil.line")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(.blue)
+                }
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Daily Check-In")
+                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .foregroundStyle(.primary)
+                    Text("How are you feeling today?")
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .foregroundStyle(.secondary)
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(16)
+            .background(cardBg)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+        }
+        .buttonStyle(ScaleButtonStyle())
+        .padding(.horizontal, 16)
+    }
+    
+    // MARK: - Quote Card
+    
+    private var quoteCard: some View {
+        Text(stickyQuote)
+            .font(.system(size: 14, weight: .medium, design: .rounded))
+            .foregroundStyle(.secondary)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 32)
+            .padding(.vertical, 8)
+    }
+    
+    // MARK: - Panic Button
+    
+    private var panicButtonView: some View {
+        Button {
+            showPanic = true
+            Haptics.feedback(style: .heavy)
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 18, weight: .bold))
+                Text("PANIC BUTTON")
+                    .font(.system(size: 15, weight: .black, design: .rounded))
+                    .tracking(0.5)
+            }
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+            .frame(height: 52)
+            .background(Color.red)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+        }
+        .buttonStyle(ScaleButtonStyle())
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(creamBg)
+    }
+    
+    // MARK: - Helpers
     
     private func moodEmoji(_ value: Int) -> String {
         switch value {
@@ -438,103 +497,6 @@ struct HomeView: View {
         case 4: return "🙂"
         case 5: return "😊"
         default: return "😐"
-        }
-    }
-    
-    private var panicButtonView: some View {
-        Button {
-            showPanic = true
-        } label: {
-            HStack(spacing: 12) {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.title2)
-                Text("PANIC BUTTON")
-                    .font(.title3)
-                    .fontWeight(.bold)
-            }
-            .foregroundColor(.white)
-            .frame(maxWidth: .infinity)
-            .frame(height: 60)
-            .background(Color.red)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-            .shadow(color: .red.opacity(0.3), radius: 10, x: 0, y: 5)
-        }
-        .buttonStyle(ScaleButtonStyle())
-        .padding(.horizontal, 20)
-        .padding(.vertical, 10)
-        .background(Color(hex: "F9F9F9"))
-    }
-    
-    private var simpleActionsView: some View {
-        HStack(spacing: 12) {
-            // Power Actions (Purple - Withdrawal/Healing)
-            simpleActionButton(
-                title: "Power Actions",
-                icon: "bolt.fill",
-                color: Color(hex: "9B59B6") // Withdrawal Color
-            ) {
-                showPowerActionsSheet = true
-            }
-            
-            // Meditate (Green - Unbothered/Calm)
-            simpleActionButton(
-                title: "Meditate",
-                icon: "wind",
-                color: Color(hex: "2ECC71") // Unbothered Color
-            ) {
-                showMeditate = true
-            }
-            
-            // Roast Me (Orange - GlowUp/Fire)
-            simpleActionButton(
-                title: "Roast Me",
-                icon: "flame.fill",
-                color: Color(hex: "F39C12") // GlowUp Color
-            ) {
-                showRoastMe = true
-            }
-        }
-        .padding(.horizontal, 20)
-    }
-    
-    private func simpleActionButton(title: String, icon: String, color: Color, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            VStack(spacing: 8) {
-                Image(systemName: icon)
-                    .font(.headline)
-                    .foregroundStyle(color)
-                    .frame(width: 40, height: 40)
-                    .background(color.opacity(0.1))
-                    .clipShape(Circle())
-                
-                Text(title)
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.primary)
-                    .multilineTextAlignment(.center)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-            .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
-        }
-        .buttonStyle(ScaleButtonStyle())
-    }
-    
-    @ViewBuilder
-    func timeUnit(value: String, unit: String) -> some View {
-        HStack(alignment: .lastTextBaseline, spacing: 2) {
-            Text(value)
-                .font(.system(.title3, design: .rounded))
-                .fontWeight(.bold)
-                .foregroundStyle(.primary)
-                .contentTransition(.numericText(value: Double(value) ?? 0))
-            
-            Text(unit)
-                .font(.caption)
-                .fontWeight(.medium)
-                .foregroundStyle(.secondary)
         }
     }
     
@@ -552,7 +514,6 @@ struct HomeView: View {
                         .font(.caption.bold())
                         .foregroundColor(.green)
                 )
-                .shadow(color: .green.opacity(0.1), radius: 2, x: 0, y: 2)
         case 2:
             Circle()
                 .fill(Color.red.opacity(0.1))
@@ -586,9 +547,7 @@ struct HomeView: View {
         let startDate = trackingStore.state.noContactStartDate
         let diff = Calendar.current.dateComponents([.day, .hour, .minute, .second], from: startDate, to: Date())
         
-        // Use totalHealingDays which includes bonus days
         let days = String(trackingStore.totalHealingDays)
-        
         let hours = String(format: "%02d", diff.hour ?? 0)
         let minutes = String(format: "%02d", diff.minute ?? 0)
         let seconds = String(format: "%02d", diff.second ?? 0)
@@ -608,39 +567,33 @@ struct QuickCheckInSheet: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header
             HStack {
                 Text("Daily Check-In")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.primary)
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
                 
                 Spacer()
                 
-                Button(action: {
-                    dismiss()
-                }) {
+                Button(action: { dismiss() }) {
                     Image(systemName: "xmark")
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundStyle(.black)
-                        .padding(10)
-                        .background(Color.gray.opacity(0.1))
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(.primary.opacity(0.5))
+                        .frame(width: 32, height: 32)
+                        .background(Color(hex: "FFFDF9"))
                         .clipShape(Circle())
                 }
             }
             .padding(.horizontal, 20)
-            .padding(.top, 20)
-            .padding(.bottom, 20)
+            .padding(.top, 16)
+            .padding(.bottom, 12)
             
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Main Card
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 20) {
                     VStack(spacing: 24) {
-                        VStack(spacing: 12) {
+                        VStack(spacing: 14) {
                             Text("How's your mood?")
-                                .font(.headline)
+                                .font(.system(size: 16, weight: .bold, design: .rounded))
                             
-                            HStack(spacing: 16) {
+                            HStack(spacing: 12) {
                                 ForEach(1...5, id: \.self) { i in
                                     Button {
                                         withAnimation(.spring(response: 0.3)) {
@@ -648,25 +601,27 @@ struct QuickCheckInSheet: View {
                                         }
                                     } label: {
                                         Text(moodEmoji(i))
-                                            .font(.system(size: i == mood ? 48 : 32))
-                                            .opacity(i == mood ? 1 : 0.5)
+                                            .font(.system(size: i == mood ? 44 : 28))
+                                            .opacity(i == mood ? 1 : 0.4)
                                             .scaleEffect(i == mood ? 1.1 : 1)
                                     }
                                 }
                             }
                             
                             Text(moodLabel(mood))
-                                .font(.subheadline)
+                                .font(.system(size: 13, weight: .medium, design: .rounded))
                                 .foregroundStyle(.secondary)
                         }
                         
-                        Divider()
+                        Rectangle()
+                            .fill(Color.primary.opacity(0.06))
+                            .frame(height: 1)
                         
-                        VStack(spacing: 12) {
+                        VStack(spacing: 14) {
                             Text("Urge to contact them?")
-                                .font(.headline)
+                                .font(.system(size: 16, weight: .bold, design: .rounded))
                             
-                            VStack(spacing: 8) {
+                            VStack(spacing: 10) {
                                 Slider(value: Binding(
                                     get: { Double(urge) },
                                     set: { urge = Int($0) }
@@ -675,51 +630,47 @@ struct QuickCheckInSheet: View {
                                 
                                 HStack {
                                     Text("0")
-                                        .font(.caption)
+                                        .font(.system(size: 12, weight: .medium, design: .rounded))
                                         .foregroundStyle(.secondary)
                                     Spacer()
                                     Text("\(urge)")
-                                        .font(.title2)
-                                        .fontWeight(.bold)
+                                        .font(.system(size: 28, weight: .black, design: .rounded))
                                         .foregroundStyle(urgeSliderColor)
                                     Spacer()
                                     Text("10")
-                                        .font(.caption)
+                                        .font(.system(size: 12, weight: .medium, design: .rounded))
                                         .foregroundStyle(.secondary)
                                 }
                             }
                             
                             Text(urgeLabel(urge))
-                                .font(.subheadline)
+                                .font(.system(size: 13, weight: .medium, design: .rounded))
                                 .foregroundStyle(.secondary)
                         }
                     }
-                    .padding(24)
-                    .background(Color.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 24))
-                    .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
-                    .padding(.horizontal, 20)
+                    .padding(20)
+                    .background(Color(hex: "FFFDF9"))
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .padding(.horizontal, 16)
                     
                     Button {
                         TrackingPersistence.recordDailyCheckIn(store: trackingStore, context: modelContext, mood: mood, urge: urge)
                         dismiss()
                     } label: {
                         Text("Save Check-In")
-                            .font(.headline)
-                            .fontWeight(.bold)
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
-                            .padding()
+                            .padding(.vertical, 16)
                             .background(Color.black)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
-                            .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+                            .clipShape(RoundedRectangle(cornerRadius: 14))
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 16)
                     .padding(.bottom, 20)
                 }
             }
         }
-        .background(Color(hex: "F9F9F9").ignoresSafeArea())
+        .background(Color(hex: "F5F0E8").ignoresSafeArea())
         .onAppear {
             if let existing = trackingStore.todayCheckIn {
                 mood = existing.mood
@@ -776,133 +727,126 @@ struct PowerActionsSheet: View {
     @State private var completedAction: PowerActionType?
     @State private var selectedAction: PowerActionType?
     @State private var showConfirmation = false
+    @State private var appear = false
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header
             HStack {
-                Text("Power Actions")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.primary)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Power Actions")
+                        .font(.system(size: 28, weight: .black, design: .rounded))
+                    Text("Level up your healing")
+                        .font(.system(size: 15, weight: .medium, design: .rounded))
+                        .foregroundStyle(.secondary)
+                }
                 
                 Spacer()
                 
-                Button(action: {
-                    dismiss()
-                }) {
+                Button(action: { dismiss() }) {
                     Image(systemName: "xmark")
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundStyle(.black)
-                        .padding(10)
-                        .background(Color.gray.opacity(0.1))
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(.primary.opacity(0.5))
+                        .frame(width: 36, height: 36)
+                        .background(Color.white)
                         .clipShape(Circle())
+                        .shadow(color: .black.opacity(0.06), radius: 8, y: 4)
                 }
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 24)
             .padding(.top, 20)
-            .padding(.bottom, 20)
+            .padding(.bottom, 16)
             
             ZStack {
-                ScrollView {
+                ScrollView(showsIndicators: false) {
                     VStack(spacing: 24) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Speed Up Your Healing")
-                                .font(.headline)
-                            Text("Complete these actions to earn bonus days. Proving to yourself that you're moving on is the biggest flex.")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 20)
-                        
                         VStack(spacing: 12) {
-                            ForEach(trackingStore.currentLevel.challenges, id: \.self) { action in
+                            ForEach(Array(trackingStore.currentLevel.challenges.enumerated()), id: \.element) { index, action in
                                 let isCompleted = !action.isRepeatable && trackingStore.powerActions.contains(where: { $0.type == action })
                                 
                                 PowerActionRow(action: action, isCompleted: isCompleted) {
                                     if !isCompleted {
+                                        Haptics.feedback(style: .medium)
                                         selectedAction = action
                                     }
                                 }
                                 .disabled(isCompleted)
-                                .opacity(isCompleted ? 0.6 : 1)
+                                .opacity(appear ? 1 : 0)
+                                .offset(y: appear ? 0 : 20)
+                                .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(Double(index) * 0.08), value: appear)
                             }
                         }
                         .padding(.horizontal, 20)
                         
                         if !trackingStore.powerActions.isEmpty {
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("History")
-                                    .font(.headline)
-                                    .padding(.horizontal, 20)
-                                
-                                ForEach(trackingStore.powerActions.sorted(by: { $0.date > $1.date }).prefix(5)) { action in
-                                    HStack(spacing: 12) {
-                                        Image(systemName: action.type.icon)
-                                            .foregroundStyle(.green)
-                                            .frame(width: 24)
-                                        
-                                        VStack(alignment: .leading, spacing: 2) {
-                                            Text(action.type.displayName)
-                                                .font(.subheadline)
-                                                .fontWeight(.medium)
-                                            Text(action.date.formatted(date: .abbreviated, time: .omitted))
-                                                .font(.caption)
-                                                .foregroundStyle(.secondary)
-                                        }
-                                        
-                                        Spacer()
-                                        
-                                        Text("+\(String(format: "%.1f", action.type.bonusDays))d")
-                                            .font(.caption)
-                                            .fontWeight(.semibold)
-                                            .foregroundStyle(.green)
-                                    }
-                                    .padding(12)
-                                    .background(Color.green.opacity(0.05))
-                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                            VStack(alignment: .leading, spacing: 16) {
+                                HStack {
+                                    Text("COMPLETED")
+                                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                                        .tracking(2)
+                                        .foregroundStyle(.secondary)
+                                    
+                                    Spacer()
                                 }
+                                .padding(.horizontal, 24)
+                                
+                                VStack(spacing: 0) {
+                                    ForEach(Array(trackingStore.powerActions.sorted(by: { $0.date > $1.date }).prefix(5).enumerated()), id: \.element.id) { index, action in
+                                        HStack(spacing: 14) {
+                                            ZStack {
+                                                Circle()
+                                                    .fill(Color(hex: "34C759").opacity(0.12))
+                                                    .frame(width: 42, height: 42)
+                                                
+                                                Image(systemName: action.type.icon)
+                                                    .font(.system(size: 16, weight: .semibold))
+                                                    .foregroundStyle(Color(hex: "34C759"))
+                                            }
+                                            
+                                            VStack(alignment: .leading, spacing: 3) {
+                                                Text(action.type.displayName)
+                                                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                                                Text(action.date.formatted(date: .abbreviated, time: .omitted))
+                                                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                                                    .foregroundStyle(.secondary)
+                                            }
+                                            
+                                            Spacer()
+                                            
+                                            Text("+\(String(format: "%.1f", action.type.bonusDays))d")
+                                                .font(.system(size: 13, weight: .bold, design: .rounded))
+                                                .foregroundStyle(Color(hex: "34C759"))
+                                        }
+                                        .padding(.vertical, 14)
+                                        .padding(.horizontal, 20)
+                                        
+                                        if index < min(trackingStore.powerActions.count - 1, 4) {
+                                            Divider()
+                                                .padding(.leading, 76)
+                                        }
+                                    }
+                                }
+                                .background(Color.white)
+                                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                                .shadow(color: .black.opacity(0.04), radius: 12, y: 4)
                                 .padding(.horizontal, 20)
                             }
+                            .opacity(appear ? 1 : 0)
+                            .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.3), value: appear)
                         }
+                        
+                        Color.clear.frame(height: 20)
                     }
-                    .padding(.vertical, 20)
+                    .padding(.top, 8)
                 }
                 .disabled(completedAction != nil)
                 
                 if let action = completedAction {
-                    Color.black.opacity(0.4).ignoresSafeArea()
-                    
-                    VStack(spacing: 20) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 60))
-                            .foregroundStyle(.green)
-                            .symbolEffect(.bounce, value: completedAction)
-                        
-                        Text("The Universe Aligns...")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.white)
-                        
-                        Text("You chose yourself today.")
-                            .font(.headline)
-                            .foregroundStyle(.white.opacity(0.9))
-                        
-                        Text("+\(String(format: "%.1f", action.bonusDays)) days added to your healing")
-                            .font(.subheadline)
-                            .foregroundStyle(.white.opacity(0.7))
-                            .padding(.top, 4)
-                    }
-                    .padding(40)
-                    .background(Color.black.opacity(0.8))
-                    .clipShape(RoundedRectangle(cornerRadius: 24))
-                    .transition(.scale.combined(with: .opacity))
-                    .zIndex(1)
+                    successOverlay(for: action)
                 }
             }
         }
         .background(Color(hex: "F9F9F9").ignoresSafeArea())
+        .onAppear { appear = true }
         .sheet(item: $selectedAction) { action in
             PowerActionSignSheet(action: action) {
                 handleCompletion(action: action)
@@ -911,8 +855,49 @@ struct PowerActionsSheet: View {
         }
     }
     
+    @ViewBuilder
+    private func successOverlay(for action: PowerActionType) -> some View {
+        Color.black.opacity(0.5)
+            .ignoresSafeArea()
+            .transition(.opacity)
+        
+        VStack(spacing: 24) {
+            ZStack {
+                Circle()
+                    .fill(Color(hex: "34C759").opacity(0.15))
+                    .frame(width: 120, height: 120)
+                
+                Text("✓")
+                    .font(.system(size: 56, weight: .black, design: .rounded))
+                    .foregroundColor(Color(hex: "34C759"))
+            }
+            
+            VStack(spacing: 8) {
+                Text("You did it.")
+                    .font(.system(size: 32, weight: .black, design: .rounded))
+                    .foregroundStyle(.white)
+                
+                Text("You chose yourself today.")
+                    .font(.system(size: 17, weight: .medium, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.8))
+            }
+            
+            Text("+\(String(format: "%.1f", action.bonusDays)) days")
+                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 12)
+                .background(Color(hex: "34C759"))
+                .clipShape(Capsule())
+        }
+        .padding(48)
+        .transition(.scale(scale: 0.9).combined(with: .opacity))
+        .zIndex(1)
+    }
+    
     func handleCompletion(action: PowerActionType) {
         TrackingPersistence.recordPowerAction(store: trackingStore, context: modelContext, type: action)
+        Haptics.notification(type: .success)
         withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
             completedAction = action
         }
@@ -928,122 +913,159 @@ struct PowerActionSignSheet: View {
     let onSign: () -> Void
     @Environment(\.dismiss) private var dismiss
     
-    @State private var signedName: String = ""
-    @State private var showSignature = false
+    @State private var signatureLines: [Line] = []
+    @State private var currentLine = Line(points: [])
+    @State private var showContent = false
+    @State private var isSigning = false
+    
+    private var hasSignature: Bool {
+        let totalPoints = signatureLines.reduce(0) { $0 + $1.points.count }
+        return totalPoints > 15
+    }
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header
             HStack {
-                Text("Commitment")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.primary)
-                
                 Spacer()
                 
-                Button(action: {
-                    dismiss()
-                }) {
+                Button(action: { dismiss() }) {
                     Image(systemName: "xmark")
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundStyle(.black)
-                        .padding(10)
-                        .background(Color.gray.opacity(0.1))
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(.primary.opacity(0.5))
+                        .frame(width: 36, height: 36)
+                        .background(Color.white)
                         .clipShape(Circle())
+                        .shadow(color: .black.opacity(0.06), radius: 8, y: 4)
                 }
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 24)
             .padding(.top, 20)
-            .padding(.bottom, 20)
             
-            VStack(spacing: 24) {
+            VStack(spacing: 0) {
                 Spacer()
                 
-                Image(systemName: "pencil.and.scribble")
-                    .font(.system(size: 60))
-                    .foregroundStyle(.primary)
-                    .padding(.bottom, 8)
-                
-                Text("Commitment Contract")
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .fontDesign(.serif)
-                
-                VStack(spacing: 16) {
-                    Text("I hereby confirm that I have completed the action:")
-                        .font(.body)
-                        .foregroundStyle(.secondary)
+                VStack(spacing: 28) {
+                    VStack(spacing: 12) {
+                        Text("COMMITMENT")
+                            .font(.system(size: 11, weight: .bold, design: .rounded))
+                            .tracking(3)
+                            .foregroundColor(.secondary)
+                        
+                        Text("Sign to confirm.")
+                            .font(.system(size: 36, weight: .black, design: .rounded))
+                    }
+                    .opacity(showContent ? 1 : 0)
+                    .offset(y: showContent ? 0 : 20)
                     
-                    Text(action.displayName)
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                    
-                    Text("By signing this, I affirm that I am choosing my own healing over the past. I am taking control of my narrative.")
-                        .font(.body)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 32)
-                        .lineSpacing(4)
-                }
-                
-                Spacer()
-                
-                VStack(spacing: 8) {
-                    if showSignature {
-                        Text("Signed: \(signedName.isEmpty ? "Me" : signedName)")
-                            .font(.custom("Zapfino", size: 24))
-                            .foregroundStyle(.blue)
-                            .transition(.scale.combined(with: .opacity))
-                    } else {
-                        TextField("Type your name to sign", text: $signedName)
-                            .font(.headline)
+                    VStack(spacing: 8) {
+                        Text("I confirm that I have completed:")
+                            .font(.system(size: 16, weight: .medium, design: .rounded))
+                            .foregroundStyle(.secondary)
+                        
+                        Text(action.displayName)
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
                             .multilineTextAlignment(.center)
-                            .padding()
-                            .background(Color.gray.opacity(0.1))
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                            .padding(.horizontal, 40)
+                        
+                        Text("By signing, I choose my healing.")
+                            .font(.system(size: 15, weight: .medium, design: .rounded))
+                            .foregroundStyle(.secondary)
+                            .padding(.top, 4)
+                    }
+                    .opacity(showContent ? 1 : 0)
+                    .padding(.horizontal, 24)
+                    
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Color.white)
+                            .shadow(color: .black.opacity(0.06), radius: 16, y: 6)
+                        
+                        if signatureLines.isEmpty && currentLine.points.isEmpty {
+                            Text("Sign here")
+                                .font(.system(size: 28, weight: .light, design: .serif))
+                                .italic()
+                                .foregroundColor(.black.opacity(0.1))
+                        }
+                        
+                        Canvas { context, _ in
+                            for line in signatureLines {
+                                var path = Path()
+                                path.addLines(line.points)
+                                context.stroke(path, with: .color(.black), lineWidth: 2.5)
+                            }
+                            var currentPath = Path()
+                            currentPath.addLines(currentLine.points)
+                            context.stroke(currentPath, with: .color(.black), lineWidth: 2.5)
+                        }
+                        .gesture(
+                            DragGesture(minimumDistance: 0, coordinateSpace: .local)
+                                .onChanged { value in
+                                    currentLine.points.append(value.location)
+                                }
+                                .onEnded { _ in
+                                    signatureLines.append(currentLine)
+                                    currentLine = Line(points: [])
+                                }
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                    }
+                    .frame(height: 140)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .strokeBorder(Color.black.opacity(0.06), lineWidth: 1)
+                    )
+                    .padding(.horizontal, 24)
+                    .opacity(showContent ? 1 : 0)
+                    .scaleEffect(showContent ? 1 : 0.95)
+                }
+                
+                Spacer()
+                Spacer()
+                
+                VStack(spacing: 12) {
+                    Button {
+                        if hasSignature {
+                            Haptics.feedback(style: .heavy)
+                            isSigning = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                onSign()
+                            }
+                        }
+                    } label: {
+                        Text("Confirm")
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 18)
+                            .background(hasSignature ? Color.black : Color.black.opacity(0.15))
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .shadow(color: .black.opacity(hasSignature ? 0.15 : 0), radius: 12, y: 6)
+                    }
+                    .disabled(!hasSignature || isSigning)
+                    .animation(.easeInOut(duration: 0.2), value: hasSignature)
+                    
+                    if !signatureLines.isEmpty {
+                        Button {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                signatureLines = []
+                            }
+                        } label: {
+                            Text("Clear signature")
+                                .font(.system(size: 14, weight: .medium, design: .rounded))
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
-                .frame(height: 80)
-                
-                Button {
-                    if showSignature {
-                        onSign()
-                    } else {
-                        withAnimation {
-                            showSignature = true
-                        }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                            onSign()
-                        }
-                    }
-                } label: {
-                    Text(showSignature ? "Sealed & Delivered" : "Sign & Confirm")
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.black)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                }
-                .padding(.horizontal, 20)
-                .disabled(signedName.isEmpty && !showSignature)
-                .opacity(signedName.isEmpty && !showSignature ? 0.5 : 1)
-                
-                Button("Cancel") {
-                    dismiss()
-                }
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .padding(.bottom, 20)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 50)
             }
         }
-        .background(Color(hex: "F9F9F9"))
-        .presentationCornerRadius(32)
+        .background(Color(hex: "F9F9F9").ignoresSafeArea())
+        .presentationCornerRadius(28)
+        .onAppear {
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                showContent = true
+            }
+        }
     }
 }
 
@@ -1057,23 +1079,25 @@ struct PowerActionRow: View {
             onComplete()
         } label: {
             HStack(spacing: 16) {
-                Image(systemName: action.icon)
-                    .font(.title3)
-                    .foregroundStyle(.white)
-                    .frame(width: 44, height: 44)
-                    .background(isCompleted ? Color.green : Color.purple)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                ZStack {
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(isCompleted ? Color(hex: "34C759").opacity(0.12) : Color.black.opacity(0.06))
+                        .frame(width: 48, height: 48)
+                    
+                    Image(systemName: isCompleted ? "checkmark" : action.icon)
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(isCompleted ? Color(hex: "34C759") : .primary)
+                }
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(action.displayName)
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .strikethrough(isCompleted)
-                        .foregroundStyle(.primary)
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .foregroundStyle(isCompleted ? .secondary : .primary)
+                        .strikethrough(isCompleted, color: .secondary)
                         .multilineTextAlignment(.leading)
                     
                     Text(action.description)
-                        .font(.caption)
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
@@ -1081,28 +1105,35 @@ struct PowerActionRow: View {
                 
                 Spacer()
                 
-                if isCompleted {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.title2)
-                        .foregroundStyle(.green)
-                } else {
+                if !isCompleted {
                     Text("+\(String(format: "%.1f", action.bonusDays))d")
-                        .font(.caption)
-                        .fontWeight(.bold)
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .background(Color.purple)
+                        .background(Color.black)
                         .clipShape(Capsule())
                 }
             }
             .padding(16)
             .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
+            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .shadow(color: .black.opacity(0.06), radius: 12, x: 0, y: 4)
+            .overlay(
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .strokeBorder(isCompleted ? Color(hex: "34C759").opacity(0.3) : Color.clear, lineWidth: 1.5)
+            )
         }
-        .buttonStyle(ScaleButtonStyle())
+        .buttonStyle(PowerActionButtonStyle())
         .disabled(isCompleted)
+    }
+}
+
+struct PowerActionButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: configuration.isPressed)
     }
 }
 

@@ -3,9 +3,7 @@ import SwiftData
 
 @MainActor
 final class AiAgentViewModel: ObservableObject {
-    @Published var messages: [ChatMessage] = [
-        ChatMessage(text: "Hi there! I'm here to listen. How are you feeling today?", isUser: false)
-    ]
+    @Published var messages: [ChatMessage] = []
     @Published var inputText: String = ""
     @Published var isStreaming = false
     @Published var errorMessage: String?

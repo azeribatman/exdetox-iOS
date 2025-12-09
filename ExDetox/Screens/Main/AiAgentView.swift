@@ -11,52 +11,22 @@ struct AiAgentView: View {
     @FocusState private var isInputFocused: Bool
     @State private var showSettings = false
     
+    private let creamBg = Color(hex: "F5F0E8")
+    private let cardBg = Color(hex: "FFFDF9")
+    
     var body: some View {
         VStack(spacing: 0) {
             headerView
-                .background(Color.white.opacity(0.95))
             
-            ScrollViewReader { proxy in
-                ScrollView {
-                    LazyVStack(spacing: 8) {
-                        ForEach(viewModel.messages) { message in
-                            messageBubble(for: message)
-                                .id(message.id)
-                        }
-                        
-                        if viewModel.isStreaming && viewModel.messages.last?.isUser == true {
-                            typingIndicator
-                                .id("typingIndicator")
-                        }
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.top, 10)
-                    .padding(.bottom, 20)
-                }
-                .background(Color.white)
-                .onChange(of: viewModel.messages) { _ in
-                    scrollToBottom(proxy: proxy)
-                }
-                .onChange(of: viewModel.isStreaming) { isStreaming in
-                    if isStreaming {
-                        scrollToBottom(proxy: proxy)
-                    }
-                }
-                .onChange(of: isInputFocused) { focused in
-                    if focused {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                            scrollToBottom(proxy: proxy)
-                        }
-                    }
-                }
-            }
-            .onTapGesture {
-                isInputFocused = false
+            if viewModel.messages.isEmpty {
+                emptyStateView
+            } else {
+                chatScrollView
             }
             
             chatInputBar
         }
-        .background(Color.white.ignoresSafeArea())
+        .background(creamBg.ignoresSafeArea())
         .sheet(isPresented: $showSettings) {
             SettingsView()
         }
@@ -81,6 +51,46 @@ struct AiAgentView: View {
                 }
             }
         )
+        .onAppear {
+            viewModel.messages = [.init(text: "Hi \(userProfileStore.profile.name)! I'm here to listen. How are you feeling today?", isUser: false)]
+        }
+    }
+    
+    private var chatScrollView: some View {
+        ScrollViewReader { proxy in
+            ScrollView(showsIndicators: false) {
+                LazyVStack(spacing: 10) {
+                    ForEach(viewModel.messages) { message in
+                        messageBubble(for: message)
+                            .id(message.id)
+                    }
+                    
+                    if viewModel.isStreaming && viewModel.messages.last?.isUser == true {
+                        typingIndicator
+                            .id("typingIndicator")
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+                .padding(.bottom, 20)
+            }
+            .onChange(of: viewModel.messages) { _ in
+                scrollToBottom(proxy: proxy)
+            }
+            .onChange(of: viewModel.isStreaming) { isStreaming in
+                if isStreaming {
+                    scrollToBottom(proxy: proxy)
+                }
+            }
+            .onChange(of: isInputFocused) { focused in
+                if focused {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        scrollToBottom(proxy: proxy)
+                    }
+                }
+            }
+        }
+        .scrollDismissesKeyboard(.interactively)
     }
     
     private func scrollToBottom(proxy: ScrollViewProxy) {
@@ -95,155 +105,147 @@ struct AiAgentView: View {
         }
     }
     
-    var headerView: some View {
-        HStack(spacing: 12) {
-            Spacer()
-            
-            VStack(spacing: 8) {
-                // Profile Avatar
-                Image(systemName: "person.crop.circle.fill")
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 48, height: 48)
-                    .foregroundStyle(.gray.opacity(0.8))
-                    .background(Color.white)
-                    .clipShape(Circle())
-                    .overlay(Circle().stroke(Color.gray.opacity(0.1), lineWidth: 1))
-                    .shadow(radius: 1)
-                
-                VStack(spacing: 2) {
-                    Text("Your Friend")
-                        .font(.footnote)
-                        .foregroundStyle(.gray)
-                }
-            }
+    private var headerView: some View {
+        HStack(alignment: .center) {
+            Text("Your Friend")
+                .font(.system(size: 28, weight: .black, design: .rounded))
+                .foregroundStyle(.primary)
             
             Spacer()
-        }
-        .padding(.top, 8)
-        .padding(.bottom, 12)
-        .background(Color.white.opacity(0.95))
-        .overlay(alignment: .bottom) {
-             Divider()
-                 .opacity(0.3)
-        }
-    }
-    
-    func messageBubble(for message: ChatMessage) -> some View {
-        HStack(alignment: .bottom, spacing: 4) {
-            if message.isUser {
-                Spacer()
-                
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(message.text)
-                        .font(.body)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(Color.blue)
-                        .foregroundStyle(.white)
-                        .clipShape(ChatBubbleShape(isUser: true))
-                        .frame(maxWidth: UIScreen.main.bounds.width * 0.75, alignment: .trailing)
-                    
-                    if message == viewModel.messages.last {
-                        Text("Read \(message.timestamp.formatted(.dateTime.hour().minute()))")
-                            .font(.caption2)
-                            .foregroundStyle(.gray)
-                            .padding(.trailing, 4)
-                    }
-                }
-            } else {
-                // Friend Avatar (small)
-                Image(systemName: "person.circle.fill") // Or custom avatar
-                    .resizable()
-                    .frame(width: 28, height: 28)
-                    .foregroundStyle(.gray)
-                    .background(Color.white)
+            
+            Button(action: { showSettings = true }) {
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(.black)
+                    .frame(width: 40, height: 40)
+                    .background(cardBg)
                     .clipShape(Circle())
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(message.text)
-                        .font(.body)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(Color(UIColor.systemGray5))
-                        .foregroundStyle(.black)
-                        .clipShape(ChatBubbleShape(isUser: false))
-                        .frame(maxWidth: UIScreen.main.bounds.width * 0.75, alignment: .leading)
-                }
-                
-                Spacer()
             }
         }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
     }
     
-    var typingIndicator: some View {
-        HStack(alignment: .bottom, spacing: 4) {
-            Image(systemName: "person.circle.fill")
-                .resizable()
-                .frame(width: 28, height: 28)
-                .foregroundStyle(.gray)
-                .background(Color.white)
+    private var emptyStateView: some View {
+        VStack(spacing: 20) {
+            Spacer()
+            
+            Text("🫂")
+                .font(.system(size: 64))
+                .frame(width: 100, height: 100)
+                .background(cardBg)
                 .clipShape(Circle())
             
-            TypingIndicatorView()
-                .padding(.horizontal, 12)
-                .padding(.vertical, 12)
-                .background(Color(UIColor.systemGray5))
-                .clipShape(ChatBubbleShape(isUser: false))
+            VStack(spacing: 8) {
+                Text("I'm here for you")
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                
+                Text("Talk to me about anything.\nNo judgment, just support.")
+                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            
+            VStack(spacing: 10) {
+                quickPromptButton("I'm feeling anxious about my ex")
+                quickPromptButton("I need motivation to stay strong")
+                quickPromptButton("Help me understand my feelings")
+            }
+            .padding(.top, 12)
             
             Spacer()
+            Spacer()
+        }
+        .padding(.horizontal, 24)
+    }
+    
+    private func quickPromptButton(_ text: String) -> some View {
+        Button {
+            viewModel.inputText = text
+            sendMessage()
+        } label: {
+            Text(text)
+                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                .foregroundStyle(.primary)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity)
+                .background(cardBg)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
     
-    var chatInputBar: some View {
-        HStack(spacing: 8) {
-            // Optional "+" button like iMessage
-            Button(action: {}) {
-                Image(systemName: "plus")
-                    .font(.system(size: 20))
-                    .foregroundStyle(.gray)
-            }
-            .padding(.leading, 4)
-            
-            HStack {
-                TextField("iMessage", text: $viewModel.inputText)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
+    private func messageBubble(for message: ChatMessage) -> some View {
+        HStack(alignment: .bottom, spacing: 8) {
+            if message.isUser {
+                Spacer(minLength: 50)
                 
-                if !viewModel.inputText.isEmpty {
-                    Button(action: sendMessage) {
-                        Image(systemName: "arrow.up.circle.fill")
-                            .font(.system(size: 30))
-                            .foregroundStyle(.blue)
-                    }
-                    .transition(.scale)
-                    .disabled(viewModel.isStreaming)
-                } else {
-                     // Mic icon if empty, typical iMessage
-                     Image(systemName: "mic.fill")
-                        .font(.system(size: 18))
-                        .foregroundStyle(.gray)
-                        .padding(.trailing, 4)
-                }
+                Text(message.text)
+                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(Color.black)
+                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            } else {
+                Text(message.text)
+                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .foregroundColor(.primary)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(cardBg)
+                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                
+                Spacer(minLength: 50)
             }
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-            .overlay(
-                RoundedRectangle(cornerRadius: 20)
-                    .stroke(Color.gray.opacity(0.2), lineWidth: 1)
-            )
+        }
+        .transition(.asymmetric(
+            insertion: .scale(scale: 0.94, anchor: message.isUser ? .bottomTrailing : .bottomLeading).combined(with: .opacity),
+            removal: .opacity
+        ))
+    }
+    
+    private var typingIndicator: some View {
+        HStack(alignment: .bottom, spacing: 8) {
+            TypingDotsView()
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .background(cardBg)
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            
+            Spacer(minLength: 50)
+        }
+    }
+    
+    private var chatInputBar: some View {
+        HStack(spacing: 10) {
+            TextField("What's on your mind?", text: $viewModel.inputText)
+                .font(.system(size: 15, weight: .medium, design: .rounded))
+                .focused($isInputFocused)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(cardBg)
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+                .submitLabel(.send)
+                .onSubmit { sendMessage() }
+            
+            Button(action: sendMessage) {
+                Image(systemName: "arrow.up.circle.fill")
+                    .font(.system(size: 40))
+                    .foregroundStyle(viewModel.inputText.isEmpty || viewModel.isStreaming ? .black.opacity(0.15) : .black)
+                    .animation(.easeInOut(duration: 0.2), value: viewModel.inputText.isEmpty)
+            }
+            .disabled(viewModel.inputText.isEmpty || viewModel.isStreaming)
         }
         .padding(.horizontal, 16)
-        .padding(.top, 8)
-        .padding(.bottom, 8)
-        .background(Color.white) // Or slightly translucent effect
-        .overlay(alignment: .top) {
-            Divider()
-                .opacity(0.3)
-        }
+        .padding(.top, 10)
+        .padding(.bottom, 12)
+        .background(creamBg)
     }
     
-    func sendMessage() {
+    private func sendMessage() {
+        guard !viewModel.inputText.isEmpty else { return }
+        Haptics.feedback(style: .light)
         viewModel.sendMessage(
             trackingStore: trackingStore,
             userProfileStore: userProfileStore,
@@ -252,64 +254,25 @@ struct AiAgentView: View {
     }
 }
 
-struct ChatBubbleShape: Shape {
-    let isUser: Bool
-    
-    func path(in rect: CGRect) -> Path {
-        let width = rect.width
-        let height = rect.height
-        
-        let path = UIBezierPath()
-        
-        if isUser {
-            path.move(to: CGPoint(x: 20, y: height))
-            path.addLine(to: CGPoint(x: width - 20, y: height))
-            path.addCurve(to: CGPoint(x: width, y: height + 0), controlPoint1: CGPoint(x: width - 8, y: height), controlPoint2: CGPoint(x: width, y: height))
-            path.addLine(to: CGPoint(x: width, y: 20))
-            path.addArc(withCenter: CGPoint(x: width - 20, y: 20), radius: 20, startAngle: 0, endAngle: CGFloat.pi * 1.5, clockwise: false)
-            path.addLine(to: CGPoint(x: 20, y: 0))
-            path.addArc(withCenter: CGPoint(x: 20, y: 20), radius: 20, startAngle: CGFloat.pi * 1.5, endAngle: CGFloat.pi, clockwise: false)
-            path.addLine(to: CGPoint(x: 0, y: height - 20))
-            path.addArc(withCenter: CGPoint(x: 20, y: height - 20), radius: 20, startAngle: CGFloat.pi, endAngle: CGFloat.pi * 0.5, clockwise: false)
-        } else {
-            path.move(to: CGPoint(x: width - 20, y: height))
-            path.addLine(to: CGPoint(x: 20, y: height))
-            path.addCurve(to: CGPoint(x: 0, y: height + 0), controlPoint1: CGPoint(x: 8, y: height), controlPoint2: CGPoint(x: 0, y: height))
-            path.addLine(to: CGPoint(x: 0, y: 20))
-            path.addArc(withCenter: CGPoint(x: 20, y: 20), radius: 20, startAngle: CGFloat.pi, endAngle: CGFloat.pi * 1.5, clockwise: true)
-            path.addLine(to: CGPoint(x: width - 20, y: 0))
-            path.addArc(withCenter: CGPoint(x: width - 20, y: 20), radius: 20, startAngle: CGFloat.pi * 1.5, endAngle: 0, clockwise: true)
-            path.addLine(to: CGPoint(x: width, y: height - 20))
-            path.addArc(withCenter: CGPoint(x: width - 20, y: height - 20), radius: 20, startAngle: 0, endAngle: CGFloat.pi * 0.5, clockwise: true)
-        }
-        
-        return Path(path.cgPath)
-    }
-}
-
-struct TypingIndicatorView: View {
-    @State private var numberOfDots = 3
-    @State private var isAnimating = false
+struct TypingDotsView: View {
+    @State private var animating = false
     
     var body: some View {
         HStack(spacing: 4) {
-            ForEach(0..<3) { index in
+            ForEach(0..<3, id: \.self) { i in
                 Circle()
-                    .fill(Color.gray)
-                    .frame(width: 6, height: 6)
-                    .scaleEffect(isAnimating ? 1.0 : 0.6)
-                    .opacity(isAnimating ? 1.0 : 0.5)
+                    .fill(Color.primary.opacity(0.4))
+                    .frame(width: 7, height: 7)
+                    .offset(y: animating ? -4 : 0)
                     .animation(
-                        Animation.easeInOut(duration: 0.6)
-                            .repeatForever()
-                            .delay(Double(index) * 0.2),
-                        value: isAnimating
+                        Animation.easeInOut(duration: 0.4)
+                            .repeatForever(autoreverses: true)
+                            .delay(Double(i) * 0.15),
+                        value: animating
                     )
             }
         }
-        .onAppear {
-            isAnimating = true
-        }
+        .onAppear { animating = true }
     }
 }
 
