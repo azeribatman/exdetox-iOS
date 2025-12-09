@@ -1,11 +1,11 @@
 import SwiftUI
 import SwiftData
+import StoreKit
 
 struct OnboardingView5: View {
     @Environment(Router.self) private var router
     @Environment(UserProfileStore.self) private var userProfileStore
-    @Environment(TrackingStore.self) private var trackingStore
-    @Environment(\.modelContext) private var modelContext
+    @Environment(\.requestReview) private var requestReview
     
     @State private var isAnimating = false
     @State private var showContent = false
@@ -129,10 +129,10 @@ struct OnboardingView5: View {
                             buttonScale = 1.0
                         }
                     }
-                    completeOnboarding()
+                    navigateToNext()
                 }) {
                     HStack {
-                        Text("See My Plan")
+                        Text("Continue")
                         Image(systemName: "arrow.right")
                     }
                     .font(.headline)
@@ -165,22 +165,16 @@ struct OnboardingView5: View {
         .disableSwipeGesture()
     }
     
-    private func completeOnboarding() {
+    private func navigateToNext() {
         userProfileStore.profile.excitementRating = rating
-        userProfileStore.completeOnboarding()
         
-        trackingStore.state.exName = userProfileStore.profile.exName
+        router.navigate(.onboarding4)
         
-        let profile = userProfileStore.profile
-        trackingStore.recordDailyCheckIn(
-            mood: profile.initialMoodScore,
-            urge: profile.initialUrgeScore,
-            note: "Initial check-in from onboarding"
-        )
-        
-        TrackingPersistence.bootstrap(store: trackingStore, context: modelContext)
-        
-        router.set(.main)
+        if rating >= 4 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                requestReview()
+            }
+        }
     }
 }
 
@@ -188,5 +182,4 @@ struct OnboardingView5: View {
     OnboardingView5()
         .environment(Router.base)
         .environment(UserProfileStore())
-        .environment(TrackingStore())
 }

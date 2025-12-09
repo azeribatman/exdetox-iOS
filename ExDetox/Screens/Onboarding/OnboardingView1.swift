@@ -2,115 +2,183 @@ import SwiftUI
 
 struct OnboardingView1: View {
     @Environment(Router.self) private var router
-    @State private var currentPage = 0
     
-    @State private var animateGrid = false
+    // MARK: - Animation States
+    @State private var phase: AnimationPhase = .darkness
     
-    let pages: [OnboardingPage] = [
-        OnboardingPage(
-            title: "Welcome to Freedom",
-            subtitle: "The ultimate breakup detox companion. Stay strong, stay no-contact, and reclaim your life.",
-            icon: "heart.slash.fill",
-            color: .pink
-        ),
-        OnboardingPage(
-            title: "Don't Panic",
-            subtitle: "About to text them? Hit the Panic Button instead. We'll talk you out of it.",
-            icon: "exclamationmark.triangle.fill",
-            color: .orange
-        ),
-        OnboardingPage(
-            title: "Your Glow Up Era",
-            subtitle: "Track your healing, build new habits, and become the best version of yourself.",
-            icon: "sparkles",
-            color: .indigo
-        )
-    ]
+    // Message States
+    @State private var showMsg1 = false
+    @State private var showMsg2 = false
+    @State private var showMsg3 = false
+    @State private var showMsg4 = false
+    @State private var showMsg5 = false
+    
+    // Light Phase States
+    @State private var revealRadius: CGFloat = 0
+    @State private var showLogo = false
+    @State private var showContent = false
+    
+    // Floating Animation
+    @State private var floatOffset: CGFloat = 0
+    
+    enum AnimationPhase {
+        case darkness
+        case transition
+        case light
+    }
     
     var body: some View {
-        ZStack {
-            Color(hex: "F9F9F9").ignoresSafeArea()
+        GeometryReader { geometry in
+            let center = CGPoint(x: geometry.size.width / 2, y: geometry.size.height / 2)
+            let maxRadius = max(geometry.size.width, geometry.size.height) * 1.5
             
-            VStack(spacing: 0) {
-                ZStack {
-                    GeometryReader { geometry in
-                        let width = geometry.size.width
-                        let height = geometry.size.height
-                        
-                        LazyVGrid(columns: [
-                            GridItem(.flexible()),
-                            GridItem(.flexible()),
-                            GridItem(.flexible())
-                        ], spacing: 12) {
-                            ForEach(0..<12, id: \.self) { index in
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [
-                                                pages[currentPage].color.opacity(0.3),
-                                                pages[currentPage].color.opacity(0.1)
-                                            ],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
-                                    .frame(height: index % 2 == 0 ? 100 : 140)
-                                    .offset(y: animateGrid ? 0 : (index % 2 == 0 ? -20 : 20))
-                                    .animation(
-                                        Animation.easeInOut(duration: 3)
-                                            .repeatForever(autoreverses: true)
-                                            .delay(Double(index) * 0.1),
-                                        value: animateGrid
-                                    )
-                            }
-                        }
-                        .rotationEffect(.degrees(-10))
-                        .scaleEffect(1.2)
-                        .offset(y: -50)
-                    }
-                }
-                .frame(height: UIScreen.main.bounds.height * 0.45)
-                .mask(
-                    LinearGradient(colors: [.black, .black, .clear], startPoint: .top, endPoint: .bottom)
-                )
-                .ignoresSafeArea()
+            ZStack {
+                // MARK: - Layer 1: Light Phase (Bottom)
+                Color(hex: "F9F9F9").ignoresSafeArea()
                 
-                Spacer()
+                if phase == .transition || phase == .light {
+                    lightPhaseContent(geometry)
+                }
+                
+                // MARK: - Layer 2: Dark Phase (Top Overlay)
+                if phase == .darkness || phase == .transition {
+                    ZStack {
+                        Color.black.ignoresSafeArea()
+                        
+                        // Dark Content Container
+                        ZStack {
+                            // Central "User"
+                            Text("😔")
+                                .font(.system(size: 80))
+                                .scaleEffect(showMsg5 ? 0.9 : 1.0)
+                                .blur(radius: showMsg5 ? 3 : 0)
+                                .animation(.easeInOut(duration: 0.4), value: showMsg5)
+                                .position(center)
+                                .offset(y: floatOffset)
+                            
+                            // Messages
+                            Group {
+                                if showMsg1 {
+                                    EmojiMessage(emoji: "👱🏻‍♂️", text: "We need to talk...", isLeft: true)
+                                        .position(x: center.x - 90, y: center.y - 180)
+                                        .transition(.asymmetric(insertion: .move(edge: .top).combined(with: .opacity), removal: .opacity))
+                                }
+                                
+                                if showMsg2 {
+                                    EmojiMessage(emoji: "👩🏼", text: "It's not you, it's me", isLeft: false)
+                                        .position(x: center.x + 80, y: center.y - 90)
+                                        .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .opacity))
+                                }
+                                
+                                if showMsg3 {
+                                    EmojiMessage(emoji: "🧔🏻‍♂️", text: "I need space", isLeft: true)
+                                        .position(x: center.x - 70, y: center.y + 100)
+                                        .transition(.asymmetric(insertion: .move(edge: .leading).combined(with: .opacity), removal: .opacity))
+                                }
+                                
+                                if showMsg4 {
+                                    EmojiMessage(emoji: "👱‍♀️", text: "Please stop calling", isLeft: false)
+                                        .position(x: center.x + 70, y: center.y + 210)
+                                        .transition(.asymmetric(insertion: .move(edge: .bottom).combined(with: .opacity), removal: .opacity))
+                                }
+                                
+                                if showMsg5 {
+                                    VStack(spacing: 8) {
+                                        Text("💔")
+                                            .font(.system(size: 70))
+                                            .symbolEffect(.bounce, value: showMsg5)
+                                        Text("IT'S OVER")
+                                            .font(.system(size: 40, weight: .black, design: .rounded))
+                                            .foregroundColor(.red)
+                                            .shadow(color: .red.opacity(0.8), radius: 20)
+                                    }
+                                    .position(x: center.x, y: center.y)
+                                    .transition(.scale(scale: 0.1).combined(with: .opacity))
+                                    .zIndex(100)
+                                }
+                            }
+                            .offset(y: floatOffset)
+                        }
+                    }
+                    // The Magic Reveal: Clip the black layer with a hole
+                    .mask(
+                        HoleShape(radius: revealRadius)
+                            .fill(style: FillStyle(eoFill: true))
+                            .ignoresSafeArea()
+                    )
+                    // Ensure touches don't get blocked once revealed (though logic hides this view anyway)
+                    .allowsHitTesting(phase == .darkness)
+                }
+            }
+        }
+        .ignoresSafeArea()
+        .onAppear {
+            runCinematicSequence()
+            startFloating()
+        }
+        .navigationBarBackButtonHidden()
+        .toolbar(.hidden, for: .navigationBar)
+    }
+    
+    // MARK: - Light Phase Content
+    @ViewBuilder
+    private func lightPhaseContent(_ geometry: GeometryProxy) -> some View {
+        VStack(spacing: 0) {
+            Spacer()
+            
+            // Logo Area
+            ZStack {
+                // Background Glow
+                RoundedRectangle(cornerRadius: 40)
+                    .fill(Color.pink.opacity(0.15))
+                    .frame(width: 160, height: 160)
+                    .blur(radius: 30)
+                    .scaleEffect(showLogo ? 1 : 0.5)
+                    .opacity(showLogo ? 1 : 0)
+                
+                // Logo Placeholder
+                Image(.commonAppicon)
+                    .build(size: 120)
+                    .clipShape(RoundedRectangle(cornerRadius: 32))
+                    .shadow(color: .black.opacity(0.2), radius: 15, x: 0, y: 10)
+                    .scaleEffect(showLogo ? 1 : 0.01)
+                    .rotationEffect(.degrees(showLogo ? 0 : -10))
+                    .opacity(showLogo ? 1 : 0)
+                    .animation(.spring(response: 0.7, dampingFraction: 0.6), value: showLogo)
+            }
+            .padding(.bottom, 30)
+            
+            // Text Content
+            VStack(spacing: 16) {
+                Text("Ex Who?")
+                    .font(.system(size: 64, weight: .black, design: .rounded))
+                    .foregroundStyle(.black)
+                    .multilineTextAlignment(.center)
+                    .opacity(showContent ? 1 : 0)
+                    .offset(y: showContent ? 0 : 20)
+                    .animation(.easeOut(duration: 0.6).delay(0.1), value: showContent)
+                
+                Text("It’s time to focus on you. Block the noise, heal the heart, and level up.\nYour glow up starts now.")
+                    .font(.body)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 32)
+                    .lineSpacing(6)
+                    .opacity(showContent ? 1 : 0)
+                    .offset(y: showContent ? 0 : 20)
+                    .animation(.easeOut(duration: 0.6).delay(0.2), value: showContent)
             }
             
-            VStack(spacing: 0) {
-                Spacer()
-                
-                TabView(selection: $currentPage) {
-                    ForEach(0..<pages.count, id: \.self) { index in
-                        OnboardingPageView(page: pages[index])
-                            .tag(index)
-                    }
-                }
-                .tabViewStyle(.page(indexDisplayMode: .never))
-                .frame(height: 400)
-                
-                HStack(spacing: 8) {
-                    ForEach(0..<pages.count, id: \.self) { index in
-                        Circle()
-                            .fill(currentPage == index ? Color.black : Color.gray.opacity(0.3))
-                            .frame(width: 8, height: 8)
-                            .scaleEffect(currentPage == index ? 1.2 : 1.0)
-                            .animation(.spring(), value: currentPage)
-                    }
-                }
-                .padding(.bottom, 32)
-                
+            Spacer()
+            Spacer()
+            
+            // CTA Button
+            if showContent {
                 Button(action: {
-                    withAnimation {
-                        if currentPage < pages.count - 1 {
-                            currentPage += 1
-                        } else {
-                            router.navigate(.onboarding2)
-                        }
-                    }
+                    Haptics.selection()
+                    router.navigate(.onboarding2)
                 }) {
-                    Text(currentPage == pages.count - 1 ? "Get Started" : "Next")
+                    Text("Start Healing")
                         .font(.headline)
                         .fontWeight(.bold)
                         .foregroundColor(.white)
@@ -121,77 +189,170 @@ struct OnboardingView1: View {
                         .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
                 }
                 .padding(.horizontal, 24)
-                .padding(.bottom, 20)
+                .padding(.bottom, 40)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
+        }
+    }
+    
+    // MARK: - Animations
+    private func startFloating() {
+        withAnimation(.easeInOut(duration: 3.0).repeatForever(autoreverses: true)) {
+            floatOffset = 15
+        }
+    }
+    
+    private func runCinematicSequence() {
+        // Sequence Timing (seconds)
+        let t1 = 0.8
+        let t2 = 1.8
+        let t3 = 2.8
+        let t4 = 3.8
+        let tBreakup = 4.8
+        let tReveal = 6.5
+        
+        // Msg 1
+        DispatchQueue.main.asyncAfter(deadline: .now() + t1) {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) { showMsg1 = true }
+            Haptics.feedback(style: .medium)
+        }
+        
+        // Msg 2
+        DispatchQueue.main.asyncAfter(deadline: .now() + t2) {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) { showMsg2 = true }
+            Haptics.feedback(style: .medium)
+        }
+        
+        // Msg 3
+        DispatchQueue.main.asyncAfter(deadline: .now() + t3) {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) { showMsg3 = true }
+            Haptics.feedback(style: .heavy)
+        }
+        
+        // Msg 4
+        DispatchQueue.main.asyncAfter(deadline: .now() + t4) {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) { showMsg4 = true }
+            Haptics.feedback(style: .medium)
+        }
+        
+        // THE BREAKUP
+        DispatchQueue.main.asyncAfter(deadline: .now() + tBreakup) {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.5)) { showMsg5 = true }
+            Haptics.notification(type: .error)
+        }
+        
+        // REVEAL
+        DispatchQueue.main.asyncAfter(deadline: .now() + tReveal) {
+            Haptics.notification(type: .success)
+            phase = .transition
             
-            GeometryReader { geo in
-                VStack {
-                    Spacer()
-                        .frame(height: geo.size.height * 0.35)
-                    
-                    HStack {
-                        Spacer()
-                        ZStack {
-                            Circle()
-                                .fill(Color.white)
-                                .frame(width: 100, height: 100)
-                                .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
-                            
-                            Image(systemName: pages[currentPage].icon)
-                                .font(.system(size: 40))
-                                .foregroundColor(pages[currentPage].color)
-                                .transition(.scale.combined(with: .opacity))
-                                .id("icon-\(currentPage)")
-                        }
-                        Spacer()
-                    }
-                    Spacer()
-                }
+            // Calculate max radius for screen
+            let screenHeight = UIScreen.main.bounds.height
+            let screenWidth = UIScreen.main.bounds.width
+            let targetRadius = max(screenHeight, screenWidth) * 1.5
+            
+            withAnimation(.easeInOut(duration: 1.5)) {
+                revealRadius = targetRadius
             }
-            .ignoresSafeArea()
         }
-        .onAppear {
-            animateGrid = true
+        
+        // Light Phase Finalize
+        DispatchQueue.main.asyncAfter(deadline: .now() + tReveal + 1.0) {
+            phase = .light
+            showLogo = true
         }
-        .navigationBarBackButtonHidden()
-        .toolbar(.hidden, for: .navigationBar)
-        .disableSwipeGesture()
+        
+        // Content
+        DispatchQueue.main.asyncAfter(deadline: .now() + tReveal + 1.5) {
+            withAnimation {
+                showContent = true
+            }
+        }
     }
 }
 
-struct OnboardingPage {
-    let title: String
-    let subtitle: String
-    let icon: String
-    let color: Color
+// MARK: - Helpers
+
+// Shape that creates a hole in a rectangle
+struct HoleShape: Shape {
+    var radius: CGFloat
+    
+    var animatableData: CGFloat {
+        get { radius }
+        set { radius = newValue }
+    }
+    
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        // The outer rectangle (the screen)
+        path.addRect(rect)
+        
+        // The hole (circle)
+        let center = CGPoint(x: rect.midX, y: rect.midY)
+        path.addEllipse(in: CGRect(
+            x: center.x - radius,
+            y: center.y - radius,
+            width: radius * 2,
+            height: radius * 2
+        ))
+        
+        return path
+    }
 }
 
-struct OnboardingPageView: View {
-    let page: OnboardingPage
+struct EmojiMessage: View {
+    let emoji: String
+    let text: String
+    let isLeft: Bool
     
     var body: some View {
-        VStack(spacing: 16) {
-            Spacer()
+        HStack(alignment: .bottom, spacing: 8) {
+            if isLeft {
+                Text(emoji)
+                    .font(.system(size: 40))
+                    .offset(y: 5)
+            }
             
-            Text(page.title)
-                .font(.system(size: 32, weight: .bold, design: .rounded))
-                .multilineTextAlignment(.center)
-                .foregroundColor(.black)
+            Text(text)
+                .font(.system(size: 15, weight: .medium))
+                .foregroundColor(.white)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(Color(hex: "2C2C2E"))
+                .clipShape(OnboardingChatBubbleShape(isLeft: isLeft))
+                .shadow(color: .black.opacity(0.5), radius: 8, x: 0, y: 4)
             
-            Text(page.subtitle)
-                .font(.body)
-                .multilineTextAlignment(.center)
-                .foregroundColor(.secondary)
-                .padding(.horizontal, 32)
-                .lineSpacing(4)
-            
-            Spacer()
+            if !isLeft {
+                Text(emoji)
+                    .font(.system(size: 40))
+                    .offset(y: 5)
+            }
         }
-        .padding(.top, 60)
+    }
+}
+
+private struct OnboardingChatBubbleShape: Shape {
+    let isLeft: Bool
+    
+    func path(in rect: CGRect) -> Path {
+        let radius: CGFloat = 18
+        
+        let path = UIBezierPath(
+            roundedRect: rect,
+            byRoundingCorners: [
+                .topLeft,
+                .topRight,
+                isLeft ? .bottomRight : .bottomLeft,
+                isLeft ? .bottomLeft : .bottomRight
+            ],
+            cornerRadii: CGSize(width: radius, height: radius)
+        )
+        
+        return Path(path.cgPath)
     }
 }
 
 #Preview {
     OnboardingView1()
-        .environment(Router.base)
+        .environment(Router())
 }

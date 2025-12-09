@@ -1,8 +1,12 @@
 import SwiftUI
+import SwiftData
 
 struct OnboardingView4: View {
     @Environment(Router.self) private var router
     @Environment(UserProfileStore.self) private var userProfileStore
+    @Environment(TrackingStore.self) private var trackingStore
+    @Environment(\.modelContext) private var modelContext
+    
     @State private var isAnimating = false
     @State private var showContent = false
     @State private var userCount = 0
@@ -124,9 +128,7 @@ struct OnboardingView4: View {
                 
                 VStack {
                     Button(action: {
-                        withAnimation {
-                            router.navigate(.onboarding5)
-                        }
+                        completeOnboarding()
                     }) {
                         HStack {
                             Text("Start My Healing Journey")
@@ -175,6 +177,23 @@ struct OnboardingView4: View {
         .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)
         .disableSwipeGesture()
+    }
+    
+    private func completeOnboarding() {
+        userProfileStore.completeOnboarding()
+        
+        trackingStore.state.exName = userProfileStore.profile.exName
+        
+        let profile = userProfileStore.profile
+        trackingStore.recordDailyCheckIn(
+            mood: profile.initialMoodScore,
+            urge: profile.initialUrgeScore,
+            note: "Initial check-in from onboarding"
+        )
+        
+        TrackingPersistence.bootstrap(store: trackingStore, context: modelContext)
+        
+        router.set(.main)
     }
 }
 
@@ -277,4 +296,5 @@ struct PlanItemRow: View {
     OnboardingView4()
         .environment(Router.base)
         .environment(UserProfileStore())
+        .environment(TrackingStore())
 }
