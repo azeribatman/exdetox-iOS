@@ -175,21 +175,20 @@ struct OnboardingView1: View {
             // CTA Button
             if showContent {
                 Button(action: {
-                    Haptics.selection()
+                    Haptics.feedback(style: .medium)
                     router.navigate(.onboarding2)
                 }) {
                     Text("Start Healing")
-                        .font(.headline)
-                        .fontWeight(.bold)
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
-                        .padding()
+                        .padding(.vertical, 18)
                         .background(Color.black)
                         .clipShape(RoundedRectangle(cornerRadius: 16))
-                        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+                        .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 6)
                 }
                 .padding(.horizontal, 24)
-                .padding(.bottom, 40)
+                .padding(.bottom, 50)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }

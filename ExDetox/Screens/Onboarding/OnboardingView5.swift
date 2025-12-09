@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 import StoreKit
 
 struct OnboardingView5: View {
@@ -7,28 +6,28 @@ struct OnboardingView5: View {
     @Environment(UserProfileStore.self) private var userProfileStore
     @Environment(\.requestReview) private var requestReview
     
-    @State private var isAnimating = false
     @State private var showContent = false
     @State private var rating = 0
-    @State private var buttonScale: CGFloat = 1.0
+    @State private var floatOffset: CGFloat = 0
     
-    var feedbackTitle: String {
+    var feedbackEmoji: String {
         switch rating {
-        case 1, 2: return "We'll do better! 🥺"
-        case 3: return "Getting there! 😐"
-        case 4: return "Almost perfect! 😮"
-        case 5: return "Life Changer! 🤩"
-        default: return "How excited are you?"
+        case 1: return "😔"
+        case 2: return "😕"
+        case 3: return "😐"
+        case 4: return "😊"
+        case 5: return "🔥"
+        default: return "✨"
         }
     }
     
-    var feedbackSubtitle: String {
+    var feedbackTitle: String {
         switch rating {
-        case 1, 2: return "Tell us what's wrong."
-        case 3: return "We're working on it."
-        case 4: return "So close to freedom."
-        case 5: return "You're ready to heal!"
-        default: return "Rate your excitement level"
+        case 1, 2: return "We'll prove\nyou wrong."
+        case 3: return "Fair enough."
+        case 4: return "Almost there."
+        case 5: return "Let's go."
+        default: return "One last thing."
         }
     }
     
@@ -36,142 +35,119 @@ struct OnboardingView5: View {
         ZStack {
             Color(hex: "F9F9F9").ignoresSafeArea()
             
-            ZStack {
-                Circle()
-                    .fill(Color.orange.opacity(0.1))
-                    .frame(width: 300, height: 300)
-                    .offset(x: -150, y: -200)
-                    .scaleEffect(isAnimating ? 1.1 : 1.0)
-                
-                Circle()
-                    .fill(Color.indigo.opacity(0.1))
-                    .frame(width: 250, height: 250)
-                    .offset(x: 150, y: 100)
-                    .scaleEffect(isAnimating ? 1.2 : 0.9)
-            }
-            .blur(radius: 30)
-            
-            VStack(spacing: 30) {
-                VStack(spacing: 16) {
-                    Text("Before we start...")
-                        .font(.headline)
-                        .foregroundStyle(.secondary)
-                        .textCase(.uppercase)
-                        .tracking(2)
-                        .opacity(showContent ? 1 : 0)
-                        .offset(y: showContent ? 0 : -10)
-                        .animation(.easeOut(duration: 0.6), value: showContent)
-                    
-                    Text(feedbackTitle)
-                        .font(.system(size: 36, weight: .black, design: .rounded))
-                        .multilineTextAlignment(.center)
-                        .contentTransition(.numericText())
-                        .padding(.horizontal)
-                        .opacity(showContent ? 1 : 0)
-                        .scaleEffect(showContent ? 1 : 0.8)
-                        .animation(.spring(response: 0.5, dampingFraction: 0.7).delay(0.1), value: showContent)
-                        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: rating)
-                    
-                    Text(feedbackSubtitle)
-                        .font(.title3)
-                        .foregroundStyle(.secondary)
-                        .opacity(showContent ? 1 : 0)
-                        .animation(.easeOut.delay(0.2), value: showContent)
-                }
-                .padding(.top, 60)
-                
+            VStack(spacing: 0) {
                 Spacer()
                 
-                HStack(spacing: 12) {
-                    ForEach(1...5, id: \.self) { index in
-                        Image(systemName: index <= rating ? "star.fill" : "star")
-                            .font(.system(size: 40))
-                            .foregroundStyle(index <= rating ? Color.orange : Color.gray.opacity(0.3))
-                            .scaleEffect(index == rating ? 1.5 : 1.0)
-                            .rotationEffect(index == rating ? .degrees(15) : .degrees(0))
-                            .shadow(color: index <= rating ? .orange.opacity(0.5) : .clear, radius: 10)
-                            .onTapGesture {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
-                                    rating = index
-                                }
-                                let impactMed = UIImpactFeedbackGenerator(style: .medium)
-                                impactMed.impactOccurred()
-                            }
-                            .offset(y: showContent ? 0 : 50)
-                            .opacity(showContent ? 1 : 0)
-                            .animation(
-                                .spring(response: 0.4, dampingFraction: 0.6)
-                                .delay(Double(index) * 0.1 + 0.3),
-                                value: showContent
-                            )
+                VStack(spacing: 32) {
+                    if showContent {
+                        Text(feedbackEmoji)
+                            .font(.system(size: 70))
+                            .offset(y: floatOffset)
+                            .transition(.scale.combined(with: .opacity))
+                            .id(feedbackEmoji)
                     }
-                }
-                .padding()
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.white)
-                        .shadow(color: .black.opacity(0.05), radius: 20, x: 0, y: 10)
-                        .scaleEffect(showContent ? 1 : 0.5)
-                        .opacity(showContent ? 1 : 0)
-                )
-                .animation(.spring(response: 0.5, dampingFraction: 0.7).delay(0.2), value: showContent)
-                
-                Spacer()
-                
-                Spacer()
-                
-                Button(action: {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                        buttonScale = 0.95
-                    }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        withAnimation {
-                            buttonScale = 1.0
+                    
+                    VStack(spacing: 12) {
+                        if showContent {
+                            Text(feedbackTitle)
+                                .font(.system(size: 42, weight: .black, design: .rounded))
+                                .multilineTextAlignment(.center)
+                                .transition(.move(edge: .bottom).combined(with: .opacity))
+                                .id(feedbackTitle)
+                        }
+                        
+                        if showContent && rating == 0 {
+                            Text("How ready are you to\nmove on?")
+                                .font(.system(size: 18, weight: .medium, design: .rounded))
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                                .transition(.opacity)
                         }
                     }
-                    navigateToNext()
-                }) {
-                    HStack {
-                        Text("Continue")
-                        Image(systemName: "arrow.right")
-                    }
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.black)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                    .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 40)
-                .scaleEffect(buttonScale)
-                .offset(y: showContent ? 0 : 100)
-                .opacity(showContent ? 1 : 0)
-                .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.8), value: showContent)
+                
+                Spacer()
+                
+                if showContent {
+                    HStack(spacing: 16) {
+                        ForEach(1...5, id: \.self) { index in
+                            Button(action: {
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) {
+                                    rating = index
+                                }
+                                Haptics.feedback(style: .medium)
+                                
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                                    navigateToNext()
+                                }
+                            }) {
+                                ZStack {
+                                    Circle()
+                                        .fill(index <= rating ? Color.black : Color.white)
+                                        .frame(width: 56, height: 56)
+                                        .shadow(color: .black.opacity(0.08), radius: 8, y: 4)
+                                    
+                                    Text("\(index)")
+                                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                                        .foregroundColor(index <= rating ? .white : .black)
+                                }
+                            }
+                            .scaleEffect(index == rating ? 1.15 : 1.0)
+                            .offset(y: showContent ? 0 : 40)
+                            .opacity(showContent ? 1 : 0)
+                            .animation(
+                                .spring(response: 0.4, dampingFraction: 0.7)
+                                .delay(Double(index) * 0.08 + 0.3),
+                                value: showContent
+                            )
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                }
+                
+                Spacer()
+                Spacer()
+                
+                if showContent {
+                    Button(action: {
+                        Haptics.feedback(style: .medium)
+                        navigateToNext()
+                    }) {
+                        Text("Skip")
+                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.bottom, 50)
+                    .offset(y: showContent ? 0 : 30)
+                    .opacity(showContent ? 1 : 0)
+                    .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.8), value: showContent)
+                }
             }
         }
         .onAppear {
-            withAnimation(.easeOut(duration: 0.8)) {
+            withAnimation(.easeOut(duration: 0.5)) {
                 showContent = true
             }
-            withAnimation(.easeInOut(duration: 4).repeatForever(autoreverses: true)) {
-                isAnimating = true
-            }
+            Haptics.feedback(style: .light)
+            startFloating()
         }
         .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)
         .disableSwipeGesture()
     }
     
+    private func startFloating() {
+        withAnimation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true)) {
+            floatOffset = 12
+        }
+    }
+    
     private func navigateToNext() {
         userProfileStore.profile.excitementRating = rating
-        
         router.navigate(.onboarding4)
         
         if rating >= 4 {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                 requestReview()
             }
         }
