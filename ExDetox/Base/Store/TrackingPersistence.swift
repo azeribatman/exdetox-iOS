@@ -17,6 +17,7 @@ enum TrackingPersistence {
                 relapseCount: existing.relapseCount,
                 maxStreak: existing.maxStreak,
                 bonusDays: existing.bonusDays,
+                lifetimeBonusDays: existing.lifetimeBonusDays,
                 relapseDates: existing.relapses.map { $0.date },
                 powerActions: existing.powerActions.map { PowerActionRecord(id: $0.id, type: $0.type, date: $0.date, note: $0.note) },
                 dailyCheckIns: existing.dailyCheckIns.map { DailyCheckIn(id: $0.id, date: $0.date, mood: $0.mood, urge: $0.urge, note: $0.note) },
@@ -35,7 +36,8 @@ enum TrackingPersistence {
                 lastRelapseDate: state.lastRelapseDate,
                 relapseCount: state.relapseCount,
                 maxStreak: state.maxStreak,
-                bonusDays: state.bonusDays
+                bonusDays: state.bonusDays,
+                lifetimeBonusDays: state.lifetimeBonusDays
             )
             context.insert(record)
             try? context.save()
@@ -59,7 +61,8 @@ enum TrackingPersistence {
                 lastRelapseDate: state.lastRelapseDate,
                 relapseCount: state.relapseCount,
                 maxStreak: state.maxStreak,
-                bonusDays: state.bonusDays
+                bonusDays: state.bonusDays,
+                lifetimeBonusDays: state.lifetimeBonusDays
             )
             context.insert(record)
         }
@@ -75,6 +78,7 @@ enum TrackingPersistence {
         record.relapseCount = state.relapseCount
         record.maxStreak = state.maxStreak
         record.bonusDays = state.bonusDays
+        record.lifetimeBonusDays = state.lifetimeBonusDays
         
         try? context.save()
     }
@@ -107,6 +111,7 @@ enum TrackingPersistence {
         record.powerActions.append(actionObject)
         record.levelStartDate = store.state.levelStartDate
         record.bonusDays = store.state.bonusDays
+        record.lifetimeBonusDays = store.state.lifetimeBonusDays
         record.currentLevelRaw = store.state.currentLevel.rawValue
         
         syncBadges(store: store, record: record)
@@ -157,5 +162,24 @@ enum TrackingPersistence {
                 record.badges.append(badgeRecord)
             }
         }
+    }
+    
+    static func resetProgress(store: TrackingStore, context: ModelContext) {
+        store.resetProgress()
+        
+        let descriptor = FetchDescriptor<TrackingRecord>()
+        guard let record = try? context.fetch(descriptor).first else { return }
+        
+        let relapse = RelapseRecord(date: Date())
+        record.relapses.append(relapse)
+        record.noContactStartDate = store.state.noContactStartDate
+        record.levelStartDate = store.state.levelStartDate
+        record.currentLevelRaw = store.state.currentLevel.rawValue
+        record.bonusDays = store.state.bonusDays
+        record.relapseCount = store.state.relapseCount
+        record.lastRelapseDate = store.state.lastRelapseDate
+        record.maxStreak = store.state.maxStreak
+        
+        try? context.save()
     }
 }

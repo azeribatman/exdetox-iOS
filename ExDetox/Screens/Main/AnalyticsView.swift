@@ -353,9 +353,14 @@ struct AnalyticsView: View {
 
                 Spacer()
 
-                Text("\(trackingStore.badges.count)/\(BadgeType.allCases.count)")
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
-                    .foregroundStyle(.secondary)
+                HStack(spacing: 4) {
+                    Text("\(trackingStore.badges.count)")
+                        .font(.system(size: 14, weight: .black, design: .rounded))
+                        .foregroundStyle(Color(hex: "FFD60A"))
+                    Text("/\(BadgeType.allCases.count)")
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundStyle(.secondary)
+                }
             }
 
             let allTypes = BadgeType.allCases
@@ -365,23 +370,28 @@ struct AnalyticsView: View {
                 ForEach(allTypes.prefix(6), id: \.self) { badgeType in
                     let earned = earnedTypes.contains(badgeType)
 
-                    VStack(spacing: 6) {
-                        Image(systemName: badgeType.icon)
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(earned ? Color(hex: badgeType.color) : .gray.opacity(0.3))
-                            .frame(width: 42, height: 42)
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(earned ? Color(hex: badgeType.color).opacity(0.12) : Color.primary.opacity(0.04))
-                            )
+                    VStack(spacing: 8) {
+                        ZStack {
+                            Circle()
+                                .fill(earned ? Color(hex: badgeType.color).opacity(0.15) : Color.primary.opacity(0.05))
+                                .frame(width: 48, height: 48)
+                            
+                            if earned {
+                                Text(badgeType.emoji)
+                                    .font(.system(size: 22))
+                            } else {
+                                Image(systemName: "lock.fill")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundStyle(Color.primary.opacity(0.15))
+                            }
+                        }
 
                         Text(badgeType.title)
-                            .font(.system(size: 10, weight: .semibold, design: .rounded))
-                            .foregroundStyle(earned ? .primary : .secondary)
+                            .font(.system(size: 10, weight: .bold, design: .rounded))
+                            .foregroundStyle(earned ? .primary : .tertiary)
                             .multilineTextAlignment(.center)
                             .lineLimit(2)
                     }
-                    .opacity(earned ? 1 : 0.5)
                 }
             }
 
@@ -389,13 +399,19 @@ struct AnalyticsView: View {
                 showBadgesSheet = true
                 Haptics.feedback(style: .light)
             } label: {
-                Text("See all badges")
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(Color.black)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                HStack {
+                    Text("See all badges")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .bold))
+                }
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .padding(.horizontal, 16)
+                .background(Color.black)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
             }
         }
         .padding(18)
@@ -546,12 +562,22 @@ struct LevelDetailRow: View {
 struct BadgesSheet: View {
     @Environment(TrackingStore.self) private var trackingStore
     @Environment(\.dismiss) private var dismiss
+    @State private var appear = false
+
+    private var earnedCount: Int {
+        trackingStore.badges.count
+    }
 
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("All Badges")
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Your Badges")
+                        .font(.system(size: 28, weight: .black, design: .rounded))
+                    Text("\(earnedCount)/\(BadgeType.allCases.count) unlocked")
+                        .font(.system(size: 15, weight: .medium, design: .rounded))
+                        .foregroundStyle(.secondary)
+                }
                 
                 Spacer()
                 
@@ -559,135 +585,175 @@ struct BadgesSheet: View {
                     Image(systemName: "xmark")
                         .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(.primary.opacity(0.5))
-                        .frame(width: 32, height: 32)
-                        .background(Color(hex: "FFFDF9"))
+                        .frame(width: 36, height: 36)
+                        .background(Color.white)
                         .clipShape(Circle())
+                        .shadow(color: .black.opacity(0.06), radius: 8, y: 4)
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 16)
-            .padding(.bottom, 12)
+            .padding(.horizontal, 24)
+            .padding(.top, 20)
+            .padding(.bottom, 16)
             
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 12) {
-                    ForEach(BadgeType.allCases, id: \.self) { badgeType in
-                        BadgeDetailRow(
+                VStack(spacing: 16) {
+                    ForEach(Array(BadgeType.allCases.enumerated()), id: \.element) { index, badgeType in
+                        let isEarned = trackingStore.badges.contains(where: { $0.type == badgeType })
+                        
+                        BadgeCard(
                             badgeType: badgeType,
-                            isEarned: trackingStore.badges.contains(where: { $0.type == badgeType }),
-                            progressText: progressText(for: badgeType)
+                            isEarned: isEarned,
+                            progressText: progressText(for: badgeType),
+                            progressValue: progressValue(for: badgeType)
                         )
+                        .opacity(appear ? 1 : 0)
+                        .offset(y: appear ? 0 : 20)
+                        .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(Double(index) * 0.05), value: appear)
                     }
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 20)
                 .padding(.vertical, 16)
             }
         }
         .background(Color(hex: "F5F0E8").ignoresSafeArea())
+        .onAppear { appear = true }
     }
 
     private func progressText(for badge: BadgeType) -> String {
         let streak = trackingStore.currentStreakDays
         switch badge {
         case .firstDay:
-            return "\(min(streak, 1))/1 day"
+            return streak >= 1 ? "Unlocked!" : "\(streak)/1 day"
         case .weekStreak:
-            return "\(min(streak, 7))/7 days"
+            return streak >= 7 ? "Unlocked!" : "\(min(streak, 7))/7 days"
         case .twoWeekStreak:
-            return "\(min(streak, 14))/14 days"
+            return streak >= 14 ? "Unlocked!" : "\(min(streak, 14))/14 days"
         case .monthStreak:
-            return "\(min(streak, 30))/30 days"
+            return streak >= 30 ? "Unlocked!" : "\(min(streak, 30))/30 days"
         case .deletedFolder:
             let done = trackingStore.powerActions.contains(where: { $0.type == .deletePhotos })
-            return done ? "Done" : "Not yet"
+            return done ? "Unlocked!" : "Do action to unlock"
         case .blockedEx:
-            let done = trackingStore.powerActions.contains(where: { $0.type == .block })
-            return done ? "Done" : "Not yet"
+            let done = trackingStore.powerActions.contains(where: { $0.type == .blockEx })
+            return done ? "Unlocked!" : "Do action to unlock"
         case .unfollowedAll:
-            let done = trackingStore.powerActions.contains(where: { $0.type == .unfollow })
-            return done ? "Done" : "Not yet"
-        case .firstJournal:
-            let done = trackingStore.powerActions.contains(where: { $0.type == .realityJournaling })
-            return done ? "Done" : "Not yet"
-        case .newExperience:
-            let done = trackingStore.powerActions.contains(where: { $0.type == .newExperience })
-            return done ? "Done" : "Not yet"
+            let done = trackingStore.powerActions.contains(where: { $0.type == .unfollowEx })
+            return done ? "Unlocked!" : "Do action to unlock"
         case .glowUpReached:
             let done = trackingStore.currentLevel.rawValue >= HealingLevel.glowUp.rawValue
-            return done ? "Reached" : "Not yet"
+            return done ? "Unlocked!" : "Reach Glow-Up level"
         case .unbotheredReached:
             let done = trackingStore.currentLevel == .unbothered
-            return done ? "Reached" : "Not yet"
+            return done ? "Unlocked!" : "Reach Unbothered level"
+        }
+    }
+    
+    private func progressValue(for badge: BadgeType) -> Double {
+        let streak = trackingStore.currentStreakDays
+        switch badge {
+        case .firstDay:
+            return min(Double(streak) / 1.0, 1.0)
+        case .weekStreak:
+            return min(Double(streak) / 7.0, 1.0)
+        case .twoWeekStreak:
+            return min(Double(streak) / 14.0, 1.0)
+        case .monthStreak:
+            return min(Double(streak) / 30.0, 1.0)
+        case .deletedFolder:
+            return trackingStore.powerActions.contains(where: { $0.type == .deletePhotos }) ? 1.0 : 0.0
+        case .blockedEx:
+            return trackingStore.powerActions.contains(where: { $0.type == .blockEx }) ? 1.0 : 0.0
+        case .unfollowedAll:
+            return trackingStore.powerActions.contains(where: { $0.type == .unfollowEx }) ? 1.0 : 0.0
+        case .glowUpReached:
+            return trackingStore.currentLevel.rawValue >= HealingLevel.glowUp.rawValue ? 1.0 : 0.0
+        case .unbotheredReached:
+            return trackingStore.currentLevel == .unbothered ? 1.0 : 0.0
         }
     }
 }
 
-struct BadgeDetailRow: View {
+struct BadgeCard: View {
     let badgeType: BadgeType
     let isEarned: Bool
     let progressText: String
+    let progressValue: Double
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: badgeType.icon)
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(isEarned ? Color(hex: badgeType.color) : .gray.opacity(0.4))
-                .frame(width: 42, height: 42)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(isEarned ? Color(hex: badgeType.color).opacity(0.12) : Color.primary.opacity(0.04))
-                )
-
-            VStack(alignment: .leading, spacing: 3) {
-                Text(badgeType.title)
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundStyle(isEarned ? .primary : .secondary)
-
-                Text(requirementText(for: badgeType))
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundStyle(.secondary)
+        VStack(spacing: 0) {
+            HStack(spacing: 16) {
+                ZStack {
+                    Circle()
+                        .fill(isEarned ? Color(hex: badgeType.color).opacity(0.15) : Color.primary.opacity(0.05))
+                        .frame(width: 60, height: 60)
+                    
+                    if isEarned {
+                        Text(badgeType.emoji)
+                            .font(.system(size: 28))
+                    } else {
+                        Image(systemName: badgeType.icon)
+                            .font(.system(size: 24, weight: .semibold))
+                            .foregroundStyle(Color.primary.opacity(0.2))
+                    }
+                }
+                
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 8) {
+                        Text(badgeType.title)
+                            .font(.system(size: 17, weight: .bold, design: .rounded))
+                            .foregroundStyle(isEarned ? .primary : .secondary)
+                        
+                        if isEarned {
+                            Image(systemName: "checkmark.seal.fill")
+                                .font(.system(size: 14))
+                                .foregroundStyle(Color(hex: badgeType.color))
+                        }
+                    }
+                    
+                    if isEarned {
+                        Text(badgeType.genZTagline)
+                            .font(.system(size: 13, weight: .medium, design: .rounded))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                    } else {
+                        Text(progressText)
+                            .font(.system(size: 13, weight: .medium, design: .rounded))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                
+                Spacer()
             }
-
-            Spacer()
-
-            Text(progressText)
-                .font(.system(size: 11, weight: .bold, design: .rounded))
-                .foregroundStyle(isEarned ? .green : .secondary)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 5)
-                .background((isEarned ? Color.green : Color.primary).opacity(0.1))
-                .clipShape(Capsule())
+            .padding(16)
+            
+            if !isEarned && progressValue > 0 && progressValue < 1 {
+                GeometryReader { geometry in
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(Color.primary.opacity(0.08))
+                            .frame(height: 4)
+                        
+                        Capsule()
+                            .fill(Color(hex: badgeType.color))
+                            .frame(width: geometry.size.width * progressValue, height: 4)
+                    }
+                }
+                .frame(height: 4)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 14)
+            }
         }
-        .padding(14)
-        .background(Color(hex: "FFFDF9"))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .opacity(isEarned ? 1 : 0.8)
-    }
-
-    private func requirementText(for badge: BadgeType) -> String {
-        switch badge {
-        case .firstDay:
-            return "Stay no contact for 1 day"
-        case .weekStreak:
-            return "Stay no contact for 7 days"
-        case .twoWeekStreak:
-            return "Stay no contact for 14 days"
-        case .monthStreak:
-            return "Stay no contact for 30 days"
-        case .deletedFolder:
-            return "Delete photos power action"
-        case .blockedEx:
-            return "Block ex power action"
-        case .unfollowedAll:
-            return "Unfollow power action"
-        case .firstJournal:
-            return "Reality journaling power action"
-        case .newExperience:
-            return "New experience power action"
-        case .glowUpReached:
-            return "Reach the Glow-Up level"
-        case .unbotheredReached:
-            return "Reach the Unbothered level"
-        }
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .shadow(color: .black.opacity(isEarned ? 0.08 : 0.04), radius: isEarned ? 16 : 12, y: isEarned ? 6 : 4)
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .strokeBorder(
+                    isEarned ? Color(hex: badgeType.color).opacity(0.3) : Color.clear,
+                    lineWidth: 2
+                )
+        )
+        .scaleEffect(isEarned ? 1 : 0.98)
     }
 }
 

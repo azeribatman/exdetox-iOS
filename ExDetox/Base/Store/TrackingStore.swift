@@ -68,13 +68,7 @@ enum HealingLevel: Int, CaseIterable, Codable, Hashable {
     }
     
     var maxBonusDays: Int {
-        switch self {
-        case .emergency: return 4
-        case .withdrawal: return 6
-        case .reality: return 10
-        case .glowUp: return 14
-        case .unbothered: return 0
-        }
+        return 4
     }
     
     var index: Int {
@@ -84,151 +78,63 @@ enum HealingLevel: Int, CaseIterable, Codable, Hashable {
     var nextLevel: HealingLevel? {
         HealingLevel(rawValue: rawValue + 1)
     }
-    
-    var challenges: [PowerActionType] {
-        switch self {
-        case .emergency:
-            return [.deletePhotos, .unfollowOne, .muteNotifications, .archiveChats, .drinkWater]
-        case .withdrawal:
-            return [.unfollow, .realityJournaling, .cleanRoom, .readBook, .walkOutside]
-        case .reality:
-            return [.block, .standardsList, .trashGifts, .changeWallpaper, .cookMeal]
-        case .glowUp:
-            return [.newExperience, .socialActivity, .fitnessChallenge, .dressUp, .listenNewMusic]
-        case .unbothered:
-            return [.newExperience, .helpOthers, .deleteNumber]
-        }
-    }
 }
 
 enum PowerActionType: String, Codable, Hashable, CaseIterable, Identifiable {
     case deletePhotos
-    case unfollow
-    case unfollowOne
-    case block
-    case realityJournaling
-    case newExperience
-    case muteNotifications
-    case standardsList
-    case socialActivity
-    case fitnessChallenge
-    case helpOthers
-    case deleteNumber
+    case unfollowEx
+    case blockEx
     case archiveChats
-    case cleanRoom
-    case trashGifts
-    case changeWallpaper
-    case readBook
-    case walkOutside
-    case dressUp
-    case cookMeal
-    case listenNewMusic
-    case drinkWater
-    case custom
+    case deleteNumber
     
     var id: String { rawValue }
     
     var bonusDays: Double {
         switch self {
-        case .deletePhotos, .block, .deleteNumber, .trashGifts:
-            return 2.0
-        case .unfollow, .unfollowOne, .helpOthers, .newExperience, .socialActivity, .fitnessChallenge, .archiveChats:
-            return 1.0
-        case .realityJournaling, .standardsList, .cleanRoom, .readBook, .walkOutside, .dressUp, .cookMeal, .listenNewMusic, .changeWallpaper, .custom, .muteNotifications, .drinkWater:
-            return 0.5
+        case .deletePhotos: return 1.0
+        case .unfollowEx: return 1.0
+        case .blockEx: return 1.0
+        case .archiveChats: return 0.5
+        case .deleteNumber: return 0.5
         }
     }
     
     var displayName: String {
         switch self {
-        case .deletePhotos: return "Deleted Photos"
-        case .unfollow: return "Unfollowed"
-        case .unfollowOne: return "Unfollowed 1 Account"
-        case .block: return "Blocked"
-        case .realityJournaling: return "Reality Journaling"
-        case .newExperience: return "New Experience"
-        case .muteNotifications: return "Muted Notifications"
-        case .standardsList: return "Wrote Standards List"
-        case .socialActivity: return "Social Activity"
-        case .fitnessChallenge: return "Fitness Challenge"
-        case .helpOthers: return "Helped Others Heal"
-        case .deleteNumber: return "Deleted Number"
-        case .archiveChats: return "Archived Chats"
-        case .cleanRoom: return "Cleaned Room"
-        case .trashGifts: return "Trashed Gifts"
-        case .changeWallpaper: return "Changed Wallpaper"
-        case .readBook: return "Read a Book"
-        case .walkOutside: return "Went for a Walk"
-        case .dressUp: return "Dressed Up"
-        case .cookMeal: return "Cooked a Meal"
-        case .listenNewMusic: return "New Music"
-        case .drinkWater: return "Drank Water"
-        case .custom: return "Custom Action"
+        case .deletePhotos: return "Delete Photos"
+        case .unfollowEx: return "Unfollow Them"
+        case .blockEx: return "Block Them"
+        case .archiveChats: return "Archive Chats"
+        case .deleteNumber: return "Delete Number"
         }
     }
     
     var icon: String {
         switch self {
         case .deletePhotos: return "trash.fill"
-        case .unfollow, .unfollowOne: return "person.badge.minus"
-        case .block: return "hand.raised.fill"
-        case .realityJournaling: return "book.fill"
-        case .newExperience: return "star.fill"
-        case .muteNotifications: return "bell.slash.fill"
-        case .standardsList: return "checklist"
-        case .socialActivity: return "person.2.fill"
-        case .fitnessChallenge: return "figure.run"
-        case .helpOthers: return "heart.fill"
-        case .deleteNumber: return "phone.down.fill"
+        case .unfollowEx: return "person.badge.minus"
+        case .blockEx: return "hand.raised.fill"
         case .archiveChats: return "archivebox.fill"
-        case .cleanRoom: return "sparkles"
-        case .trashGifts: return "gift.fill"
-        case .changeWallpaper: return "photo.fill"
-        case .readBook: return "book.closed.fill"
-        case .walkOutside: return "figure.walk"
-        case .dressUp: return "tshirt.fill"
-        case .cookMeal: return "fork.knife"
-        case .listenNewMusic: return "music.note"
-        case .drinkWater: return "drop.fill"
-        case .custom: return "sparkles"
+        case .deleteNumber: return "phone.down.fill"
         }
     }
     
     var description: String {
         switch self {
-        case .deletePhotos: return "Delete photos of your ex from your phone"
-        case .unfollow: return "Unfollow your ex on all platforms"
-        case .unfollowOne: return "Unfollow your ex on one platform"
-        case .block: return "Block your ex to remove temptation"
-        case .realityJournaling: return "Write about the real relationship, not the fantasy"
-        case .newExperience: return "Try something new you've been putting off"
-        case .muteNotifications: return "Mute notifications from apps that remind you of them"
-        case .standardsList: return "Write your non-negotiables for future relationships"
-        case .socialActivity: return "Hang out with friends or meet new people"
-        case .fitnessChallenge: return "Complete a workout or physical challenge"
-        case .helpOthers: return "Help someone else going through heartbreak"
-        case .deleteNumber: return "Delete their number so you can't text them"
-        case .archiveChats: return "Archive or delete old chat history"
-        case .cleanRoom: return "Clean your space to clear your mind"
-        case .trashGifts: return "Get rid of gifts that remind you of them"
-        case .changeWallpaper: return "Change your wallpaper if it reminds you of them"
-        case .readBook: return "Read a few pages of a book to distract yourself"
-        case .walkOutside: return "Go for a walk and get some fresh air"
-        case .dressUp: return "Put on an outfit that makes you feel confident"
-        case .cookMeal: return "Cook a healthy meal for yourself"
-        case .listenNewMusic: return "Listen to new music, not sad songs"
-        case .drinkWater: return "Stay hydrated and take care of your body"
-        case .custom: return "A personal healing action you defined"
+        case .deletePhotos: return "Delete their photos from your phone"
+        case .unfollowEx: return "Unfollow them on social media"
+        case .blockEx: return "Block them to remove temptation"
+        case .archiveChats: return "Archive or delete old conversations"
+        case .deleteNumber: return "Delete their number so you can't text"
         }
     }
     
     var isRepeatable: Bool {
-        switch self {
-        case .deletePhotos, .unfollow, .block, .muteNotifications, .standardsList, .deleteNumber, .archiveChats, .trashGifts, .changeWallpaper:
-            return false
-        default:
-            return true
-        }
+        return false
+    }
+    
+    static var allActions: [PowerActionType] {
+        [.deletePhotos, .unfollowEx, .blockEx, .archiveChats, .deleteNumber]
     }
 }
 
@@ -270,8 +176,6 @@ enum BadgeType: String, Codable, Hashable, CaseIterable, Identifiable {
     case deletedFolder
     case blockedEx
     case unfollowedAll
-    case firstJournal
-    case newExperience
     case glowUpReached
     case unbotheredReached
     
@@ -282,46 +186,68 @@ enum BadgeType: String, Codable, Hashable, CaseIterable, Identifiable {
         case .firstDay: return "Day One"
         case .weekStreak: return "Week Warrior"
         case .twoWeekStreak: return "Two Weeks Strong"
-        case .monthStreak: return "30 Days No Contact"
-        case .deletedFolder: return "Deleted the Folder"
+        case .monthStreak: return "Month Master"
+        case .deletedFolder: return "Photo Purge"
         case .blockedEx: return "Blocked & Blessed"
         case .unfollowedAll: return "Digital Detox"
-        case .firstJournal: return "Reality Check"
-        case .newExperience: return "New Chapter"
         case .glowUpReached: return "Glow-Up Achieved"
-        case .unbotheredReached: return "Unbothered Era"
+        case .unbotheredReached: return "Unbothered Queen"
+        }
+    }
+    
+    var emoji: String {
+        switch self {
+        case .firstDay: return "🌱"
+        case .weekStreak: return "🔥"
+        case .twoWeekStreak: return "💪"
+        case .monthStreak: return "👑"
+        case .deletedFolder: return "🗑️"
+        case .blockedEx: return "🚫"
+        case .unfollowedAll: return "📵"
+        case .glowUpReached: return "💅"
+        case .unbotheredReached: return "🏆"
+        }
+    }
+    
+    var genZTagline: String {
+        switch self {
+        case .firstDay: return "You showed up. That's the vibe."
+        case .weekStreak: return "A whole week? That's giving main character."
+        case .twoWeekStreak: return "Two weeks of choosing yourself. Iconic."
+        case .monthStreak: return "30 days of being that person. Obsessed."
+        case .deletedFolder: return "Deleted the receipts. Growth era unlocked."
+        case .blockedEx: return "Blocked with love. Peace was chosen."
+        case .unfollowedAll: return "Unfollowed and unbothered. As you should."
+        case .glowUpReached: return "The glow-up is giving everything."
+        case .unbotheredReached: return "Living rent-free in your own peace."
         }
     }
     
     var icon: String {
         switch self {
-        case .firstDay: return "1.circle.fill"
-        case .weekStreak: return "7.circle.fill"
-        case .twoWeekStreak: return "14.circle.fill"
-        case .monthStreak: return "30.circle.fill"
-        case .deletedFolder: return "folder.badge.minus"
-        case .blockedEx: return "hand.raised.fill"
-        case .unfollowedAll: return "person.2.slash.fill"
-        case .firstJournal: return "book.closed.fill"
-        case .newExperience: return "star.fill"
+        case .firstDay: return "leaf.fill"
+        case .weekStreak: return "flame.fill"
+        case .twoWeekStreak: return "bolt.fill"
+        case .monthStreak: return "crown.fill"
+        case .deletedFolder: return "trash.fill"
+        case .blockedEx: return "xmark.shield.fill"
+        case .unfollowedAll: return "person.crop.circle.badge.minus"
         case .glowUpReached: return "sparkles"
-        case .unbotheredReached: return "crown.fill"
+        case .unbotheredReached: return "trophy.fill"
         }
     }
     
     var color: String {
         switch self {
-        case .firstDay: return "9B59B6"
-        case .weekStreak: return "3498DB"
-        case .twoWeekStreak: return "1ABC9C"
-        case .monthStreak: return "F39C12"
-        case .deletedFolder: return "E74C3C"
-        case .blockedEx: return "E91E63"
-        case .unfollowedAll: return "00BCD4"
-        case .firstJournal: return "8E44AD"
-        case .newExperience: return "FF9800"
+        case .firstDay: return "34C759"
+        case .weekStreak: return "FF6B35"
+        case .twoWeekStreak: return "5856D6"
+        case .monthStreak: return "FFD60A"
+        case .deletedFolder: return "FF3B30"
+        case .blockedEx: return "FF2D55"
+        case .unfollowedAll: return "007AFF"
         case .glowUpReached: return "FFD700"
-        case .unbotheredReached: return "2ECC71"
+        case .unbotheredReached: return "30D158"
         }
     }
 }
@@ -352,6 +278,7 @@ struct TrackingState: StoreState {
     var maxStreak: Int
     
     var bonusDays: Double
+    var lifetimeBonusDays: Double
     var relapseDates: [Date]
     var powerActions: [PowerActionRecord]
     var dailyCheckIns: [DailyCheckIn]
@@ -372,6 +299,7 @@ extension TrackingState {
             relapseCount: 0,
             maxStreak: 0,
             bonusDays: 0,
+            lifetimeBonusDays: 0,
             relapseDates: [],
             powerActions: [],
             dailyCheckIns: [],
@@ -390,6 +318,7 @@ extension TrackingState {
         relapseCount: Int = 0,
         maxStreak: Int = 0,
         bonusDays: Double = 0,
+        lifetimeBonusDays: Double = 0,
         powerActions: [PowerActionRecord] = [],
         dailyCheckIns: [DailyCheckIn] = [],
         badges: [Badge] = []
@@ -411,6 +340,7 @@ extension TrackingState {
             relapseCount: relapseCount,
             maxStreak: maxStreak,
             bonusDays: bonusDays,
+            lifetimeBonusDays: lifetimeBonusDays,
             relapseDates: relapseDates,
             powerActions: powerActions,
             dailyCheckIns: dailyCheckIns,
@@ -425,19 +355,22 @@ extension TrackingState {
     var daysSinceProgramStart: Int {
         let start = calendar.startOfDay(for: programStartDate)
         let now = calendar.startOfDay(for: Date())
-        return max(calendar.dateComponents([.day], from: start, to: now).day ?? 0, 0)
+        let days = calendar.dateComponents([.day], from: start, to: now).day ?? 0
+        return max(days + 1, 1)
     }
     
     var daysInLevel: Int {
         let start = calendar.startOfDay(for: levelStartDate)
         let now = calendar.startOfDay(for: Date())
-        return max(calendar.dateComponents([.day], from: start, to: now).day ?? 0, 0)
+        let days = calendar.dateComponents([.day], from: start, to: now).day ?? 0
+        return max(days + 1, 1)
     }
     
     var currentStreakDays: Int {
         let start = calendar.startOfDay(for: noContactStartDate)
         let now = calendar.startOfDay(for: Date())
-        return max(calendar.dateComponents([.day], from: start, to: now).day ?? 0, 0)
+        let days = calendar.dateComponents([.day], from: start, to: now).day ?? 0
+        return max(days + 1, 1)
     }
     
     var totalHealingDays: Int {
@@ -622,6 +555,10 @@ final class TrackingStore: Store<TrackingState> {
         state.bonusDays
     }
     
+    var lifetimeBonusDays: Double {
+        state.lifetimeBonusDays
+    }
+    
     var daysInLevel: Int {
         state.daysInLevel
     }
@@ -677,7 +614,6 @@ final class TrackingStore: Store<TrackingState> {
     }
     
     func recordPowerAction(_ type: PowerActionType, on date: Date = Date(), note: String? = nil) {
-        // Prevent duplicates for non-repeatable actions
         if !type.isRepeatable && state.powerActions.contains(where: { $0.type == type }) {
             return
         }
@@ -688,6 +624,7 @@ final class TrackingStore: Store<TrackingState> {
         let maxBonus = state.currentLevel.maxBonusDays
         let updated = min(state.bonusDays + type.bonusDays, Double(maxBonus))
         state.bonusDays = updated
+        state.lifetimeBonusDays += type.bonusDays
         
         updateLevelIfNeeded(currentDate: date)
         checkAndAwardBadges()
@@ -744,20 +681,12 @@ final class TrackingStore: Store<TrackingState> {
             state.badges.append(Badge(type: .deletedFolder))
         }
         
-        if state.powerActions.contains(where: { $0.type == .block }) && !earnedTypes.contains(.blockedEx) {
+        if state.powerActions.contains(where: { $0.type == .blockEx }) && !earnedTypes.contains(.blockedEx) {
             state.badges.append(Badge(type: .blockedEx))
         }
         
-        if state.powerActions.contains(where: { $0.type == .unfollow }) && !earnedTypes.contains(.unfollowedAll) {
+        if state.powerActions.contains(where: { $0.type == .unfollowEx }) && !earnedTypes.contains(.unfollowedAll) {
             state.badges.append(Badge(type: .unfollowedAll))
-        }
-        
-        if state.powerActions.contains(where: { $0.type == .realityJournaling }) && !earnedTypes.contains(.firstJournal) {
-            state.badges.append(Badge(type: .firstJournal))
-        }
-        
-        if state.powerActions.contains(where: { $0.type == .newExperience }) && !earnedTypes.contains(.newExperience) {
-            state.badges.append(Badge(type: .newExperience))
         }
         
         if state.currentLevel.rawValue >= HealingLevel.glowUp.rawValue && !earnedTypes.contains(.glowUpReached) {
@@ -772,6 +701,26 @@ final class TrackingStore: Store<TrackingState> {
     func awardBadge(_ type: BadgeType) {
         guard !state.badges.contains(where: { $0.type == type }) else { return }
         state.badges.append(Badge(type: type))
+    }
+    
+    func resetProgress() {
+        let now = Date()
+        let previousStreak = state.currentStreakDays
+        if previousStreak > state.maxStreak {
+            state.maxStreak = previousStreak
+        }
+        
+        state.noContactStartDate = now
+        state.levelStartDate = now
+        state.currentLevel = .emergency
+        state.bonusDays = 0
+        state.relapseCount += 1
+        state.lastRelapseDate = now
+        
+        let today = state.calendar.startOfDay(for: now)
+        if !state.relapseDates.contains(where: { state.calendar.isDate($0, inSameDayAs: today) }) {
+            state.relapseDates.append(today)
+        }
     }
 }
 
@@ -963,6 +912,7 @@ extension TrackingStore {
             relapseCount: 3,
             maxStreak: 180,
             bonusDays: 0,
+            lifetimeBonusDays: 25,
             relapseDates: [],
             powerActions: powerActions,
             dailyCheckIns: checkIns,

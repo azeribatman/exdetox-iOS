@@ -14,7 +14,23 @@ struct ExDetoxApp: App {
             WhyItemRecord.self
         ])
         let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-        return try! ModelContainer(for: schema, configurations: [configuration])
+        
+        do {
+            return try ModelContainer(for: schema, configurations: [configuration])
+        } catch {
+            print("Failed to create ModelContainer: \(error)")
+            
+            let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+            let dbPath = documentsPath.appendingPathComponent("default.store")
+            
+            try? FileManager.default.removeItem(at: dbPath)
+            
+            do {
+                return try ModelContainer(for: schema, configurations: [configuration])
+            } catch {
+                fatalError("Could not create ModelContainer even after clearing data: \(error)")
+            }
+        }
     }()
     
     @State private var router = Router.base

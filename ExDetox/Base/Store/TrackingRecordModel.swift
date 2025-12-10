@@ -3,21 +3,22 @@ import SwiftData
 
 @Model
 final class TrackingRecord {
-    @Attribute(.unique) var id: UUID
-    var exName: String
-    var programStartDate: Date
-    var totalProgramDays: Int
-    var levelStartDate: Date
-    var currentLevelRaw: Int
-    var noContactStartDate: Date
+    @Attribute(.unique) var id: UUID = UUID()
+    var exName: String = ""
+    var programStartDate: Date = Date()
+    var totalProgramDays: Int = 180
+    var levelStartDate: Date = Date()
+    var currentLevelRaw: Int = 0
+    var noContactStartDate: Date = Date()
     var lastRelapseDate: Date?
-    var relapseCount: Int
-    var maxStreak: Int
-    var bonusDays: Double
-    @Relationship(deleteRule: .cascade) var relapses: [RelapseRecord]
-    @Relationship(deleteRule: .cascade) var powerActions: [PowerActionObject]
-    @Relationship(deleteRule: .cascade) var dailyCheckIns: [DailyCheckInRecord]
-    @Relationship(deleteRule: .cascade) var badges: [BadgeRecord]
+    var relapseCount: Int = 0
+    var maxStreak: Int = 0
+    var bonusDays: Double = 0
+    var lifetimeBonusDays: Double = 0
+    @Relationship(deleteRule: .cascade) var relapses: [RelapseRecord] = []
+    @Relationship(deleteRule: .cascade) var powerActions: [PowerActionObject] = []
+    @Relationship(deleteRule: .cascade) var dailyCheckIns: [DailyCheckInRecord] = []
+    @Relationship(deleteRule: .cascade) var badges: [BadgeRecord] = []
     
     init(
         id: UUID = UUID(),
@@ -31,6 +32,7 @@ final class TrackingRecord {
         relapseCount: Int,
         maxStreak: Int,
         bonusDays: Double,
+        lifetimeBonusDays: Double = 0,
         relapses: [RelapseRecord] = [],
         powerActions: [PowerActionObject] = [],
         dailyCheckIns: [DailyCheckInRecord] = [],
@@ -47,6 +49,7 @@ final class TrackingRecord {
         self.relapseCount = relapseCount
         self.maxStreak = maxStreak
         self.bonusDays = bonusDays
+        self.lifetimeBonusDays = lifetimeBonusDays
         self.relapses = relapses
         self.powerActions = powerActions
         self.dailyCheckIns = dailyCheckIns

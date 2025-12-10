@@ -1,8 +1,12 @@
 import SwiftUI
+import SwiftData
 
 struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(TrackingStore.self) private var trackingStore
+    @Environment(\.modelContext) private var modelContext
     @State private var showResetAlert = false
+    @State private var showResetConfirmation = false
     
     var body: some View {
         ZStack {
@@ -13,6 +17,7 @@ struct SettingsView: View {
                 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 20) {
+                        lifetimeStatsSection
                         accountSection
                         legalSection
                         socialSection
@@ -26,13 +31,64 @@ struct SettingsView: View {
                 }
             }
         }
-        .alert("Reset Progress", isPresented: $showResetAlert) {
+        .alert("Reset Your Streak?", isPresented: $showResetAlert) {
             Button("Cancel", role: .cancel) { }
-            Button("Reset", role: .destructive) {
+            Button("Reset Streak", role: .destructive) {
+                TrackingPersistence.resetProgress(store: trackingStore, context: modelContext)
                 Haptics.notification(type: .warning)
+                showResetConfirmation = true
             }
         } message: {
-            Text("This will erase all your progress. This action cannot be undone.")
+            Text("This will reset your current streak to Day 1. Your lifetime stats (power action days, badges) will be preserved. You got this! 💪")
+        }
+        .alert("Streak Reset", isPresented: $showResetConfirmation) {
+            Button("OK") { }
+        } message: {
+            Text("Your streak has been reset. Today is Day 1 of your new journey. We believe in you! ✨")
+        }
+    }
+    
+    private var lifetimeStatsSection: some View {
+        SettingsSection(title: "LIFETIME STATS") {
+            HStack(spacing: 0) {
+                VStack(spacing: 4) {
+                    Text("\(trackingStore.maxStreak)")
+                        .font(.system(size: 24, weight: .black, design: .rounded))
+                    Text("best streak")
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                
+                Rectangle()
+                    .fill(Color.primary.opacity(0.08))
+                    .frame(width: 1, height: 36)
+                
+                VStack(spacing: 4) {
+                    Text("+\(String(format: "%.1f", trackingStore.lifetimeBonusDays))")
+                        .font(.system(size: 24, weight: .black, design: .rounded))
+                        .foregroundStyle(Color(hex: "34C759"))
+                    Text("action days")
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                
+                Rectangle()
+                    .fill(Color.primary.opacity(0.08))
+                    .frame(width: 1, height: 36)
+                
+                VStack(spacing: 4) {
+                    Text("\(trackingStore.badges.count)")
+                        .font(.system(size: 24, weight: .black, design: .rounded))
+                        .foregroundStyle(Color(hex: "FFD60A"))
+                    Text("badges")
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .padding(.vertical, 16)
         }
     }
     
@@ -72,9 +128,9 @@ struct SettingsView: View {
         SettingsSection(title: "ACCOUNT") {
             SettingsRow(
                 icon: "arrow.counterclockwise",
-                title: "Reset Progress",
-                subtitle: "Start fresh",
-                iconColor: .red
+                title: "Reset Streak",
+                subtitle: "Start fresh (keeps lifetime stats)",
+                iconColor: .orange
             ) {
                 Haptics.feedback(style: .medium)
                 showResetAlert = true
@@ -269,4 +325,12 @@ struct SettingsDivider: View {
 
 #Preview {
     SettingsView()
+        .environment(TrackingStore.previewLevel2WithProgress)
+        .modelContainer(for: [
+            TrackingRecord.self,
+            RelapseRecord.self,
+            PowerActionObject.self,
+            DailyCheckInRecord.self,
+            BadgeRecord.self
+        ], inMemory: true)
 }
