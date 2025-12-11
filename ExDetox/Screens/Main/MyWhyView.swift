@@ -194,6 +194,28 @@ struct MyWhyView: View {
         .padding(16)
         .background(cardBg)
         .clipShape(RoundedRectangle(cornerRadius: 20))
+        .contextMenu {
+            Button(role: .destructive) {
+                deleteItem(item)
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
+    }
+    
+    private func deleteItem(_ item: WhyItemRecord) {
+        if let fileName = item.imageFileName {
+            deleteImageFromDocuments(fileName)
+        }
+        modelContext.delete(item)
+        try? modelContext.save()
+        Haptics.notification(type: .warning)
+    }
+    
+    private func deleteImageFromDocuments(_ fileName: String) {
+        guard let directory = documentsDirectory() else { return }
+        let url = directory.appendingPathComponent(fileName)
+        try? FileManager.default.removeItem(at: url)
     }
 }
 

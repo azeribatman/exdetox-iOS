@@ -1,0 +1,130 @@
+{
+  "quotes": {
+    "male": {
+      "emergency": [
+        "{exName}'s probably scrolling through reels rn. You should slay your goals instead 💅",
+        "Main character energy: activated. {exName}: deleted from the storyline 🎬",
+        "You're in your villain arc. Channel that energy into something iconic ✨",
+        "He's not thinking about you rn. Stop giving him mental real estate 🏠",
+        "Plot twist: the heartbreak arc is where you become unstoppable 🔥",
+        "{exName} was the tutorial level. The real game starts now 🎮"
+      ],
+      "withdrawal": [
+        "Missing {exName}? That's just your brain being dramatic. Don't let it win 🧠",
+        "The urge to text will pass. The regret won't. Stay strong bestie 💪",
+        "Every hour you don't text {exName} is a W. Keep stacking those wins 🏆",
+        "Your phone is not a magic portal to fixing things. Put it down 📵",
+        "He's not 'the one that got away', he's the one you released back to the sea 🐟",
+        "The craving is temporary. Your peace is permanent if you protect it 🧘"
+      ],
+      "reality": [
+        "Remember: you're missing {exName}'s highlight reel, not the behind-the-scenes 🎭",
+        "The rose-colored glasses are off. Now you see {pronoun} for who {pronoun} really is 🪞",
+        "You're not healing too slow. You're healing at exactly the right pace 🌱",
+        "He showed you who he was. Believe him the first time 👀",
+        "{exName} was good on paper but trash in practice. Facts are facts 📝",
+        "You didn't lose him. You discovered what you DON'T want 🔍"
+      ],
+      "glowUp": [
+        "You're literally glowing. {exName} would be shook if {pronoun} saw you now ✨",
+        "Plot twist: the best relationship you'll ever have is with yourself 💕",
+        "Main character? You're the whole studio. {exName} was just an extra 🎬",
+        "He's out here being mid while you're becoming iconic 👑",
+        "The glow-up is so real even your haters are impressed 💅",
+        "You went from 'I miss {exName}' to 'I love me' and that's growth 📈"
+      ],
+      "unbothered": [
+        "Living rent-free in {exName}'s head while thriving in your own life 🏠",
+        "You've unlocked: peace. It's giving unbothered energy 😌",
+        "{exName} is a closed chapter. You're writing a whole new book 📖",
+        "He's a lesson you aced. Time for new curriculum 🎓",
+        "You really went from heartbroken to unshakeable. Iconic behavior 🏆",
+        "The best revenge is a life well lived and bestie, you're LIVING 🌟"
+      ]
+    },
+    "female": {
+      "emergency": [
+        "{exName}'s probably posting cryptic quotes rn. You should focus on your own narrative 💅",
+        "Main character energy: activated. {exName}: written out of the script 🎬",
+        "You're in your healing arc. Let the tears water your growth ✨",
+        "She's not thinking about you rn. Redirect that mental energy 🧠",
+        "Plot twist: this heartbreak is your origin story for something better 🔥",
+        "{exName} was the prequel. Your best season starts now 🎮"
+      ],
+      "withdrawal": [
+        "Missing {exName}? That's just attachment, not love. Know the difference 🧠",
+        "The urge to check her socials will pass. The peace won't if you give in 💪",
+        "Every hour you don't stalk {exName}'s profile is a W. Stack those wins 🏆",
+        "Your phone won't give you closure. Only time and therapy do that 📵",
+        "She's not 'special', you just invested a lot. Sunk cost fallacy is real 💭",
+        "The craving is your brain lying to you. Don't fall for it 🧘"
+      ],
+      "reality": [
+        "Remember: you're missing {exName}'s curated version, not the real one 🎭",
+        "The rose-colored glasses are off. Now you see {pronoun} clearly 🪞",
+        "You're not healing too slow. You're healing at exactly the right pace 🌱",
+        "She showed you who she was. Believe the actions, not the words 👀",
+        "{exName} was a vibe until she wasn't. That's just facts 📝",
+        "You didn't lose her. You gained clarity and self-respect 🔍"
+      ],
+      "glowUp": [
+        "You're literally glowing. {exName} would be shook if {pronoun} saw you now ✨",
+        "Plot twist: the best relationship you'll ever have is with yourself 💕",
+        "Main character? You're the whole production. {exName} was just a cameo 🎬",
+        "She's out here being confused while you're becoming powerful 👑",
+        "The glow-up is so real your timeline can't even handle it 💅",
+        "You went from 'I miss {exName}' to 'I choose me' and that's growth 📈"
+      ],
+      "unbothered": [
+        "Living rent-free in {exName}'s head while thriving in your own life 🏠",
+        "You've unlocked: peace. It's giving unbothered energy 😌",
+        "{exName} is a closed chapter. You're writing a whole new story 📖",
+        "She's a lesson you learned. Time for new experiences 🎓",
+        "You really went from heartbroken to unbreakable. Legendary behavior 🏆",
+        "The best revenge is becoming your best self and bestie, you ARE 🌟"
+      ]
+    },
+    "other": {
+      "emergency": [
+        "{exName}'s probably doing their thing rn. You should focus on yours 💅",
+        "Main character energy: activated. {exName}: removed from the cast 🎬",
+        "You're in your transformation arc. Embrace the uncomfortable ✨",
+        "They're not thinking about you rn. Reclaim that mental space 🧠",
+        "Plot twist: this ending is just a new beginning in disguise 🔥",
+        "{exName} was chapter one. The best chapters are ahead 🎮"
+      ],
+      "withdrawal": [
+        "Missing {exName}? That's just habit, not need. There's a difference 🧠",
+        "The urge to reach out will pass. The regret won't. Stay strong 💪",
+        "Every hour you maintain no-contact is a W. Keep stacking 🏆",
+        "Your phone won't fix this. Time and self-love will 📵",
+        "They're not irreplaceable. You just haven't met the replacement yet 💭",
+        "The craving is temporary. Your self-worth is permanent 🧘"
+      ],
+      "reality": [
+        "Remember: you're missing {exName}'s highlight reel, not reality 🎭",
+        "The rose-colored glasses are off. Now you see {pronoun} clearly 🪞",
+        "You're not healing too slow. You're healing perfectly 🌱",
+        "They showed you who they were. Accept it and move forward 👀",
+        "{exName} seemed perfect until they proved otherwise. Trust the evidence 📝",
+        "You didn't lose them. You found yourself instead 🔍"
+      ],
+      "glowUp": [
+        "You're literally glowing. {exName} would be shook if {pronoun} saw you now ✨",
+        "Plot twist: the best relationship you'll ever have is with yourself 💕",
+        "Main character? You're the whole franchise. {exName} was just a spin-off 🎬",
+        "They're out here being average while you're becoming exceptional 👑",
+        "The glow-up is so real everyone's taking notes 💅",
+        "You went from 'I miss {exName}' to 'I am enough' and that's everything 📈"
+      ],
+      "unbothered": [
+        "Living rent-free in {exName}'s head while thriving in your own life 🏠",
+        "You've unlocked: peace. It's giving unbothered vibes 😌",
+        "{exName} is a closed chapter. You're authoring a whole new series 📖",
+        "They're a lesson you mastered. Time for new classes 🎓",
+        "You really went from heartbroken to unshakeable. Elite behavior 🏆",
+        "The best revenge is becoming your best self and you're THERE 🌟"
+      ]
+    }
+  }
+}

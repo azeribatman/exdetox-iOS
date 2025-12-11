@@ -160,3 +160,16 @@ final class WhyItemRecord {
         self.imageFileName = imageFileName
     }
 }
+
+@Model
+final class LearningProgressRecord {
+    @Attribute(.unique) var lessonId: String
+    var sectionId: String
+    var completedAt: Date
+    
+    init(lessonId: String, sectionId: String, completedAt: Date = Date()) {
+        self.lessonId = lessonId
+        self.sectionId = sectionId
+        self.completedAt = completedAt
+    }
+}

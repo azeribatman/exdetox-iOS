@@ -1,30 +1,30 @@
 import SwiftUI
 
+struct RoastsData: Codable {
+    let roasts: [String: [String]]
+}
+
 struct RoastMeView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(UserProfileStore.self) private var userProfileStore
+    
     @State private var roastMessage: String = ""
     @State private var emojiScale: CGFloat = 1.0
     @State private var emojiRotation: Double = 0
     @State private var cardOffset: CGFloat = 0
     @State private var showContent = false
+    @State private var roasts: [String] = []
     
-    private let roasts = [
-        "He's not 'finding himself', he's finding someone else to manipulate. 🚩",
-        "Your ex is like a software update: annoying, unnecessary, and makes everything slower. 🐌",
-        "If he was a spice, he'd be flour. 🍞",
-        "Checking his story won't change the ending, sweetie. 📖",
-        "You dropped this 👑. Now pick it up and block him.",
-        "He's probably wearing that same hoodie he hasn't washed in 3 weeks. 🤢",
-        "The only thing he committed to was being a disappointment. 📉",
-        "You miss the idea of him, not the clown who forgot your birthday. 🤡",
-        "His new girl isn't competition, she's the next victim. 🕵️‍♀️",
-        "Remember when you thought he was 'The One'? Yeah, we all make mistakes. 😂",
-        "He's a 10? But he texts his ex? He's a -2. 📉",
-        "Crying over him? Dehydration is not a good look. 💧",
-        "He's living rent-free in your head. Evict him. 🏠",
-        "If he wanted to, he would. He didn't. End of story. 🤷‍♀️",
-        "Trash takes itself out. Don't go dumpster diving. 🗑️"
-    ]
+    private var exGenderKey: String {
+        let gender = userProfileStore.profile.exGender.lowercased()
+        if gender.contains("male") && !gender.contains("female") {
+            return "male"
+        } else if gender.contains("female") {
+            return "female"
+        } else {
+            return "other"
+        }
+    }
     
     var body: some View {
         ZStack {
@@ -43,11 +43,29 @@ struct RoastMeView: View {
             }
         }
         .onAppear {
-            generateRoast()
+            loadRoasts()
             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                 showContent = true
             }
         }
+    }
+    
+    private func loadRoasts() {
+        if let url = Bundle.main.url(forResource: "roasts", withExtension: "json"),
+           let data = try? Data(contentsOf: url),
+           let decoded = try? JSONDecoder().decode(RoastsData.self, from: data) {
+            roasts = decoded.roasts[exGenderKey] ?? decoded.roasts["other"] ?? []
+        }
+        
+        if roasts.isEmpty {
+            roasts = [
+                "They're not worth your peace. Block and breathe. 🧘",
+                "You dropped this 👑. Now pick it up and block them.",
+                "The only thing they committed to was being a disappointment. 📉"
+            ]
+        }
+        
+        generateRoast()
     }
     
     private var headerView: some View {
@@ -149,16 +167,16 @@ struct RoastMeView: View {
     private func generateRoast() {
         Haptics.feedback(style: .heavy)
         
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.5)) {
             emojiScale = 1.3
-            emojiRotation += 15
+            emojiRotation += 360
         }
         
-        withAnimation(.spring(response: 0.2, dampingFraction: 0.6).delay(0.1)) {
+        withAnimation(.spring(response: 0.2, dampingFraction: 0.6).delay(0.15)) {
             emojiScale = 0.9
         }
         
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.7).delay(0.2)) {
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.7).delay(0.25)) {
             emojiScale = 1.0
         }
         
@@ -170,7 +188,9 @@ struct RoastMeView: View {
             cardOffset = 0
         }
         
-        var newRoast = roasts.randomElement() ?? "You're doing great! (Just kidding, block him)"
+        guard !roasts.isEmpty else { return }
+        
+        var newRoast = roasts.randomElement() ?? "You're doing great! (Just kidding, block them)"
         while newRoast == roastMessage && roasts.count > 1 {
             newRoast = roasts.randomElement() ?? "You're doing great!"
         }
@@ -183,4 +203,5 @@ struct RoastMeView: View {
 
 #Preview {
     RoastMeView()
+        .environment(UserProfileStore())
 }

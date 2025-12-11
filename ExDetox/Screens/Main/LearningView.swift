@@ -1,6 +1,10 @@
 import SwiftUI
+import SwiftData
 
 struct LearningView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query private var completedLessons: [LearningProgressRecord]
+    
     @State private var selectedArticle: Article?
     @State private var learningSections: [LearningSection] = []
     @State private var selectedSectionId: String?
@@ -159,12 +163,17 @@ struct LearningView: View {
     }
     
     func loadLearningSectionsIfNeeded() {
-        guard learningSections.isEmpty else { return }
+        guard learningSections.isEmpty else { 
+            syncCompletionStatus()
+            return 
+        }
         
         guard let url = Bundle.main.url(forResource: "learnings", withExtension: "json") else {
             print("learnings.json not found in bundle")
             return
         }
+        
+        let completedLessonIds = Set(completedLessons.map { $0.lessonId })
         
         do {
             let data = try Data(contentsOf: url)
@@ -186,13 +195,23 @@ struct LearningView: View {
                             quote: lesson.quote,
                             quiz: lesson.quiz ?? [],
                             content: lesson.content ?? [],
-                            isCompleted: false
+                            isCompleted: completedLessonIds.contains(lesson.id)
                         )
                     }
                 )
             }
         } catch {
             print("Failed to load learnings.json: \(error)")
+        }
+    }
+    
+    private func syncCompletionStatus() {
+        let completedLessonIds = Set(completedLessons.map { $0.lessonId })
+        for sectionIndex in learningSections.indices {
+            for lessonIndex in learningSections[sectionIndex].lessons.indices {
+                let lessonId = learningSections[sectionIndex].lessons[lessonIndex].id
+                learningSections[sectionIndex].lessons[lessonIndex].isCompleted = completedLessonIds.contains(lessonId)
+            }
         }
     }
     
@@ -231,6 +250,13 @@ struct LearningView: View {
         }
         
         learningSections[sectionIndex].lessons[lessonIndex].isCompleted = true
+        
+        let alreadyExists = completedLessons.contains { $0.lessonId == lessonId }
+        if !alreadyExists {
+            let progressRecord = LearningProgressRecord(lessonId: lessonId, sectionId: sectionId)
+            modelContext.insert(progressRecord)
+            try? modelContext.save()
+        }
     }
     
     func colorForSection(id: String) -> Color {
@@ -408,4 +434,5 @@ struct QuizOption: Decodable, Identifiable {
 
 #Preview {
     LearningView()
+        .modelContainer(for: [LearningProgressRecord.self], inMemory: true)
 }

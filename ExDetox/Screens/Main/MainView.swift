@@ -112,7 +112,8 @@ struct MainView_Previews: PreviewProvider {
                     DailyCheckInRecord.self,
                     BadgeRecord.self,
                     UserProfileRecord.self,
-                    WhyItemRecord.self
+                    WhyItemRecord.self,
+                    LearningProgressRecord.self
                 ], inMemory: true)
                 .previewDisplayName("New User")
             
@@ -127,7 +128,8 @@ struct MainView_Previews: PreviewProvider {
                     DailyCheckInRecord.self,
                     BadgeRecord.self,
                     UserProfileRecord.self,
-                    WhyItemRecord.self
+                    WhyItemRecord.self,
+                    LearningProgressRecord.self
                 ], inMemory: true)
                 .previewDisplayName("Level 2 Progress")
             
@@ -142,7 +144,8 @@ struct MainView_Previews: PreviewProvider {
                     DailyCheckInRecord.self,
                     BadgeRecord.self,
                     UserProfileRecord.self,
-                    WhyItemRecord.self
+                    WhyItemRecord.self,
+                    LearningProgressRecord.self
                 ], inMemory: true)
                 .previewDisplayName("Level 3 With Relapses")
             
@@ -157,7 +160,8 @@ struct MainView_Previews: PreviewProvider {
                     DailyCheckInRecord.self,
                     BadgeRecord.self,
                     UserProfileRecord.self,
-                    WhyItemRecord.self
+                    WhyItemRecord.self,
+                    LearningProgressRecord.self
                 ], inMemory: true)
                 .previewDisplayName("Level 5 Unbothered")
         }

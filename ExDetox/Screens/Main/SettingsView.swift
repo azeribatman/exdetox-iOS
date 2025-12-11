@@ -1,20 +1,31 @@
 import SwiftUI
 import SwiftData
+import StoreKit
 
 struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(\.requestReview) var requestReview
     @Environment(TrackingStore.self) private var trackingStore
     @Environment(UserProfileStore.self) private var userProfileStore
     @Environment(\.modelContext) private var modelContext
-    @State private var showResetAlert = false
-    @State private var showResetConfirmation = false
+    @Query private var whyItems: [WhyItemRecord]
+    @Query private var learningProgress: [LearningProgressRecord]
+    @Query private var trackingRecords: [TrackingRecord]
     @State private var showOpenSettingsAlert = false
+    @State private var showStartFreshAlert = false
+    @State private var showStartFreshConfirmation = false
     @State private var showStreakCelebration = false
     @State private var showExQuizSheet = false
     @State private var testQuizMessage: ExQuizMessage?
     @State private var debugStreakValue = 7
     
     private let notificationManager = LocalNotificationManager.shared
+    
+    private func deleteImageFromDocuments(_ fileName: String) {
+        guard let directory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
+        let url = directory.appendingPathComponent(fileName)
+        try? FileManager.default.removeItem(at: url)
+    }
     
     var body: some View {
         ZStack {
@@ -29,7 +40,6 @@ struct SettingsView: View {
                         notificationsSection
                         accountSection
                         legalSection
-                        socialSection
                         supportSection
                         
                         #if DEBUG
@@ -58,20 +68,40 @@ struct SettingsView: View {
                 .zIndex(100)
             }
         }
-        .alert("Reset Your Streak?", isPresented: $showResetAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Reset Streak", role: .destructive) {
-                TrackingPersistence.resetProgress(store: trackingStore, context: modelContext)
+        .alert("Time For A Plot Twist? 🎬", isPresented: $showStartFreshAlert) {
+            Button("Nah, I'm Good", role: .cancel) { }
+            Button("Yeet Everything 🚀", role: .destructive) {
+                for item in whyItems {
+                    if let fileName = item.imageFileName {
+                        deleteImageFromDocuments(fileName)
+                    }
+                    modelContext.delete(item)
+                }
+                for progress in learningProgress {
+                    modelContext.delete(progress)
+                }
+                for record in trackingRecords {
+                    modelContext.delete(record)
+                }
+                try? modelContext.save()
+                
+                userProfileStore.reset()
+                trackingStore.state = .initialNow()
+                
+                LocalNotificationManager.shared.cancelAllNotifications()
+                
                 Haptics.notification(type: .warning)
-                showResetConfirmation = true
+                showStartFreshConfirmation = true
             }
         } message: {
-            Text("This will reset your current streak to Day 1. Your lifetime stats (power action days, badges) will be preserved. You got this! 💪")
+            Text("This will delete ALL your data - ex info, streaks, whys, everything. You're literally starting from scratch like a main character origin story. No take-backs bestie! 💀")
         }
-        .alert("Streak Reset", isPresented: $showResetConfirmation) {
-            Button("OK") { }
+        .alert("Clean Slate Unlocked ✨", isPresented: $showStartFreshConfirmation) {
+            Button("Let's Gooo") {
+                dismiss()
+            }
         } message: {
-            Text("Your streak has been reset. Today is Day 1 of your new journey. We believe in you! ✨")
+            Text("Everything's gone. New phone who dis? Time to write a whole new chapter. You got this fr fr 💅")
         }
         .alert("Enable Notifications", isPresented: $showOpenSettingsAlert) {
             Button("Cancel", role: .cancel) { }
@@ -403,24 +433,13 @@ struct SettingsView: View {
     private var accountSection: some View {
         SettingsSection(title: "ACCOUNT") {
             SettingsRow(
-                icon: "arrow.counterclockwise",
-                title: "Reset Streak",
-                subtitle: "Start fresh (keeps lifetime stats)",
-                iconColor: .orange
+                icon: "arrow.trianglehead.2.counterclockwise.rotate.90",
+                title: "New Era, Who Dis? 💅",
+                subtitle: "New ex, new you, fresh start",
+                iconColor: Color(hex: "FF6B6B")
             ) {
                 Haptics.feedback(style: .medium)
-                showResetAlert = true
-            }
-            
-            SettingsDivider()
-            
-            SettingsRow(
-                icon: "shield.lefthalf.filled",
-                title: "Content Blocking",
-                subtitle: "Safari protection",
-                iconColor: .blue
-            ) {
-                Haptics.feedback(style: .light)
+                showStartFreshAlert = true
             }
         }
     }
@@ -433,6 +452,9 @@ struct SettingsView: View {
                 iconColor: .gray
             ) {
                 Haptics.feedback(style: .light)
+                if let url = URL(string: "https://exdetox.app/legal/privacypolicyexdetox.html") {
+                    UIApplication.shared.open(url)
+                }
             }
             
             SettingsDivider()
@@ -443,33 +465,13 @@ struct SettingsView: View {
                 iconColor: .gray
             ) {
                 Haptics.feedback(style: .light)
+                if let url = URL(string: "https://exdetox.app/legal/termsofuseexdetox.html") {
+                    UIApplication.shared.open(url)
+                }
             }
         }
     }
     
-    private var socialSection: some View {
-        SettingsSection(title: "FOLLOW US") {
-            SettingsRow(
-                icon: "play.rectangle.fill",
-                title: "TikTok",
-                subtitle: "@exdetox",
-                iconColor: .black
-            ) {
-                Haptics.feedback(style: .light)
-            }
-            
-            SettingsDivider()
-            
-            SettingsRow(
-                icon: "camera.fill",
-                title: "Instagram",
-                subtitle: "@exdetox",
-                iconColor: .pink
-            ) {
-                Haptics.feedback(style: .light)
-            }
-        }
-    }
     
     private var supportSection: some View {
         SettingsSection(title: "SUPPORT") {
@@ -480,6 +482,7 @@ struct SettingsView: View {
                 iconColor: .yellow
             ) {
                 Haptics.feedback(style: .medium)
+                requestReview()
             }
             
             SettingsDivider()
@@ -487,12 +490,21 @@ struct SettingsView: View {
             SettingsRow(
                 icon: "envelope.fill",
                 title: "Contact Us",
-                subtitle: "We're here for you",
+                subtitle: "support@exdetox.app",
                 iconColor: .purple
             ) {
                 Haptics.feedback(style: .light)
+                if let url = URL(string: "mailto:support@exdetox.app") {
+                    UIApplication.shared.open(url)
+                }
             }
         }
+    }
+    
+    private var appVersion: String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+        return "Version \(version) (\(build))"
     }
     
     private var versionFooter: some View {
@@ -501,7 +513,7 @@ struct SettingsView: View {
                 .font(.system(size: 15, weight: .bold, design: .rounded))
                 .foregroundColor(.secondary)
             
-            Text("Version 1.0.0")
+            Text(appVersion)
                 .font(.system(size: 13, weight: .medium, design: .rounded))
                 .foregroundStyle(.tertiary)
             
@@ -650,6 +662,8 @@ struct SettingsToggleRow: View {
             RelapseRecord.self,
             PowerActionObject.self,
             DailyCheckInRecord.self,
-            BadgeRecord.self
+            BadgeRecord.self,
+            WhyItemRecord.self,
+            LearningProgressRecord.self
         ], inMemory: true)
 }

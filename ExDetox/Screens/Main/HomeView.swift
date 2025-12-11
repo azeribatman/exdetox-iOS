@@ -39,7 +39,35 @@ struct HomeView: View {
         userProfileStore.profile.pronounForEx
     }
     
-    private var dailyQuotes: [String] {
+    private var exGenderKey: String {
+        let gender = userProfileStore.profile.exGender.lowercased()
+        if gender.contains("male") && !gender.contains("female") {
+            return "male"
+        } else if gender.contains("female") {
+            return "female"
+        } else {
+            return "other"
+        }
+    }
+    
+    private func loadDailyQuotes() -> [String] {
+        guard let url = Bundle.main.url(forResource: "dailyQuotes", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let quotes = json["quotes"] as? [String: [String: [String]]],
+              let genderQuotes = quotes[exGenderKey],
+              let levelQuotes = genderQuotes[trackingStore.currentLevel.rawValue] else {
+            return defaultQuotes
+        }
+        
+        return levelQuotes.map { quote in
+            quote
+                .replacingOccurrences(of: "{exName}", with: exName)
+                .replacingOccurrences(of: "{pronoun}", with: exPronoun)
+        }
+    }
+    
+    private var defaultQuotes: [String] {
         switch trackingStore.currentLevel {
         case .emergency:
             return [
@@ -72,6 +100,10 @@ struct HomeView: View {
                 "\(exName) is a closed chapter. You're writing a whole new book 📖"
             ]
         }
+    }
+    
+    private var dailyQuotes: [String] {
+        loadDailyQuotes()
     }
     
     private var randomQuote: String {

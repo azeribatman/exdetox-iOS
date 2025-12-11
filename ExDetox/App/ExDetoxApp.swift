@@ -14,7 +14,8 @@ struct ExDetoxApp: App {
             DailyCheckInRecord.self,
             BadgeRecord.self,
             UserProfileRecord.self,
-            WhyItemRecord.self
+            WhyItemRecord.self,
+            LearningProgressRecord.self
         ])
         let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         
