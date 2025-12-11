@@ -8,5 +8,9 @@
 	<array>
 		<string></string>
 	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>ExDetox needs access to your photo library to add images to your "My Why" reasons.</string>
 </dict>
 </plist>
