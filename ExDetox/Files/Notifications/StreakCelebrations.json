@@ -1,0 +1,180 @@
+{
+  "milestones": [
+    {
+      "day": 1,
+      "emoji": "🌱",
+      "title": "Day 1 Complete!",
+      "message": "You showed up. That's the vibe.",
+      "notification": "You made it through Day 1! 🌱"
+    },
+    {
+      "day": 2,
+      "emoji": "✨",
+      "title": "Day 2!",
+      "message": "Two days of choosing yourself. Iconic behavior.",
+      "notification": "Day 2 done! Keep going! ✨"
+    },
+    {
+      "day": 3,
+      "emoji": "🔥",
+      "title": "3 Days Strong!",
+      "message": "The first 72 hours are the hardest. You crushed them.",
+      "notification": "3 days! You're on fire! 🔥"
+    },
+    {
+      "day": 5,
+      "emoji": "💪",
+      "title": "5 Days!",
+      "message": "Almost a week. The urges get weaker from here.",
+      "notification": "5 days strong! 💪"
+    },
+    {
+      "day": 7,
+      "emoji": "👑",
+      "title": "1 WEEK!",
+      "message": "A whole week of main character energy. They wish they were you.",
+      "notification": "1 WEEK! 👑 You're literally unstoppable"
+    },
+    {
+      "day": 10,
+      "emoji": "⚡️",
+      "title": "10 Days!",
+      "message": "Double digits. Your brain is rewiring. Feel that power?",
+      "notification": "10 days! ⚡️ Double digits baby!"
+    },
+    {
+      "day": 14,
+      "emoji": "🏆",
+      "title": "2 WEEKS!",
+      "message": "Two weeks of peace. The old you couldn't have done this.",
+      "notification": "2 WEEKS! 🏆 Absolutely elite behavior"
+    },
+    {
+      "day": 21,
+      "emoji": "🧠",
+      "title": "3 WEEKS!",
+      "message": "21 days to form a habit. You're officially built different.",
+      "notification": "3 WEEKS! 🧠 New habits unlocked"
+    },
+    {
+      "day": 30,
+      "emoji": "💎",
+      "title": "1 MONTH!",
+      "message": "30 days. A whole month of choosing yourself. Living legend behavior.",
+      "notification": "1 MONTH! 💎 You're absolutely iconic"
+    },
+    {
+      "day": 45,
+      "emoji": "🌟",
+      "title": "45 Days!",
+      "message": "You're past the danger zone. The healing is real now.",
+      "notification": "45 days! 🌟 Healing mode: activated"
+    },
+    {
+      "day": 60,
+      "emoji": "🦋",
+      "title": "2 MONTHS!",
+      "message": "60 days of glow up. You're not the same person anymore.",
+      "notification": "2 MONTHS! 🦋 Transformation complete"
+    },
+    {
+      "day": 90,
+      "emoji": "🏅",
+      "title": "3 MONTHS!",
+      "message": "90 days. You've proven you don't need them. You never did.",
+      "notification": "3 MONTHS! 🏅 Main character arc complete"
+    },
+    {
+      "day": 100,
+      "emoji": "💯",
+      "title": "100 DAYS!",
+      "message": "Triple digits. You're a legend. Write that in your memoir.",
+      "notification": "100 DAYS! 💯 Legendary status"
+    },
+    {
+      "day": 120,
+      "emoji": "🌈",
+      "title": "4 MONTHS!",
+      "message": "Four months of peace. Your future self is thanking you.",
+      "notification": "4 MONTHS! 🌈 The best is yet to come"
+    },
+    {
+      "day": 150,
+      "emoji": "⭐️",
+      "title": "5 MONTHS!",
+      "message": "150 days. You're living rent-free in your own peace.",
+      "notification": "5 MONTHS! ⭐️ Unbothered energy"
+    },
+    {
+      "day": 180,
+      "emoji": "🎯",
+      "title": "HALF A YEAR!",
+      "message": "6 months. Half a year of choosing yourself. Historical behavior.",
+      "notification": "HALF A YEAR! 🎯 You're writing history"
+    },
+    {
+      "day": 270,
+      "emoji": "🔮",
+      "title": "9 MONTHS!",
+      "message": "Long enough to create new life. You've rebirthed yourself.",
+      "notification": "9 MONTHS! 🔮 A whole new you"
+    },
+    {
+      "day": 365,
+      "emoji": "🎊",
+      "title": "1 YEAR!",
+      "message": "365 days. One full orbit around the sun without them. You're free.",
+      "notification": "1 YEAR! 🎊 Freedom achieved"
+    }
+  ],
+  "generic": [
+    {
+      "emoji": "🔥",
+      "title": "Day {streak}!",
+      "message": "Still going strong. They could never.",
+      "notification": "Day {streak}! 🔥 Keep that energy"
+    },
+    {
+      "emoji": "💪",
+      "title": "Day {streak}!",
+      "message": "Another day of choosing your peace. That's growth.",
+      "notification": "Day {streak}! 💪 You got this"
+    },
+    {
+      "emoji": "✨",
+      "title": "Day {streak}!",
+      "message": "Your healing journey continues. We see you.",
+      "notification": "Day {streak}! ✨ Keep shining"
+    },
+    {
+      "emoji": "🚀",
+      "title": "Day {streak}!",
+      "message": "Every day you're leveling up. Main character things.",
+      "notification": "Day {streak}! 🚀 To the moon"
+    },
+    {
+      "emoji": "⚡️",
+      "title": "Day {streak}!",
+      "message": "Your willpower is unmatched. Built different for real.",
+      "notification": "Day {streak}! ⚡️ Unstoppable"
+    },
+    {
+      "emoji": "🎯",
+      "title": "Day {streak}!",
+      "message": "Focused on yourself. That's the only flex that matters.",
+      "notification": "Day {streak}! 🎯 Stay focused"
+    },
+    {
+      "emoji": "💅",
+      "title": "Day {streak}!",
+      "message": "Living your best life. The glow up is real.",
+      "notification": "Day {streak}! 💅 Slay bestie"
+    },
+    {
+      "emoji": "🌟",
+      "title": "Day {streak}!",
+      "message": "Star behavior. Literally iconic.",
+      "notification": "Day {streak}! 🌟 You're a star"
+    }
+  ]
+}

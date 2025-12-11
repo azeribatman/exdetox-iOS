@@ -1,0 +1,554 @@
+{
+  "messages": [
+    {
+      "id": "msg_001",
+      "text": "I miss you...",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "I miss you too 💔",
+        "Can we meet up?"
+      ],
+      "rightAnswer": "Nice try 🚩",
+      "decodedMeaning": "They're bored and lonely"
+    },
+    {
+      "id": "msg_002",
+      "text": "I've been thinking about you",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "Me too, all the time",
+        "What were you thinking?"
+      ],
+      "rightAnswer": "I'm focusing on myself now",
+      "decodedMeaning": "They want validation"
+    },
+    {
+      "id": "msg_003",
+      "text": "Can we talk?",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "Sure, call me",
+        "What about?"
+      ],
+      "rightAnswer": "There's nothing to discuss",
+      "decodedMeaning": "They want to reel you back in"
+    },
+    {
+      "id": "msg_004",
+      "text": "I made a mistake",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "I forgive you",
+        "What kind of mistake?"
+      ],
+      "rightAnswer": "That's your journey, not mine",
+      "decodedMeaning": "They regret losing control over you"
+    },
+    {
+      "id": "msg_005",
+      "text": "No one gets me like you did",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "I felt the same way",
+        "We had something special"
+      ],
+      "rightAnswer": "Someone will, but it won't be me",
+      "decodedMeaning": "Manipulation through flattery"
+    },
+    {
+      "id": "msg_006",
+      "text": "I saw something that reminded me of you",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "What was it? 🥺",
+        "I think about you too"
+      ],
+      "rightAnswer": "Cool story 👋",
+      "decodedMeaning": "Testing if you'll respond"
+    },
+    {
+      "id": "msg_007",
+      "text": "Are you seeing someone?",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "No, I'm still single",
+        "Why do you want to know?"
+      ],
+      "rightAnswer": "That's not your business anymore",
+      "decodedMeaning": "Jealousy check"
+    },
+    {
+      "id": "msg_008",
+      "text": "I had a dream about you",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "Really? What happened?",
+        "I dream about you too"
+      ],
+      "rightAnswer": "Keep dreaming 💅",
+      "decodedMeaning": "Creating false intimacy"
+    },
+    {
+      "id": "msg_009",
+      "text": "Remember when we...",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "Yes, those were good times",
+        "I remember everything"
+      ],
+      "rightAnswer": "The past stays in the past",
+      "decodedMeaning": "Nostalgia trap"
+    },
+    {
+      "id": "msg_010",
+      "text": "I've changed, I promise",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "How have you changed?",
+        "I believe you"
+      ],
+      "rightAnswer": "Good for you, I've moved on",
+      "decodedMeaning": "Empty promises to get you back"
+    },
+    {
+      "id": "msg_011",
+      "text": "Happy birthday! 🎂",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "Thanks! How are you?",
+        "I was hoping you'd remember"
+      ],
+      "rightAnswer": "✓ Seen",
+      "decodedMeaning": "Using occasions to reconnect"
+    },
+    {
+      "id": "msg_012",
+      "text": "I still have your hoodie",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "Keep it, it looks better on you",
+        "Can I come get it?"
+      ],
+      "rightAnswer": "Donate it",
+      "decodedMeaning": "Creating excuses to meet"
+    },
+    {
+      "id": "msg_013",
+      "text": "Are you okay? You seemed off on Instagram",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "Yeah, going through some stuff",
+        "You noticed? 🥺"
+      ],
+      "rightAnswer": "Stop watching my stories",
+      "decodedMeaning": "Playing the caring ex card"
+    },
+    {
+      "id": "msg_014",
+      "text": "I can't stop listening to our song",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "Which one? 💔",
+        "It makes me sad too"
+      ],
+      "rightAnswer": "Find a new playlist",
+      "decodedMeaning": "Weaponizing shared memories"
+    },
+    {
+      "id": "msg_015",
+      "text": "My friends keep asking about you",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "Tell them I said hi",
+        "What do they say?"
+      ],
+      "rightAnswer": "That's their problem",
+      "decodedMeaning": "Showing you're still relevant in their life"
+    },
+    {
+      "id": "msg_016",
+      "text": "I was just in our favorite place",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "I haven't been there since...",
+        "Did you think of me?"
+      ],
+      "rightAnswer": "It's just a place now",
+      "decodedMeaning": "Nostalgia manipulation"
+    },
+    {
+      "id": "msg_017",
+      "text": "You up?",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "Yeah, what's up?",
+        "Couldn't sleep either?"
+      ],
+      "rightAnswer": "🚫",
+      "decodedMeaning": "Late night loneliness text"
+    },
+    {
+      "id": "msg_018",
+      "text": "I'm sorry for everything",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "I appreciate that",
+        "It hurt so much"
+      ],
+      "rightAnswer": "Apology accepted. Goodbye.",
+      "decodedMeaning": "Seeking forgiveness to ease their guilt"
+    },
+    {
+      "id": "msg_019",
+      "text": "We should catch up sometime",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "Sure, when are you free?",
+        "I'd like that"
+      ],
+      "rightAnswer": "No, we shouldn't",
+      "decodedMeaning": "Testing the waters"
+    },
+    {
+      "id": "msg_020",
+      "text": "I deleted the dating apps",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "Really? Why?",
+        "Me too actually"
+      ],
+      "rightAnswer": "Your dating life isn't my concern",
+      "decodedMeaning": "Showing they're 'available' again"
+    },
+    {
+      "id": "msg_021",
+      "text": "My mom still asks about you",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "Aww tell her I said hi",
+        "I miss your family too"
+      ],
+      "rightAnswer": "Tell her I'm thriving",
+      "decodedMeaning": "Using family to create guilt"
+    },
+    {
+      "id": "msg_022",
+      "text": "I found our photos",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "Don't delete them 🥺",
+        "We looked so happy"
+      ],
+      "rightAnswer": "Delete them",
+      "decodedMeaning": "Keeping you emotionally attached"
+    },
+    {
+      "id": "msg_023",
+      "text": "No one makes me laugh like you",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "We did have fun together",
+        "I miss making you laugh"
+      ],
+      "rightAnswer": "Get a comedy subscription",
+      "decodedMeaning": "Flattery to lower your guard"
+    },
+    {
+      "id": "msg_024",
+      "text": "I'm going through a lot rn",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "What's wrong? Tell me",
+        "I'm here if you need me"
+      ],
+      "rightAnswer": "I hope you find the support you need",
+      "decodedMeaning": "Using vulnerability to get attention"
+    },
+    {
+      "id": "msg_025",
+      "text": "This reminded me of us",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "Send it to me",
+        "Everything reminds me of you"
+      ],
+      "rightAnswer": "There is no 'us' anymore",
+      "decodedMeaning": "Keeping the connection alive"
+    },
+    {
+      "id": "msg_026",
+      "text": "I know I messed up",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "What made you realize?",
+        "We both made mistakes"
+      ],
+      "rightAnswer": "Self-awareness comes too late sometimes",
+      "decodedMeaning": "Seeking sympathy"
+    },
+    {
+      "id": "msg_027",
+      "text": "Wanna grab coffee?",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "When were you thinking?",
+        "As friends, right?"
+      ],
+      "rightAnswer": "I'll pass ☕️",
+      "decodedMeaning": "Casual meeting to rekindle"
+    },
+    {
+      "id": "msg_028",
+      "text": "I still love you",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "I love you too",
+        "What do you mean?"
+      ],
+      "rightAnswer": "Love yourself first",
+      "decodedMeaning": "Playing the love card when convenient"
+    },
+    {
+      "id": "msg_029",
+      "text": "Things aren't the same without you",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "I feel empty too",
+        "What's changed?"
+      ],
+      "rightAnswer": "Things will get better for both of us",
+      "decodedMeaning": "Making you feel needed"
+    },
+    {
+      "id": "msg_030",
+      "text": "Did you block me?",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "No, why would I?",
+        "I was thinking about it"
+      ],
+      "rightAnswer": "Maybe I should",
+      "decodedMeaning": "Checking if you still care"
+    },
+    {
+      "id": "msg_031",
+      "text": "Hey stranger 👋",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "Hey! Long time",
+        "I was just thinking about you"
+      ],
+      "rightAnswer": "Let's keep it that way",
+      "decodedMeaning": "Casual opener to restart conversation"
+    },
+    {
+      "id": "msg_032",
+      "text": "I've been going to therapy",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "That's great! How's it going?",
+        "I'm proud of you"
+      ],
+      "rightAnswer": "Good. Keep going.",
+      "decodedMeaning": "Showing growth to win you back"
+    },
+    {
+      "id": "msg_033",
+      "text": "I had the best dream about us",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "Tell me about it",
+        "I dream about us too"
+      ],
+      "rightAnswer": "Dreams aren't reality",
+      "decodedMeaning": "Creating fantasy connection"
+    },
+    {
+      "id": "msg_034",
+      "text": "Your new profile pic looks amazing",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "Thanks! 😊",
+        "You think so?"
+      ],
+      "rightAnswer": "Stop stalking my socials",
+      "decodedMeaning": "Flattery + admitting they check your profile"
+    },
+    {
+      "id": "msg_035",
+      "text": "I can't date anyone else",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "Why not?",
+        "I feel the same"
+      ],
+      "rightAnswer": "That's a you problem",
+      "decodedMeaning": "Making you feel responsible for their choices"
+    },
+    {
+      "id": "msg_036",
+      "text": "Just wanted to check on you",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "That's sweet of you",
+        "I'm okay, how are you?"
+      ],
+      "rightAnswer": "I'm good. No need to check.",
+      "decodedMeaning": "Pretending to care to get a response"
+    },
+    {
+      "id": "msg_037",
+      "text": "I wrote you a letter",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "Can I read it?",
+        "That's so thoughtful"
+      ],
+      "rightAnswer": "Please don't send it",
+      "decodedMeaning": "Grand gesture to manipulate emotions"
+    },
+    {
+      "id": "msg_038",
+      "text": "Do you ever think about what could've been?",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "All the time",
+        "What do you mean?"
+      ],
+      "rightAnswer": "I think about what will be",
+      "decodedMeaning": "Pulling you into hypotheticals"
+    },
+    {
+      "id": "msg_039",
+      "text": "I drove past your place today",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "You should've stopped by",
+        "I saw your car!"
+      ],
+      "rightAnswer": "That's a bit creepy ngl",
+      "decodedMeaning": "Showing they're still orbiting your life"
+    },
+    {
+      "id": "msg_040",
+      "text": "My therapist thinks I should reach out",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "For closure?",
+        "I'm glad you did"
+      ],
+      "rightAnswer": "My peace thinks you shouldn't",
+      "decodedMeaning": "Using therapy as an excuse to contact"
+    },
+    {
+      "id": "msg_041",
+      "text": "I miss your cooking",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "I'll make your favorite sometime",
+        "Those were good times"
+      ],
+      "rightAnswer": "Learn to cook",
+      "decodedMeaning": "Missing the comfort, not you"
+    },
+    {
+      "id": "msg_042",
+      "text": "You're the one that got away",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "Don't say that",
+        "We can fix this"
+      ],
+      "rightAnswer": "I got away for a reason",
+      "decodedMeaning": "Romantic cliché to manipulate"
+    },
+    {
+      "id": "msg_043",
+      "text": "I keep our playlist on repeat",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "Which songs?",
+        "I can't listen to them anymore"
+      ],
+      "rightAnswer": "Time for new music",
+      "decodedMeaning": "Living in the past"
+    },
+    {
+      "id": "msg_044",
+      "text": "Everyone says we were perfect together",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "We really were",
+        "I hear that too"
+      ],
+      "rightAnswer": "Everyone was wrong",
+      "decodedMeaning": "Using social pressure"
+    },
+    {
+      "id": "msg_045",
+      "text": "I'm not seeing anyone, just so you know",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "Neither am I",
+        "Why are you telling me?"
+      ],
+      "rightAnswer": "I don't need to know that",
+      "decodedMeaning": "Signaling availability"
+    },
+    {
+      "id": "msg_046",
+      "text": "Guess what happened today...",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "What? Tell me!",
+        "You know I love your stories"
+      ],
+      "rightAnswer": "Tell someone else",
+      "decodedMeaning": "Creating casual conversation"
+    },
+    {
+      "id": "msg_047",
+      "text": "I'm working on myself",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "That's great to hear",
+        "What are you doing differently?"
+      ],
+      "rightAnswer": "Good. So am I. Separately.",
+      "decodedMeaning": "Showing improvement to attract you back"
+    },
+    {
+      "id": "msg_048",
+      "text": "Can we at least be friends?",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "Maybe eventually",
+        "I'd like that"
+      ],
+      "rightAnswer": "No, we can't",
+      "decodedMeaning": "Friendship as a stepping stone"
+    },
+    {
+      "id": "msg_049",
+      "text": "I sent you something in the mail",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "What is it?!",
+        "You didn't have to"
+      ],
+      "rightAnswer": "Return to sender",
+      "decodedMeaning": "Creating obligation to respond"
+    },
+    {
+      "id": "msg_050",
+      "text": "I can't sleep. Missing you.",
+      "exGenders": ["male", "female", "other"],
+      "wrongAnswers": [
+        "Me neither",
+        "I'm here if you need to talk"
+      ],
+      "rightAnswer": "Try melatonin",
+      "decodedMeaning": "Nighttime vulnerability play"
+    }
+  ]
+}

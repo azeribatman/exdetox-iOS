@@ -818,7 +818,8 @@ struct AnalyticsView_Previews: PreviewProvider {
             sleepQuality: "Tossing & turning",
             mood: "Okay-ish 😐",
             excitementRating: 4,
-            onboardingCompletedDate: Date()
+            onboardingCompletedDate: Date(),
+            notificationPreferences: .defaults
         )
         return store
     }

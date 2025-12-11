@@ -1,11 +1,11 @@
 import Foundation
 
-enum HealingLevel: Int, CaseIterable, Codable, Hashable {
-    case emergency
-    case withdrawal
-    case reality
-    case glowUp
-    case unbothered
+enum HealingLevel: String, CaseIterable, Codable, Hashable {
+    case emergency = "emergency"
+    case withdrawal = "withdrawal"
+    case reality = "reality"
+    case glowUp = "glowUp"
+    case unbothered = "unbothered"
     
     var title: String {
         switch self {
@@ -71,12 +71,27 @@ enum HealingLevel: Int, CaseIterable, Codable, Hashable {
         return 4
     }
     
+    var levelIndex: Int {
+        switch self {
+        case .emergency: return 0
+        case .withdrawal: return 1
+        case .reality: return 2
+        case .glowUp: return 3
+        case .unbothered: return 4
+        }
+    }
+    
     var index: Int {
-        rawValue + 1
+        levelIndex + 1
     }
     
     var nextLevel: HealingLevel? {
-        HealingLevel(rawValue: rawValue + 1)
+        let allLevels = HealingLevel.allCases
+        guard let currentIndex = allLevels.firstIndex(of: self),
+              currentIndex + 1 < allLevels.count else {
+            return nil
+        }
+        return allLevels[currentIndex + 1]
     }
 }
 
@@ -286,6 +301,16 @@ struct TrackingState: StoreState {
 }
 
 extension TrackingState {
+    private static var utcCalendar: Calendar {
+        var calendar = Calendar.current
+        calendar.timeZone = TimeZone(identifier: "UTC") ?? .current
+        return calendar
+    }
+    
+    static func normalizedStartOfDay(_ date: Date, using calendar: Calendar = Calendar.current) -> Date {
+        calendar.startOfDay(for: date)
+    }
+    
     static func initialNow(totalProgramDays: Int = 180) -> TrackingState {
         let now = Date()
         return TrackingState(
@@ -349,27 +374,33 @@ extension TrackingState {
     }
     
     var calendar: Calendar {
-        Calendar.current
+        var cal = Calendar.current
+        cal.timeZone = .current
+        return cal
+    }
+    
+    private func daysBetween(from startDate: Date, to endDate: Date) -> Int {
+        let start = calendar.startOfDay(for: startDate)
+        let end = calendar.startOfDay(for: endDate)
+        
+        guard start <= end else { return 0 }
+        
+        let days = calendar.dateComponents([.day], from: start, to: end).day ?? 0
+        return max(days, 0)
     }
     
     var daysSinceProgramStart: Int {
-        let start = calendar.startOfDay(for: programStartDate)
-        let now = calendar.startOfDay(for: Date())
-        let days = calendar.dateComponents([.day], from: start, to: now).day ?? 0
+        let days = daysBetween(from: programStartDate, to: Date())
         return max(days + 1, 1)
     }
     
     var daysInLevel: Int {
-        let start = calendar.startOfDay(for: levelStartDate)
-        let now = calendar.startOfDay(for: Date())
-        let days = calendar.dateComponents([.day], from: start, to: now).day ?? 0
+        let days = daysBetween(from: levelStartDate, to: Date())
         return max(days + 1, 1)
     }
     
     var currentStreakDays: Int {
-        let start = calendar.startOfDay(for: noContactStartDate)
-        let now = calendar.startOfDay(for: Date())
-        let days = calendar.dateComponents([.day], from: start, to: now).day ?? 0
+        let days = daysBetween(from: noContactStartDate, to: Date())
         return max(days + 1, 1)
     }
     
@@ -651,7 +682,7 @@ final class TrackingStore: Store<TrackingState> {
         let effective = Double(state.daysInLevel) + state.bonusDays
         guard effective >= Double(requiredDays) else { return }
         
-        guard let nextLevel = HealingLevel(rawValue: state.currentLevel.rawValue + 1) else { return }
+        guard let nextLevel = state.currentLevel.nextLevel else { return }
         
         state.currentLevel = nextLevel
         state.levelStartDate = currentDate
@@ -689,7 +720,7 @@ final class TrackingStore: Store<TrackingState> {
             state.badges.append(Badge(type: .unfollowedAll))
         }
         
-        if state.currentLevel.rawValue >= HealingLevel.glowUp.rawValue && !earnedTypes.contains(.glowUpReached) {
+        if state.currentLevel.levelIndex >= HealingLevel.glowUp.levelIndex && !earnedTypes.contains(.glowUpReached) {
             state.badges.append(Badge(type: .glowUpReached))
         }
         
@@ -760,9 +791,8 @@ extension TrackingStore {
         let now = Date()
         
         let powerActions = [
-            PowerActionRecord(type: .muteNotifications, date: calendar.date(byAdding: .day, value: -10, to: now) ?? now),
             PowerActionRecord(type: .deletePhotos, date: calendar.date(byAdding: .day, value: -7, to: now) ?? now),
-            PowerActionRecord(type: .unfollowOne, date: calendar.date(byAdding: .day, value: -5, to: now) ?? now)
+            PowerActionRecord(type: .unfollowEx, date: calendar.date(byAdding: .day, value: -5, to: now) ?? now)
         ]
         
         let checkIns = (0..<14).compactMap { offset -> DailyCheckIn? in
@@ -785,7 +815,7 @@ extension TrackingStore {
             levelOffsetDays: 4,
             noContactOffsetDays: 18,
             maxStreak: 18,
-            bonusDays: 1.75,
+            bonusDays: 2,
             powerActions: powerActions,
             dailyCheckIns: checkIns,
             badges: badges
@@ -802,9 +832,8 @@ extension TrackingStore {
         
         let powerActions = [
             PowerActionRecord(type: .deletePhotos, date: calendar.date(byAdding: .day, value: -30, to: now) ?? now),
-            PowerActionRecord(type: .unfollow, date: calendar.date(byAdding: .day, value: -25, to: now) ?? now),
-            PowerActionRecord(type: .realityJournaling, date: calendar.date(byAdding: .day, value: -20, to: now) ?? now),
-            PowerActionRecord(type: .block, date: calendar.date(byAdding: .day, value: -10, to: now) ?? now)
+            PowerActionRecord(type: .unfollowEx, date: calendar.date(byAdding: .day, value: -25, to: now) ?? now),
+            PowerActionRecord(type: .blockEx, date: calendar.date(byAdding: .day, value: -10, to: now) ?? now)
         ]
         
         let checkIns = (0..<7).compactMap { offset -> DailyCheckIn? in
@@ -819,8 +848,7 @@ extension TrackingStore {
             Badge(type: .twoWeekStreak),
             Badge(type: .deletedFolder),
             Badge(type: .blockedEx),
-            Badge(type: .unfollowedAll),
-            Badge(type: .firstJournal)
+            Badge(type: .unfollowedAll)
         ]
         
         let state = TrackingState.preview(
@@ -832,7 +860,7 @@ extension TrackingStore {
             lastRelapseDate: relapse1,
             relapseCount: 4,
             maxStreak: 18,
-            bonusDays: 2,
+            bonusDays: 3,
             powerActions: powerActions,
             dailyCheckIns: checkIns,
             badges: badges
@@ -845,10 +873,9 @@ extension TrackingStore {
         let calendar = Calendar.current
         let now = Date()
         
-        let powerActions = (0..<12).compactMap { offset -> PowerActionRecord? in
-            guard let date = calendar.date(byAdding: .day, value: -offset * 5, to: now) else { return nil }
-            let types: [PowerActionType] = [.deletePhotos, .realityJournaling, .newExperience, .socialActivity, .fitnessChallenge]
-            return PowerActionRecord(type: types[offset % types.count], date: date)
+        let powerActions = PowerActionType.allActions.enumerated().compactMap { index, type -> PowerActionRecord? in
+            guard let date = calendar.date(byAdding: .day, value: -index * 10, to: now) else { return nil }
+            return PowerActionRecord(type: type, date: date)
         }
         
         let checkIns = (0..<30).compactMap { offset -> DailyCheckIn? in
@@ -863,9 +890,7 @@ extension TrackingStore {
             Badge(type: .monthStreak),
             Badge(type: .deletedFolder),
             Badge(type: .blockedEx),
-            Badge(type: .unfollowedAll),
-            Badge(type: .firstJournal),
-            Badge(type: .newExperience)
+            Badge(type: .unfollowedAll)
         ]
         
         let state = TrackingState.preview(
@@ -875,7 +900,7 @@ extension TrackingStore {
             noContactOffsetDays: 120,
             relapseCount: 2,
             maxStreak: 120,
-            bonusDays: 10,
+            bonusDays: 4,
             powerActions: powerActions,
             dailyCheckIns: checkIns,
             badges: badges
@@ -888,10 +913,9 @@ extension TrackingStore {
         let calendar = Calendar.current
         let now = Date()
         
-        let powerActions = (0..<20).compactMap { offset -> PowerActionRecord? in
-            guard let date = calendar.date(byAdding: .day, value: -offset * 7, to: now) else { return nil }
-            let types: [PowerActionType] = [.deletePhotos, .unfollow, .block, .realityJournaling, .newExperience, .socialActivity, .fitnessChallenge, .helpOthers]
-            return PowerActionRecord(type: types[offset % types.count], date: date)
+        let powerActions = PowerActionType.allActions.enumerated().compactMap { index, type -> PowerActionRecord? in
+            guard let date = calendar.date(byAdding: .day, value: -index * 20, to: now) else { return nil }
+            return PowerActionRecord(type: type, date: date)
         }
         
         let checkIns = (0..<60).compactMap { offset -> DailyCheckIn? in
@@ -912,7 +936,7 @@ extension TrackingStore {
             relapseCount: 3,
             maxStreak: 180,
             bonusDays: 0,
-            lifetimeBonusDays: 25,
+            lifetimeBonusDays: 4,
             relapseDates: [],
             powerActions: powerActions,
             dailyCheckIns: checkIns,
@@ -929,7 +953,7 @@ extension TrackingStore {
         
         let powerActions = [
             PowerActionRecord(type: .deletePhotos, date: calendar.date(byAdding: .day, value: -20, to: now) ?? now),
-            PowerActionRecord(type: .unfollow, date: calendar.date(byAdding: .day, value: -15, to: now) ?? now)
+            PowerActionRecord(type: .unfollowEx, date: calendar.date(byAdding: .day, value: -15, to: now) ?? now)
         ]
         
         let badges = [

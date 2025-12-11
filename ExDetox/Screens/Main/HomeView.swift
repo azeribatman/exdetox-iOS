@@ -117,6 +117,10 @@ struct HomeView: View {
             if stickyQuote.isEmpty {
                 stickyQuote = randomQuote
             }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                NotificationCenter.default.post(name: .checkStreakCelebration, object: nil)
+            }
         }
         .sheet(isPresented: $showSettings) {
             SettingsView()
@@ -1388,7 +1392,8 @@ struct HomeView_Previews: PreviewProvider {
             sleepQuality: "Tossing & turning",
             mood: "Okay-ish 😐",
             excitementRating: 4,
-            onboardingCompletedDate: Date()
+            onboardingCompletedDate: Date(),
+            notificationPreferences: .defaults
         )
         return store
     }

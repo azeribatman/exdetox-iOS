@@ -187,7 +187,12 @@ struct OnboardingView4: View {
     
     private func completeOnboarding() {
         userProfileStore.completeOnboarding()
+        
+        let now = Date()
         trackingStore.state.exName = userProfileStore.profile.exName
+        trackingStore.state.programStartDate = now
+        trackingStore.state.levelStartDate = now
+        trackingStore.state.noContactStartDate = now
         
         let profile = userProfileStore.profile
         trackingStore.recordDailyCheckIn(
@@ -196,7 +201,7 @@ struct OnboardingView4: View {
             note: "Initial check-in from onboarding"
         )
         
-        TrackingPersistence.bootstrap(store: trackingStore, context: modelContext)
+        TrackingPersistence.bootstrap(store: trackingStore, context: modelContext, isNewUser: true)
         router.set(.main)
     }
 }

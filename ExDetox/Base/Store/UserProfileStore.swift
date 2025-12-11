@@ -1,6 +1,22 @@
 import Foundation
 import SwiftData
 
+struct NotificationPreferences: Codable, Equatable {
+    var exQuizEnabled: Bool
+    var streakCelebrationEnabled: Bool
+    var lastShownStreakDay: Int
+    var notificationPermissionRequested: Bool
+    
+    static var defaults: NotificationPreferences {
+        NotificationPreferences(
+            exQuizEnabled: true,
+            streakCelebrationEnabled: true,
+            lastShownStreakDay: 0,
+            notificationPermissionRequested: false
+        )
+    }
+}
+
 struct UserProfile: Codable, Equatable {
     var name: String
     var gender: String
@@ -14,6 +30,7 @@ struct UserProfile: Codable, Equatable {
     var mood: String
     var excitementRating: Int
     var onboardingCompletedDate: Date?
+    var notificationPreferences: NotificationPreferences
     
     static var empty: UserProfile {
         UserProfile(
@@ -28,7 +45,8 @@ struct UserProfile: Codable, Equatable {
             sleepQuality: "",
             mood: "",
             excitementRating: 0,
-            onboardingCompletedDate: nil
+            onboardingCompletedDate: nil,
+            notificationPreferences: .defaults
         )
     }
     
@@ -133,6 +151,10 @@ final class UserProfileRecord {
     var mood: String
     var excitementRating: Int
     var onboardingCompletedDate: Date?
+    var exQuizEnabled: Bool
+    var streakCelebrationEnabled: Bool
+    var lastShownStreakDay: Int
+    var notificationPermissionRequested: Bool
     
     init(
         id: UUID = UUID(),
@@ -147,7 +169,11 @@ final class UserProfileRecord {
         sleepQuality: String = "",
         mood: String = "",
         excitementRating: Int = 0,
-        onboardingCompletedDate: Date? = nil
+        onboardingCompletedDate: Date? = nil,
+        exQuizEnabled: Bool = true,
+        streakCelebrationEnabled: Bool = true,
+        lastShownStreakDay: Int = 0,
+        notificationPermissionRequested: Bool = false
     ) {
         self.id = id
         self.name = name
@@ -162,6 +188,10 @@ final class UserProfileRecord {
         self.mood = mood
         self.excitementRating = excitementRating
         self.onboardingCompletedDate = onboardingCompletedDate
+        self.exQuizEnabled = exQuizEnabled
+        self.streakCelebrationEnabled = streakCelebrationEnabled
+        self.lastShownStreakDay = lastShownStreakDay
+        self.notificationPermissionRequested = notificationPermissionRequested
     }
     
     func toProfile() -> UserProfile {
@@ -177,7 +207,13 @@ final class UserProfileRecord {
             sleepQuality: sleepQuality,
             mood: mood,
             excitementRating: excitementRating,
-            onboardingCompletedDate: onboardingCompletedDate
+            onboardingCompletedDate: onboardingCompletedDate,
+            notificationPreferences: NotificationPreferences(
+                exQuizEnabled: exQuizEnabled,
+                streakCelebrationEnabled: streakCelebrationEnabled,
+                lastShownStreakDay: lastShownStreakDay,
+                notificationPermissionRequested: notificationPermissionRequested
+            )
         )
     }
     
@@ -194,6 +230,10 @@ final class UserProfileRecord {
         mood = profile.mood
         excitementRating = profile.excitementRating
         onboardingCompletedDate = profile.onboardingCompletedDate
+        exQuizEnabled = profile.notificationPreferences.exQuizEnabled
+        streakCelebrationEnabled = profile.notificationPreferences.streakCelebrationEnabled
+        lastShownStreakDay = profile.notificationPreferences.lastShownStreakDay
+        notificationPermissionRequested = profile.notificationPreferences.notificationPermissionRequested
     }
 }
 

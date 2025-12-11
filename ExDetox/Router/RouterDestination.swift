@@ -18,6 +18,8 @@ enum RouterDestination: Identifiable, Hashable {
             return "onboarding2"
         case .onboarding3:
             return "onboarding3"
+        case .onboardingNotification:
+            return "onboardingNotification"
         case .onboarding4:
             return "onboarding4"
         case .onboarding5:
@@ -30,6 +32,7 @@ enum RouterDestination: Identifiable, Hashable {
     case onboarding1
     case onboarding2
     case onboarding3
+    case onboardingNotification
     case onboarding4
     case onboarding5
     case main
@@ -43,6 +46,8 @@ enum RouterDestination: Identifiable, Hashable {
             OnboardingView2()
         case .onboarding3:
             OnboardingView3()
+        case .onboardingNotification:
+            OnboardingNotificationView()
         case .onboarding4:
             OnboardingView4()
         case .onboarding5:

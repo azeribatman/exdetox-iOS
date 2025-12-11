@@ -4,9 +4,17 @@ import SwiftData
 struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(TrackingStore.self) private var trackingStore
+    @Environment(UserProfileStore.self) private var userProfileStore
     @Environment(\.modelContext) private var modelContext
     @State private var showResetAlert = false
     @State private var showResetConfirmation = false
+    @State private var showOpenSettingsAlert = false
+    @State private var showStreakCelebration = false
+    @State private var showExQuizSheet = false
+    @State private var testQuizMessage: ExQuizMessage?
+    @State private var debugStreakValue = 7
+    
+    private let notificationManager = LocalNotificationManager.shared
     
     var body: some View {
         ZStack {
@@ -18,10 +26,15 @@ struct SettingsView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 20) {
                         lifetimeStatsSection
+                        notificationsSection
                         accountSection
                         legalSection
                         socialSection
                         supportSection
+                        
+                        #if DEBUG
+                        debugSection
+                        #endif
                         
                         versionFooter
                     }
@@ -29,6 +42,20 @@ struct SettingsView: View {
                     .padding(.top, 8)
                     .padding(.bottom, 40)
                 }
+            }
+            
+            if showStreakCelebration {
+                StreakCelebrationView(
+                    previousStreak: debugStreakValue - 1,
+                    currentStreak: debugStreakValue,
+                    onDismiss: {
+                        withAnimation {
+                            showStreakCelebration = false
+                        }
+                    }
+                )
+                .transition(.opacity)
+                .zIndex(100)
             }
         }
         .alert("Reset Your Streak?", isPresented: $showResetAlert) {
@@ -46,7 +73,256 @@ struct SettingsView: View {
         } message: {
             Text("Your streak has been reset. Today is Day 1 of your new journey. We believe in you! ✨")
         }
+        .alert("Enable Notifications", isPresented: $showOpenSettingsAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Open Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+        } message: {
+            Text("To enable notifications, please go to Settings and allow notifications for ExDetox.")
+        }
+        .sheet(isPresented: $showExQuizSheet) {
+            if let message = testQuizMessage {
+                ExQuizSheetView(
+                    message: message,
+                    exName: userProfileStore.profile.exName,
+                    onDismiss: {
+                        showExQuizSheet = false
+                    }
+                )
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+            }
+        }
+        .onAppear {
+            Task {
+                await notificationManager.checkAuthorizationStatus()
+            }
+        }
     }
+    
+    private var notificationsSection: some View {
+        SettingsSection(title: "NOTIFICATIONS") {
+            SettingsToggleRow(
+                icon: "message.fill",
+                title: "Ex Quiz",
+                subtitle: "Decode their manipulation",
+                iconColor: Color(hex: "FF6B6B"),
+                isOn: Binding(
+                    get: { userProfileStore.profile.notificationPreferences.exQuizEnabled },
+                    set: { newValue in
+                        handleNotificationToggle(newValue) { granted in
+                            userProfileStore.profile.notificationPreferences.exQuizEnabled = granted && newValue
+                            if granted && newValue {
+                                scheduleExQuizNotifications()
+                            } else {
+                                Task {
+                                    await notificationManager.cancelNotifications(ofType: .exQuiz)
+                                }
+                            }
+                        }
+                    }
+                )
+            )
+            
+            SettingsDivider()
+            
+            SettingsToggleRow(
+                icon: "flame.fill",
+                title: "Streak Celebrations",
+                subtitle: "Get hyped for milestones",
+                iconColor: Color(hex: "FF9500"),
+                isOn: Binding(
+                    get: { userProfileStore.profile.notificationPreferences.streakCelebrationEnabled },
+                    set: { newValue in
+                        handleNotificationToggle(newValue) { granted in
+                            userProfileStore.profile.notificationPreferences.streakCelebrationEnabled = granted && newValue
+                            if granted && newValue {
+                                scheduleStreakNotification()
+                            } else {
+                                Task {
+                                    await notificationManager.cancelNotifications(ofType: .streakCelebration)
+                                }
+                            }
+                        }
+                    }
+                )
+            )
+        }
+    }
+    
+    private func handleNotificationToggle(_ newValue: Bool, completion: @escaping (Bool) -> Void) {
+        if newValue {
+            Task {
+                await notificationManager.checkAuthorizationStatus()
+                
+                if notificationManager.authorizationStatus == .notDetermined {
+                    let granted = await notificationManager.requestAuthorization()
+                    await MainActor.run {
+                        completion(granted)
+                    }
+                } else if notificationManager.authorizationStatus == .denied {
+                    await MainActor.run {
+                        showOpenSettingsAlert = true
+                        completion(false)
+                    }
+                } else {
+                    await MainActor.run {
+                        completion(true)
+                    }
+                }
+            }
+        } else {
+            completion(true)
+        }
+    }
+    
+    private func scheduleExQuizNotifications() {
+        Task {
+            await notificationManager.scheduleExQuizNotifications(
+                exName: userProfileStore.profile.exName,
+                exGender: userProfileStore.profile.exGender
+            )
+        }
+    }
+    
+    private func scheduleStreakNotification() {
+        Task {
+            await notificationManager.scheduleStreakNotification(
+                currentStreak: trackingStore.currentStreakDays
+            )
+        }
+    }
+    
+    #if DEBUG
+    private var debugSection: some View {
+        SettingsSection(title: "🛠️ DEBUG MODE") {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Current State")
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundStyle(.secondary)
+                
+                Group {
+                    debugInfoRow("Current Streak", "\(trackingStore.currentStreakDays) days")
+                    debugInfoRow("Last Shown", "\(userProfileStore.profile.notificationPreferences.lastShownStreakDay) days")
+                    debugInfoRow("Onboarding", userProfileStore.hasCompletedOnboarding ? "✅ Done" : "❌ Not done")
+                    debugInfoRow("Ex Quiz", userProfileStore.profile.notificationPreferences.exQuizEnabled ? "✅ On" : "❌ Off")
+                    debugInfoRow("Streak Notif", userProfileStore.profile.notificationPreferences.streakCelebrationEnabled ? "✅ On" : "❌ Off")
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            
+            SettingsDivider()
+            
+            SettingsRow(
+                icon: "bell.badge.fill",
+                title: "Test Ex Quiz Notification",
+                subtitle: "Triggers in 3 seconds",
+                iconColor: Color(hex: "FF6B6B")
+            ) {
+                Haptics.feedback(style: .medium)
+                Task {
+                    await notificationManager.triggerTestExQuizNotification(
+                        exName: userProfileStore.profile.exName
+                    )
+                }
+            }
+            
+            SettingsDivider()
+            
+            SettingsRow(
+                icon: "flame.fill",
+                title: "Test Streak Notification",
+                subtitle: "Triggers in 3 seconds",
+                iconColor: Color(hex: "FF9500")
+            ) {
+                Haptics.feedback(style: .medium)
+                Task {
+                    await notificationManager.triggerTestStreakNotification(
+                        streak: trackingStore.currentStreakDays + 1
+                    )
+                }
+            }
+            
+            SettingsDivider()
+            
+            VStack(spacing: 12) {
+                HStack {
+                    Text("Test Streak Celebration")
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    
+                    Spacer()
+                    
+                    Stepper("", value: $debugStreakValue, in: 1...365)
+                        .labelsHidden()
+                    
+                    Text("Day \(debugStreakValue)")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 60)
+                }
+                
+                Button(action: {
+                    Haptics.feedback(style: .heavy)
+                    withAnimation {
+                        showStreakCelebration = true
+                    }
+                }) {
+                    Text("Show Celebration")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(Color(hex: "FF9500"))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            
+            SettingsDivider()
+            
+            SettingsRow(
+                icon: "doc.text.magnifyingglass",
+                title: "Test Ex Quiz Sheet",
+                subtitle: "Show quiz interaction",
+                iconColor: Color(hex: "6366F1")
+            ) {
+                Haptics.feedback(style: .medium)
+                if let message = notificationManager.getMessage(byId: "msg_001") {
+                    testQuizMessage = message
+                    showExQuizSheet = true
+                }
+            }
+            
+            SettingsDivider()
+            
+            SettingsRow(
+                icon: "arrow.clockwise",
+                title: "Reset Last Shown Streak",
+                subtitle: "Clears celebration state",
+                iconColor: .gray
+            ) {
+                Haptics.feedback(style: .light)
+                userProfileStore.profile.notificationPreferences.lastShownStreakDay = 0
+            }
+        }
+    }
+    
+    private func debugInfoRow(_ label: String, _ value: String) -> some View {
+        HStack {
+            Text(label)
+                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .foregroundStyle(.secondary)
+            Spacer()
+            Text(value)
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+        }
+    }
+    #endif
     
     private var lifetimeStatsSection: some View {
         SettingsSection(title: "LIFETIME STATS") {
@@ -323,9 +599,52 @@ struct SettingsDivider: View {
     }
 }
 
+struct SettingsToggleRow: View {
+    let icon: String
+    let title: String
+    var subtitle: String? = nil
+    let iconColor: Color
+    @Binding var isOn: Bool
+    
+    var body: some View {
+        HStack(spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(iconColor.opacity(0.12))
+                    .frame(width: 38, height: 38)
+                
+                Image(systemName: icon)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(iconColor)
+            }
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .foregroundColor(.primary)
+                
+                if let subtitle = subtitle {
+                    Text(subtitle)
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .foregroundColor(.secondary)
+                }
+            }
+            
+            Spacer()
+            
+            Toggle("", isOn: $isOn)
+                .labelsHidden()
+                .tint(iconColor)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+    }
+}
+
 #Preview {
     SettingsView()
         .environment(TrackingStore.previewLevel2WithProgress)
+        .environment(UserProfileStore())
         .modelContainer(for: [
             TrackingRecord.self,
             RelapseRecord.self,

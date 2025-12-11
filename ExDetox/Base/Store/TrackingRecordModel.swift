@@ -3,18 +3,29 @@ import SwiftData
 
 @Model
 final class TrackingRecord {
+    static let currentSchemaVersion: Int = 1
+    
     @Attribute(.unique) var id: UUID = UUID()
+    var schemaVersion: Int = TrackingRecord.currentSchemaVersion
     var exName: String = ""
     var programStartDate: Date = Date()
     var totalProgramDays: Int = 180
     var levelStartDate: Date = Date()
-    var currentLevelRaw: Int = 0
+    var currentLevelRaw: String = HealingLevel.emergency.rawValue
     var noContactStartDate: Date = Date()
     var lastRelapseDate: Date?
     var relapseCount: Int = 0
     var maxStreak: Int = 0
-    var bonusDays: Double = 0
-    var lifetimeBonusDays: Double = 0
+    var bonusDays: Double = 0 {
+        didSet {
+            bonusDays = max(0, min(bonusDays, Double(HealingLevel.emergency.maxBonusDays)))
+        }
+    }
+    var lifetimeBonusDays: Double = 0 {
+        didSet {
+            lifetimeBonusDays = max(0, lifetimeBonusDays)
+        }
+    }
     @Relationship(deleteRule: .cascade) var relapses: [RelapseRecord] = []
     @Relationship(deleteRule: .cascade) var powerActions: [PowerActionObject] = []
     @Relationship(deleteRule: .cascade) var dailyCheckIns: [DailyCheckInRecord] = []
@@ -22,11 +33,12 @@ final class TrackingRecord {
     
     init(
         id: UUID = UUID(),
+        schemaVersion: Int = TrackingRecord.currentSchemaVersion,
         exName: String,
         programStartDate: Date,
         totalProgramDays: Int,
         levelStartDate: Date,
-        currentLevelRaw: Int,
+        currentLevelRaw: String,
         noContactStartDate: Date,
         lastRelapseDate: Date?,
         relapseCount: Int,
@@ -39,21 +51,26 @@ final class TrackingRecord {
         badges: [BadgeRecord] = []
     ) {
         self.id = id
+        self.schemaVersion = schemaVersion
         self.exName = exName
         self.programStartDate = programStartDate
-        self.totalProgramDays = totalProgramDays
+        self.totalProgramDays = max(1, totalProgramDays)
         self.levelStartDate = levelStartDate
         self.currentLevelRaw = currentLevelRaw
         self.noContactStartDate = noContactStartDate
         self.lastRelapseDate = lastRelapseDate
-        self.relapseCount = relapseCount
-        self.maxStreak = maxStreak
-        self.bonusDays = bonusDays
-        self.lifetimeBonusDays = lifetimeBonusDays
+        self.relapseCount = max(0, relapseCount)
+        self.maxStreak = max(0, maxStreak)
+        self.bonusDays = max(0, min(bonusDays, Double(HealingLevel.emergency.maxBonusDays)))
+        self.lifetimeBonusDays = max(0, lifetimeBonusDays)
         self.relapses = relapses
         self.powerActions = powerActions
         self.dailyCheckIns = dailyCheckIns
         self.badges = badges
+    }
+    
+    var currentLevel: HealingLevel {
+        HealingLevel(rawValue: currentLevelRaw) ?? .emergency
     }
 }
 
@@ -83,7 +100,7 @@ final class PowerActionObject {
     }
     
     var type: PowerActionType {
-        PowerActionType(rawValue: typeRaw) ?? .custom
+        PowerActionType(rawValue: typeRaw) ?? .deletePhotos
     }
 }
 
@@ -91,15 +108,23 @@ final class PowerActionObject {
 final class DailyCheckInRecord {
     @Attribute(.unique) var id: UUID
     var date: Date
-    var mood: Int
-    var urge: Int
+    var mood: Int {
+        didSet {
+            mood = min(max(mood, 1), 5)
+        }
+    }
+    var urge: Int {
+        didSet {
+            urge = min(max(urge, 0), 10)
+        }
+    }
     var note: String?
     
     init(id: UUID = UUID(), date: Date = Date(), mood: Int = 3, urge: Int = 5, note: String? = nil) {
         self.id = id
         self.date = date
-        self.mood = mood
-        self.urge = urge
+        self.mood = min(max(mood, 1), 5)
+        self.urge = min(max(urge, 0), 10)
         self.note = note
     }
 }

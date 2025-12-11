@@ -108,7 +108,7 @@ struct OnboardingView3: View {
                 if phase == .ready && ctaVisible {
                     Button(action: {
                         Haptics.feedback(style: .medium)
-                        router.navigate(.onboarding5)
+                        router.navigate(.onboardingNotification)
                     }) {
                         Text("Continue")
                             .font(.system(size: 18, weight: .bold, design: .rounded))
