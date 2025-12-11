@@ -140,6 +140,7 @@ struct ExDetoxApp: App {
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
             }
+            .preferredColorScheme(.light)
         }
     }
     
