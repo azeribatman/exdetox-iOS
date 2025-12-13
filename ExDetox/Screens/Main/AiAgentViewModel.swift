@@ -7,13 +7,24 @@ final class AiAgentViewModel: ObservableObject {
     @Published var inputText: String = ""
     @Published var isStreaming = false
     @Published var errorMessage: String?
+    @Published var hasReachedMonthlyLimit = false
     
     private let sseClient: SSEClientType
     private var streamingMessageID: UUID?
     private var hasFinishedCurrentStream = false
+    private let messageLimitManager = ChatMessageLimitManager.shared
+    
+    var remainingMessages: Int {
+        messageLimitManager.remainingMessages
+    }
+    
+    var maxCharacters: Int {
+        messageLimitManager.maxCharacters
+    }
     
     init(sseClient: SSEClientType = SSEClient()) {
         self.sseClient = sseClient
+        self.hasReachedMonthlyLimit = !messageLimitManager.canSendMessage
     }
     
     func sendMessage(
@@ -21,8 +32,18 @@ final class AiAgentViewModel: ObservableObject {
         userProfileStore: UserProfileStore,
         whyItems: [WhyItemRecord]
     ) {
-        let trimmed = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard messageLimitManager.canSendMessage else {
+            hasReachedMonthlyLimit = true
+            return
+        }
+        
+        let trimmed = messageLimitManager.truncateMessage(
+            inputText.trimmingCharacters(in: .whitespacesAndNewlines)
+        )
         guard !trimmed.isEmpty else { return }
+        
+        messageLimitManager.incrementMessageCount()
+        hasReachedMonthlyLimit = !messageLimitManager.canSendMessage
         
         inputText = ""
         errorMessage = nil

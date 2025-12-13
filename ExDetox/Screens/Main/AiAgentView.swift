@@ -51,6 +51,16 @@ struct AiAgentView: View {
                 }
             }
         )
+        .alert(
+            "Monthly Limit Reached",
+            isPresented: $viewModel.hasReachedMonthlyLimit,
+            actions: {
+                Button("OK", role: .cancel) {}
+            },
+            message: {
+                Text("You've used all 1,000 messages this month. Your limit will reset at the start of next month.")
+            }
+        )
         .onAppear {
             viewModel.messages = [.init(text: "Hi \(userProfileStore.profile.name)! I'm here to listen. How are you feeling today?", isUser: false)]
         }
@@ -218,29 +228,63 @@ struct AiAgentView: View {
     }
     
     private var chatInputBar: some View {
-        HStack(spacing: 10) {
-            TextField("What's on your mind?", text: $viewModel.inputText)
-                .font(.system(size: 15, weight: .medium, design: .rounded))
-                .focused($isInputFocused)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .background(cardBg)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .submitLabel(.send)
-                .onSubmit { sendMessage() }
-            
-            Button(action: sendMessage) {
-                Image(systemName: "arrow.up.circle.fill")
-                    .font(.system(size: 40))
-                    .foregroundStyle(viewModel.inputText.isEmpty || viewModel.isStreaming ? .black.opacity(0.15) : .black)
-                    .animation(.easeInOut(duration: 0.2), value: viewModel.inputText.isEmpty)
+        VStack(spacing: 0) {
+            if isInputFocused && !viewModel.inputText.isEmpty {
+                messageLimitBadge
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
             }
-            .disabled(viewModel.inputText.isEmpty || viewModel.isStreaming)
+            
+            HStack(spacing: 10) {
+                TextField("What's on your mind?", text: $viewModel.inputText)
+                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .focused($isInputFocused)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(cardBg)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .submitLabel(.send)
+                    .onSubmit { sendMessage() }
+                    .onChange(of: viewModel.inputText) { newValue in
+                        if newValue.count > viewModel.maxCharacters {
+                            viewModel.inputText = String(newValue.prefix(viewModel.maxCharacters))
+                        }
+                    }
+                
+                Button(action: sendMessage) {
+                    Image(systemName: "arrow.up.circle.fill")
+                        .font(.system(size: 40))
+                        .foregroundStyle(viewModel.inputText.isEmpty || viewModel.isStreaming || viewModel.hasReachedMonthlyLimit ? .black.opacity(0.15) : .black)
+                        .animation(.easeInOut(duration: 0.2), value: viewModel.inputText.isEmpty)
+                }
+                .disabled(viewModel.inputText.isEmpty || viewModel.isStreaming || viewModel.hasReachedMonthlyLimit)
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 10)
+            .padding(.bottom, 12)
+        }
+        .background(creamBg)
+        .animation(.easeInOut(duration: 0.2), value: isInputFocused)
+    }
+    
+    private var messageLimitBadge: some View {
+        HStack(spacing: 6) {
+            Image(systemName: viewModel.remainingMessages < 50 ? "exclamationmark.circle.fill" : "bubble.left.fill")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(viewModel.remainingMessages < 50 ? Color(hex: "EF4444") : .secondary)
+            
+            Text("\(viewModel.remainingMessages) messages left this month")
+                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .foregroundStyle(viewModel.remainingMessages < 50 ? Color(hex: "EF4444") : .secondary)
+            
+            Spacer()
+            
+            Text("\(viewModel.inputText.count)/\(viewModel.maxCharacters)")
+                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                .foregroundStyle(viewModel.inputText.count >= viewModel.maxCharacters ? Color(hex: "EF4444") : .secondary)
         }
         .padding(.horizontal, 16)
-        .padding(.top, 10)
-        .padding(.bottom, 12)
-        .background(creamBg)
+        .padding(.vertical, 8)
+        .background(cardBg.opacity(0.9))
     }
     
     private func sendMessage() {
