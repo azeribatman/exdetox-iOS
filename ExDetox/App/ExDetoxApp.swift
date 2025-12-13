@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import UserNotifications
+import SuperwallKit
 
 @main
 struct ExDetoxApp: App {
@@ -267,6 +268,9 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         UNUserNotificationCenter.current().delegate = self
+        
+        Superwall.configure(apiKey: "pk_UVy__-LmdHBZflLIZ7SfN")
+        
         return true
     }
     

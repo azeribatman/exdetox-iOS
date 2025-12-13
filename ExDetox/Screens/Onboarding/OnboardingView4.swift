@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import SuperwallKit
 
 struct OnboardingView4: View {
     @Environment(Router.self) private var router
@@ -202,7 +203,10 @@ struct OnboardingView4: View {
         )
         
         TrackingPersistence.bootstrap(store: trackingStore, context: modelContext, isNewUser: true)
-        router.set(.main)
+        
+        Superwall.shared.register(placement: "onboarding_custom_plan") {
+            router.set(.main)
+        }
     }
 }
 

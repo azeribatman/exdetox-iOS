@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import SuperwallKit
 
 struct LaunchView: View {
     @Environment(Router.self) private var router
@@ -55,7 +56,11 @@ struct LaunchView: View {
                             trackingStore.state.exName = userProfileStore.profile.exName
                         }
                         
-                        router.set(.main)
+                        Superwall.shared.register(
+                            placement: "app_launch_onboarded"
+                        ) {
+                            router.set(.main)
+                        }
                     } else {
                         router.set(.onboarding1)
                     }
