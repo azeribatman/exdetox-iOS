@@ -466,6 +466,10 @@ struct OnboardingView2: View {
     
     func handleContractSigned() {
         saveData()
+        
+        // Track tutorial/quiz completion
+        AnalyticsManager.shared.trackTutorialCompletion(tutorialId: "intro_quiz", success: true)
+        
         router.navigate(.onboarding3)
     }
     

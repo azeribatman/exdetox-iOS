@@ -30,7 +30,7 @@ struct OnboardingView1: View {
     var body: some View {
         GeometryReader { geometry in
             let center = CGPoint(x: geometry.size.width / 2, y: geometry.size.height / 2)
-            let maxRadius = max(geometry.size.width, geometry.size.height) * 1.5
+//            let maxRadius = max(geometry.size.width, geometry.size.height) * 1.5
             
             ZStack {
                 // MARK: - Layer 1: Light Phase (Bottom)

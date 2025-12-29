@@ -84,15 +84,15 @@ struct AiAgentView: View {
                 .padding(.top, 12)
                 .padding(.bottom, 20)
             }
-            .onChange(of: viewModel.messages) { _ in
+            .onChange(of: viewModel.messages) { _, _ in
                 scrollToBottom(proxy: proxy)
             }
-            .onChange(of: viewModel.isStreaming) { isStreaming in
+            .onChange(of: viewModel.isStreaming) { _, isStreaming in
                 if isStreaming {
                     scrollToBottom(proxy: proxy)
                 }
             }
-            .onChange(of: isInputFocused) { focused in
+            .onChange(of: isInputFocused) { _, focused in
                 if focused {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                         scrollToBottom(proxy: proxy)
@@ -244,7 +244,7 @@ struct AiAgentView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 20))
                     .submitLabel(.send)
                     .onSubmit { sendMessage() }
-                    .onChange(of: viewModel.inputText) { newValue in
+                    .onChange(of: viewModel.inputText) { _, newValue in
                         if newValue.count > viewModel.maxCharacters {
                             viewModel.inputText = String(newValue.prefix(viewModel.maxCharacters))
                         }

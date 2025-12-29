@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import AppsFlyerLib
 
 struct PanicView: View {
     @Environment(\.dismiss) var dismiss
@@ -60,6 +61,8 @@ struct PanicView: View {
         .background(Color(hex: "F9F9F9").ignoresSafeArea())
         .onAppear {
             startAnimations()
+            // Track panic view content view (when opened as sheet)
+            AnalyticsManager.shared.trackContentView(contentId: "panic_view", contentType: "sos_screen")
         }
         .sheet(isPresented: $showMeditate) {
             MeditateView()

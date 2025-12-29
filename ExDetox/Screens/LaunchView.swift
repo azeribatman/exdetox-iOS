@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import SuperwallKit
+import AppsFlyerLib
 
 struct LaunchView: View {
     @Environment(Router.self) private var router
@@ -175,6 +176,12 @@ struct LaunchView: View {
                     if trackingStore.state.exName.isEmpty {
                         trackingStore.state.exName = userProfileStore.profile.exName
                     }
+                    
+                    // Track returning user login
+                    AnalyticsManager.shared.trackLogin(method: "app_open")
+                    
+                    // Track paywall view
+                    AnalyticsManager.shared.trackPaywallView(placement: "app_launch_onboarded")
                     
                     Superwall.shared.register(
                         placement: "app_launch_onboarded"

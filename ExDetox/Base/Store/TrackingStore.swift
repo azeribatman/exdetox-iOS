@@ -1,4 +1,5 @@
 import Foundation
+import AppsFlyerLib
 
 enum HealingLevel: String, CaseIterable, Codable, Hashable {
     case emergency = "emergency"
@@ -684,9 +685,17 @@ final class TrackingStore: Store<TrackingState> {
         
         guard let nextLevel = state.currentLevel.nextLevel else { return }
         
+        let previousLevel = state.currentLevel
         state.currentLevel = nextLevel
         state.levelStartDate = currentDate
         state.bonusDays = 0
+        
+        // Track level/streak milestone achievement
+        AnalyticsManager.shared.trackStreakMilestone(
+            streakDays: state.currentStreakDays,
+            levelName: nextLevel.title
+        )
+        print("📊 Level up tracked: \(previousLevel.title) -> \(nextLevel.title)")
     }
     
     private func checkAndAwardBadges() {

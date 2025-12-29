@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import SuperwallKit
+import AppsFlyerLib
 
 struct OnboardingView4: View {
     @Environment(Router.self) private var router
@@ -204,7 +205,12 @@ struct OnboardingView4: View {
         
         TrackingPersistence.bootstrap(store: trackingStore, context: modelContext, isNewUser: true)
         
+        // Track paywall view
+        AnalyticsManager.shared.trackPaywallView(placement: "onboarding_custom_plan")
+        
         Superwall.shared.register(placement: "onboarding_custom_plan") {
+            // Track registration completion after onboarding
+            AnalyticsManager.shared.trackCompleteRegistration(method: "onboarding")
             router.set(.main)
         }
     }

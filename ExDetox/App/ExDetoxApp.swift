@@ -2,6 +2,8 @@ import SwiftUI
 import SwiftData
 import UserNotifications
 import SuperwallKit
+import AppsFlyerLib
+import AppTrackingTransparency
 
 @main
 struct ExDetoxApp: App {
@@ -50,6 +52,29 @@ struct ExDetoxApp: App {
     @Environment(\.scenePhase) private var scenePhase
     
     private let notificationManager = LocalNotificationManager.shared
+    
+    init() {
+        AppsFlyerLib.shared().appsFlyerDevKey = "42Lv7YCLa6d23HZsjVAnBP"
+        AppsFlyerLib.shared().appleAppID = "6756420232"
+        AppsFlyerLib.shared().waitForATTUserAuthorization(timeoutInterval: 60)
+        
+        ATTrackingManager.requestTrackingAuthorization { (status) in
+            switch status {
+            case .denied:
+                print("AuthorizationSatus is denied")
+            case .notDetermined:
+                print("AuthorizationSatus is notDetermined")
+            case .restricted:
+                print("AuthorizationSatus is restricted")
+            case .authorized:
+                print("AuthorizationSatus is authorized")
+            @unknown default:
+                fatalError("Invalid authorization status")
+            }
+        }
+        
+        AppsFlyerLib.shared().start()
+    }
     
     var body: some Scene {
         WindowGroup {
@@ -270,6 +295,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         UNUserNotificationCenter.current().delegate = self
         
         Superwall.configure(apiKey: "pk_UVy__-LmdHBZflLIZ7SfN")
+        Superwall.shared.delegate = SuperwallAnalyticsDelegate.shared
         
         return true
     }

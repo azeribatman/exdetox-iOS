@@ -11,6 +11,12 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>ExDetox needs access to your photo library to add images to your "My Why" reasons.</string>
+	<string>ExDetox needs access to your photo library to add images to your &quot;My Why&quot; reasons.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>ExDetox needs your data to provide a personalized ad experience and improve our app&apos;s features.</string>
+	<key>NSAdvertisingAttributionReportEndpoint</key>
+	<string>https://appsflyer-skadnetwork.com/</string>
+	<key>AttributionCopyEndpoint</key>
+	<string>https://appsflyer-skadnetwork.com/</string>
 </dict>
 </plist>

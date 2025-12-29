@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 import SwiftData
+import AppsFlyerLib
 
 struct HomeView: View {
     @Environment(TrackingStore.self) private var trackingStore
@@ -295,12 +296,15 @@ struct HomeView: View {
         HStack(spacing: 10) {
             actionCard(icon: "bolt.fill", title: "Power Actions", color: .primary) {
                 showPowerActionsSheet = true
+                AnalyticsManager.shared.trackPowerActionsTap()
             }
             actionCard(icon: "wind", title: "Breathe", color: .green) {
                 showMeditate = true
+                AnalyticsManager.shared.trackBreatheTap()
             }
             actionCard(icon: "flame.fill", title: "Roast Me", color: .orange) {
                 showRoastMe = true
+                AnalyticsManager.shared.trackRoastMeTap()
             }
         }
         .padding(.horizontal, 16)
@@ -511,6 +515,8 @@ struct HomeView: View {
         Button {
             showPanic = true
             Haptics.feedback(style: .heavy)
+            // Track panic button tap for power user identification
+            AnalyticsManager.shared.trackPanicButtonTap()
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: "exclamationmark.triangle.fill")

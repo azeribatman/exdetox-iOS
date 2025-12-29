@@ -10,6 +10,7 @@
 		681AA1C52E7FAE77005DB953 /* KeychainSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 681AA1C42E7FAE77005DB953 /* KeychainSwift */; };
 		684AF8412EEC31A5007A0EEC /* SuperwallKit in Frameworks */ = {isa = PBXBuildFile; productRef = 684AF8402EEC31A5007A0EEC /* SuperwallKit */; };
 		68E4960F2EEC576E0051E82F /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 68E4960E2EEC576E0051E82F /* StoreKit.framework */; };
+		99D3CB392F01210D00D8157D /* AppsFlyerLib in Frameworks */ = {isa = PBXBuildFile; productRef = 99D3CB382F01210D00D8157D /* AppsFlyerLib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -73,6 +74,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				68E4960F2EEC576E0051E82F /* StoreKit.framework in Frameworks */,
+				99D3CB392F01210D00D8157D /* AppsFlyerLib in Frameworks */,
 				681AA1C52E7FAE77005DB953 /* KeychainSwift in Frameworks */,
 				684AF8412EEC31A5007A0EEC /* SuperwallKit in Frameworks */,
 			);
@@ -146,6 +148,7 @@
 			packageProductDependencies = (
 				681AA1C42E7FAE77005DB953 /* KeychainSwift */,
 				684AF8402EEC31A5007A0EEC /* SuperwallKit */,
+				99D3CB382F01210D00D8157D /* AppsFlyerLib */,
 			);
 			productName = BatcaveStarter;
 			productReference = 68D5F0022E7F9E0B0032D089 /* ExDetox.app */;
@@ -232,6 +235,7 @@
 			packageReferences = (
 				681AA1C32E7FAE77005DB953 /* XCRemoteSwiftPackageReference "keychain-swift" */,
 				684AF83F2EEC31A5007A0EEC /* XCRemoteSwiftPackageReference "Superwall-iOS" */,
+				99D3CB372F01210D00D8157D /* XCRemoteSwiftPackageReference "AppsFlyerFramework" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 68D5F0032E7F9E0B0032D089 /* Products */;
@@ -630,6 +634,14 @@
 				minimumVersion = 4.10.8;
 			};
 		};
+		99D3CB372F01210D00D8157D /* XCRemoteSwiftPackageReference "AppsFlyerFramework" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/AppsFlyerSDK/AppsFlyerFramework.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.17.8;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -642,6 +654,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 684AF83F2EEC31A5007A0EEC /* XCRemoteSwiftPackageReference "Superwall-iOS" */;
 			productName = SuperwallKit;
+		};
+		99D3CB382F01210D00D8157D /* AppsFlyerLib */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 99D3CB372F01210D00D8157D /* XCRemoteSwiftPackageReference "AppsFlyerFramework" */;
+			productName = AppsFlyerLib;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
