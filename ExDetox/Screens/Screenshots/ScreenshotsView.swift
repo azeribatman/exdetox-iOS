@@ -337,6 +337,10 @@ struct ScreenshotsView: View {
         
         let whyItems = [
             WhyItemRecord(
+                title: "He forgot to buy me a Christmas gift and acted like it wasn’t a big deal",
+                imageFileName: nil
+            ),
+            WhyItemRecord(
                 title: "He forgot my birthday and blamed it on being 'busy with work'",
                 imageFileName: nil
             ),

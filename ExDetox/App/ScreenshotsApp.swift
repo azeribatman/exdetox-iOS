@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 
+//@main
 struct ScreenshotsApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
@@ -21,7 +22,7 @@ struct ScreenshotsApp: App {
         }
     }()
     
-    @State private var trackingStore = TrackingStore.previewLevel2WithProgress
+    @State private var trackingStore = TrackingStore.previewLevel4NearLevelUp
     @State private var notificationStore = NotificationStore()
     @State private var userProfileStore = UserProfileStore.previewProfile()
     
@@ -41,8 +42,8 @@ extension UserProfileStore {
     static func previewProfile() -> UserProfileStore {
         let store = UserProfileStore()
         store.profile = UserProfile(
-            name: "Sarah",
-            gender: "Female",
+            name: "Lina",
+            gender: "Male",
             exName: "Jake",
             exGender: "Male",
             relationshipDuration: "1 - 3 years",
