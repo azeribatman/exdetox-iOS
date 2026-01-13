@@ -484,7 +484,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ExDetox/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "ExDetox Creator";
+				INFOPLIST_KEY_CFBundleDisplayName = ExDetox;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "ExDetox needs access to your photo library to add images to your \"My Why\" reasons.";
 				INFOPLIST_KEY_NSUserTrackingUsageDescription = "ExDetox needs your data to provide a personalized ad experience and improve our app's features.";
