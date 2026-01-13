@@ -8,6 +8,10 @@ struct MainView: View {
     
     @State private var selectedTab: Tab = .home
     
+    #if DEBUG
+    @State private var showCreatorPanel = false
+    #endif
+    
     init() {
         UITabBar.appearance().isHidden = true
     }
@@ -38,6 +42,14 @@ struct MainView: View {
         .onAppear {
             TrackingPersistence.bootstrap(store: trackingStore, context: modelContext)
         }
+        #if DEBUG
+        .onShake {
+            showCreatorPanel = true
+        }
+        .sheet(isPresented: $showCreatorPanel) {
+            CreatorPanelView()
+        }
+        #endif
     }
     
     private func tabBarView() -> some View {

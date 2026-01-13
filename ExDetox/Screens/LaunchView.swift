@@ -170,6 +170,23 @@ struct LaunchView: View {
             try? await Task.sleep(nanoseconds: 1_000_000_000)
             
             await MainActor.run {
+                #if DEBUG
+                TrackingPersistence.bootstrap(store: trackingStore, context: modelContext)
+                
+                if trackingStore.state.exName.isEmpty {
+                    trackingStore.state.exName = userProfileStore.profile.exName.isEmpty ? "Ex" : userProfileStore.profile.exName
+                }
+                
+                if userProfileStore.profile.name.isEmpty {
+                    userProfileStore.profile.name = "Debug User"
+                }
+                
+                if userProfileStore.profile.exName.isEmpty {
+                    userProfileStore.profile.exName = "Ex"
+                }
+                
+                router.set(.main)
+                #else
                 if userProfileStore.hasCompletedOnboarding {
                     TrackingPersistence.bootstrap(store: trackingStore, context: modelContext)
                     
@@ -191,6 +208,7 @@ struct LaunchView: View {
                 } else {
                     router.set(.onboarding1)
                 }
+                #endif
             }
         }
     }
