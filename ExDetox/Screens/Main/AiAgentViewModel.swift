@@ -34,6 +34,7 @@ final class AiAgentViewModel: ObservableObject {
     ) {
         guard messageLimitManager.canSendMessage else {
             hasReachedMonthlyLimit = true
+            AnalyticsManager.shared.trackAiLimitReached()
             return
         }
         
@@ -51,6 +52,9 @@ final class AiAgentViewModel: ObservableObject {
         
         let userMessage = ChatMessage(text: trimmed, isUser: true)
         messages.append(userMessage)
+        
+        // Track AI message sent
+        AnalyticsManager.shared.trackAiMessageSent(messageLength: trimmed.count)
         
         let history = historyString(excludingLatestUser: true)
         let request = AIChatRequest(body: buildBody(

@@ -7,6 +7,7 @@ struct MainView: View {
     @Environment(\.modelContext) private var modelContext
     
     @State private var selectedTab: Tab = .home
+    @State private var previousTab: Tab? = nil
     
     #if DEBUG
     @State private var showCreatorPanel = false
@@ -65,8 +66,14 @@ struct MainView: View {
     
     private func tabItemView(for tab: Tab) -> some View {
         Button {
+            let prevTab = selectedTab
             selectedTab = tab
             Haptics.feedback(style: .light)
+            
+            // Track tab switch
+            if prevTab != tab {
+                AnalyticsManager.shared.trackTabSwitch(from: prevTab.rawValue, to: tab.rawValue)
+            }
         } label: {
             VStack(spacing: 4) {
                 Image(systemName: selectedTab == tab ? tab.selectedIcon : tab.unselectedIcon)

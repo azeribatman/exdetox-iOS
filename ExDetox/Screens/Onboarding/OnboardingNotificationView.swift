@@ -386,6 +386,9 @@ struct OnboardingNotificationView: View {
                 
                 isRequesting = false
                 
+                // Track notification response
+                AnalyticsManager.shared.trackOnboardingNotificationResponse(enabled: granted)
+                
                 if granted {
                     Haptics.notification(type: .success)
                 }
@@ -400,6 +403,10 @@ struct OnboardingNotificationView: View {
         userProfileStore.profile.notificationPreferences.notificationPermissionRequested = true
         userProfileStore.profile.notificationPreferences.exQuizEnabled = false
         userProfileStore.profile.notificationPreferences.streakCelebrationEnabled = false
+        
+        // Track notification skipped
+        AnalyticsManager.shared.trackOnboardingNotificationResponse(enabled: false)
+        
         navigateToNext()
     }
     

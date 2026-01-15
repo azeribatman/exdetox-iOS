@@ -90,6 +90,9 @@ struct SettingsView: View {
                 
                 LocalNotificationManager.shared.cancelAllNotifications()
                 
+                // Track start fresh
+                AnalyticsManager.shared.trackStartFresh()
+                
                 Haptics.notification(type: .warning)
                 showStartFreshConfirmation = true
             }
@@ -130,6 +133,9 @@ struct SettingsView: View {
             Task {
                 await notificationManager.checkAuthorizationStatus()
             }
+            
+            // Track settings opened
+            AnalyticsManager.shared.trackSettingsOpen()
         }
     }
     

@@ -1,8 +1,9 @@
 import Foundation
 import AppsFlyerLib
+import FirebaseAnalytics
 
-/// Centralized analytics manager for AppsFlyer event tracking.
-/// All events use standard AppsFlyer event names for automatic mapping to TikTok/Apple.
+/// Centralized analytics manager for AppsFlyer + Firebase event tracking.
+/// All events are sent to both platforms for comprehensive analytics.
 final class AnalyticsManager {
     
     static let shared = AnalyticsManager()
@@ -27,6 +28,16 @@ final class AnalyticsManager {
         }
         
         AppsFlyerLib.shared().logEvent(AFEventStartTrial, withValues: eventValues)
+        
+        // Firebase
+        FirebaseAnalyticsManager.shared.trackSubscriptionStart(
+            productId: eventValues[AFEventParamContentId] as? String ?? trialType,
+            price: price ?? 0,
+            currency: currency,
+            type: trialType,
+            isTrial: true
+        )
+        
         print("📊 Analytics: af_start_trial - \(eventValues)")
     }
     
@@ -48,6 +59,16 @@ final class AnalyticsManager {
         }
         
         AppsFlyerLib.shared().logEvent(AFEventSubscribe, withValues: eventValues)
+        
+        // Firebase
+        FirebaseAnalyticsManager.shared.trackSubscriptionStart(
+            productId: productId ?? subscriptionType,
+            price: revenue,
+            currency: currency,
+            type: subscriptionType,
+            isTrial: false
+        )
+        
         print("📊 Analytics: af_subscribe - \(eventValues)")
     }
     
@@ -66,6 +87,14 @@ final class AnalyticsManager {
         ]
         
         AppsFlyerLib.shared().logEvent(AFEventPurchase, withValues: eventValues)
+        
+        // Firebase
+        FirebaseAnalyticsManager.shared.trackPurchaseComplete(
+            productId: productId,
+            price: revenue,
+            currency: currency
+        )
+        
         print("📊 Analytics: af_purchase - \(eventValues)")
     }
     
@@ -83,6 +112,13 @@ final class AnalyticsManager {
         }
         
         AppsFlyerLib.shared().logEvent(AFEventInitiatedCheckout, withValues: eventValues)
+        
+        // Firebase
+        FirebaseAnalyticsManager.shared.trackPaywallView(
+            paywallId: paywallId,
+            source: source ?? "unknown"
+        )
+        
         print("📊 Analytics: af_initiated_checkout - \(eventValues)")
     }
     
@@ -102,6 +138,11 @@ final class AnalyticsManager {
         }
         
         AppsFlyerLib.shared().logEvent(AFEventCompleteRegistration, withValues: eventValues)
+        
+        // Firebase
+        FirebaseAnalyticsManager.shared.trackOnboardingComplete()
+        FirebaseAnalyticsManager.shared.setOnboardingComplete(true)
+        
         print("📊 Analytics: af_complete_registration - \(eventValues)")
     }
     
@@ -116,6 +157,10 @@ final class AnalyticsManager {
         ]
         
         AppsFlyerLib.shared().logEvent(AFEventTutorial_completion, withValues: eventValues)
+        
+        // Firebase
+        FirebaseAnalyticsManager.shared.trackOnboardingQuizComplete(exNameSet: true, exGender: "")
+        
         print("📊 Analytics: af_tutorial_completion - \(eventValues)")
     }
     
@@ -127,6 +172,10 @@ final class AnalyticsManager {
         ]
         
         AppsFlyerLib.shared().logEvent(AFEventLogin, withValues: eventValues)
+        
+        // Firebase
+        FirebaseAnalyticsManager.shared.trackAppOpen(isReturningUser: true)
+        
         print("📊 Analytics: af_login - \(eventValues)")
     }
     
@@ -143,6 +192,9 @@ final class AnalyticsManager {
         ]
         
         AppsFlyerLib.shared().logEvent(AFEventContentView, withValues: eventValues)
+        
+        // Firebase - handled by specific feature tracking methods
+        
         print("📊 Analytics: af_content_view - \(eventValues)")
     }
     
@@ -157,6 +209,12 @@ final class AnalyticsManager {
         ]
         
         AppsFlyerLib.shared().logEvent(AFEventLevelAchieved, withValues: eventValues)
+        
+        // Firebase
+        FirebaseAnalyticsManager.shared.trackStreakMilestone(days: score, level: level)
+        FirebaseAnalyticsManager.shared.setUserLevel(level)
+        FirebaseAnalyticsManager.shared.setUserStreakDays(score)
+        
         print("📊 Analytics: af_level_achieved - \(eventValues)")
     }
     
@@ -176,6 +234,9 @@ final class AnalyticsManager {
         
         // Using custom event name as af_feature_use is not a predefined constant
         AppsFlyerLib.shared().logEvent("af_feature_use", withValues: eventValues)
+        
+        // Firebase - specific feature events handled by convenience methods
+        
         print("📊 Analytics: af_feature_use - \(eventValues)")
     }
     
@@ -185,24 +246,36 @@ final class AnalyticsManager {
     func trackPanicButtonTap() {
         trackFeatureUse(featureName: "panic_button", details: "sos_mode_opened")
         trackContentView(contentId: "panic_button", contentType: "sos_tool")
+        
+        // Firebase
+        FirebaseAnalyticsManager.shared.trackPanicButtonTap()
     }
     
     /// Track breathe/meditate feature usage
     func trackBreatheTap() {
         trackFeatureUse(featureName: "breathe", details: "meditation_opened")
         trackContentView(contentId: "breathe", contentType: "wellness_tool")
+        
+        // Firebase
+        FirebaseAnalyticsManager.shared.trackBreatheOpen()
     }
     
     /// Track roast me feature usage
     func trackRoastMeTap() {
         trackFeatureUse(featureName: "roast_me", details: "roast_opened")
         trackContentView(contentId: "roast_me", contentType: "motivation_tool")
+        
+        // Firebase
+        FirebaseAnalyticsManager.shared.trackRoastMeOpen()
     }
     
     /// Track power actions feature usage
     func trackPowerActionsTap() {
         trackFeatureUse(featureName: "power_actions", details: "power_actions_opened")
         trackContentView(contentId: "power_actions", contentType: "engagement_tool")
+        
+        // Firebase
+        FirebaseAnalyticsManager.shared.trackPowerActionsOpen()
     }
     
     /// Track streak milestone achievement
@@ -217,6 +290,212 @@ final class AnalyticsManager {
     /// - Parameter placement: The Superwall placement identifier
     func trackPaywallView(placement: String) {
         trackInitiatedCheckout(paywallId: placement, source: "superwall")
+        // Firebase tracking handled in trackInitiatedCheckout
+    }
+    
+    // MARK: - Additional Firebase-Specific Tracking
+    
+    /// Track onboarding step progression
+    func trackOnboardingStep(step: Int, name: String) {
+        FirebaseAnalyticsManager.shared.trackOnboardingStep(step: step, name: name)
+    }
+    
+    /// Track tab switch in main view
+    func trackTabSwitch(from previousTab: String?, to newTab: String) {
+        FirebaseAnalyticsManager.shared.trackTabSwitch(from: previousTab, to: newTab)
+    }
+    
+    /// Track AI agent message sent
+    func trackAiMessageSent(messageLength: Int) {
+        trackFeatureUse(featureName: "ai_agent", details: "message_sent")
+        FirebaseAnalyticsManager.shared.trackAiMessageSent(messageLength: messageLength)
+    }
+    
+    /// Track AI agent opened
+    func trackAiAgentOpen() {
+        trackContentView(contentId: "ai_agent", contentType: "chat_tool")
+        FirebaseAnalyticsManager.shared.trackAiAgentOpen()
+    }
+    
+    /// Track My Why opened
+    func trackMyWhyOpen(itemCount: Int) {
+        trackContentView(contentId: "my_why", contentType: "motivation_screen")
+        FirebaseAnalyticsManager.shared.trackMyWhyOpen(itemCount: itemCount)
+    }
+    
+    /// Track Why item added
+    func trackWhyItemAdd(hasImage: Bool) {
+        trackFeatureUse(featureName: "my_why", details: "item_added")
+        FirebaseAnalyticsManager.shared.trackWhyItemAdd(hasImage: hasImage)
+    }
+    
+    /// Track Learning opened
+    func trackLearningOpen(completedCount: Int, totalCount: Int) {
+        trackContentView(contentId: "learning", contentType: "education_screen")
+        FirebaseAnalyticsManager.shared.trackLearningOpen(completedCount: completedCount, totalCount: totalCount)
+    }
+    
+    /// Track lesson started
+    func trackLessonStart(lessonId: String, sectionId: String) {
+        trackFeatureUse(featureName: "learning", details: "lesson_started")
+        FirebaseAnalyticsManager.shared.trackLessonStart(lessonId: lessonId, sectionId: sectionId)
+    }
+    
+    /// Track lesson completed
+    func trackLessonComplete(lessonId: String, sectionId: String) {
+        trackFeatureUse(featureName: "learning", details: "lesson_completed")
+        FirebaseAnalyticsManager.shared.trackLessonComplete(lessonId: lessonId, sectionId: sectionId)
+    }
+    
+    /// Track article opened
+    func trackArticleOpen(articleId: String, articleTitle: String) {
+        trackContentView(contentId: articleId, contentType: "article")
+        FirebaseAnalyticsManager.shared.trackArticleOpen(articleId: articleId, articleTitle: articleTitle)
+    }
+    
+    /// Track article completed
+    func trackArticleComplete(articleId: String) {
+        trackFeatureUse(featureName: "learning", details: "article_completed")
+        FirebaseAnalyticsManager.shared.trackArticleComplete(articleId: articleId)
+    }
+    
+    /// Track Analytics view opened
+    func trackAnalyticsViewOpen(streakDays: Int, level: String) {
+        trackContentView(contentId: "analytics", contentType: "progress_screen")
+        FirebaseAnalyticsManager.shared.trackAnalyticsViewOpen(streakDays: streakDays, level: level)
+    }
+    
+    /// Track daily check-in
+    func trackDailyCheckIn(moodScore: Int, urgeScore: Int, hasNote: Bool) {
+        trackFeatureUse(featureName: "check_in", details: "daily_check_in")
+        FirebaseAnalyticsManager.shared.trackDailyCheckIn(moodScore: moodScore, urgeScore: urgeScore, hasNote: hasNote)
+    }
+    
+    /// Track relapse
+    func trackRelapse(previousStreak: Int) {
+        trackFeatureUse(featureName: "relapse", details: "streak_reset")
+        FirebaseAnalyticsManager.shared.trackRelapse(previousStreak: previousStreak)
+    }
+    
+    /// Track settings opened
+    func trackSettingsOpen() {
+        trackContentView(contentId: "settings", contentType: "settings_screen")
+        FirebaseAnalyticsManager.shared.trackSettingsOpen()
+    }
+    
+    /// Track breathing session start
+    func trackBreathingSessionStart() {
+        trackFeatureUse(featureName: "breathe", details: "session_started")
+        FirebaseAnalyticsManager.shared.trackBreathingSessionStart()
+    }
+    
+    /// Track breathing session complete
+    func trackBreathingSessionComplete(durationSeconds: Int) {
+        trackFeatureUse(featureName: "breathe", details: "session_completed")
+        FirebaseAnalyticsManager.shared.trackBreathingSessionComplete(durationSeconds: durationSeconds)
+    }
+    
+    /// Track roast generated
+    func trackRoastGenerated() {
+        trackFeatureUse(featureName: "roast_me", details: "roast_generated")
+        FirebaseAnalyticsManager.shared.trackRoastGenerated()
+    }
+    
+    /// Track power action tap
+    func trackPowerActionTap(actionName: String) {
+        trackFeatureUse(featureName: "power_actions", details: actionName)
+        FirebaseAnalyticsManager.shared.trackPowerActionTap(actionName: actionName)
+    }
+    
+    /// Track power action complete
+    func trackPowerActionComplete(actionName: String) {
+        trackFeatureUse(featureName: "power_actions", details: "\(actionName)_completed")
+        FirebaseAnalyticsManager.shared.trackPowerActionComplete(actionName: actionName)
+    }
+    
+    /// Track level up
+    func trackLevelUp(from previousLevel: String, to newLevel: String, streakDays: Int) {
+        trackLevelAchieved(level: newLevel, score: streakDays)
+        FirebaseAnalyticsManager.shared.trackLevelUp(from: previousLevel, to: newLevel, streakDays: streakDays)
+    }
+    
+    /// Track badge earned
+    func trackBadgeEarned(badgeName: String) {
+        trackFeatureUse(featureName: "badge", details: badgeName)
+        FirebaseAnalyticsManager.shared.trackBadgeEarned(badgeName: badgeName)
+    }
+    
+    /// Track notification toggle
+    func trackNotificationToggle(enabled: Bool, type: String) {
+        FirebaseAnalyticsManager.shared.trackNotificationToggle(enabled: enabled, type: type)
+    }
+    
+    /// Track start fresh (reset all data)
+    func trackStartFresh() {
+        trackFeatureUse(featureName: "settings", details: "start_fresh")
+        FirebaseAnalyticsManager.shared.trackStartFresh()
+    }
+    
+    /// Track rate app
+    func trackRateApp(source: String) {
+        trackFeatureUse(featureName: "rate_app", details: source)
+        FirebaseAnalyticsManager.shared.trackRateApp(source: source)
+    }
+    
+    /// Track share app
+    func trackShareApp(method: String) {
+        trackFeatureUse(featureName: "share_app", details: method)
+        FirebaseAnalyticsManager.shared.trackShareApp(method: method)
+    }
+    
+    /// Track Ex Quiz opened
+    func trackExQuizOpen() {
+        trackContentView(contentId: "ex_quiz", contentType: "quiz_tool")
+        FirebaseAnalyticsManager.shared.trackExQuizOpen()
+    }
+    
+    /// Track Ex Quiz complete
+    func trackExQuizComplete(score: Int) {
+        trackFeatureUse(featureName: "ex_quiz", details: "completed")
+        FirebaseAnalyticsManager.shared.trackExQuizComplete(score: score)
+    }
+    
+    /// Track panic view action
+    func trackPanicViewAction(action: String) {
+        trackFeatureUse(featureName: "panic", details: action)
+        FirebaseAnalyticsManager.shared.trackPanicViewAction(action: action)
+    }
+    
+    /// Track burn text feature
+    func trackBurnTextStart() {
+        trackFeatureUse(featureName: "burn_text", details: "started")
+        FirebaseAnalyticsManager.shared.trackBurnTextStart()
+    }
+    
+    func trackBurnTextComplete() {
+        trackFeatureUse(featureName: "burn_text", details: "completed")
+        FirebaseAnalyticsManager.shared.trackBurnTextComplete()
+    }
+    
+    /// Track AI limit reached
+    func trackAiLimitReached() {
+        trackFeatureUse(featureName: "ai_agent", details: "limit_reached")
+        FirebaseAnalyticsManager.shared.trackAiLimitReached()
+    }
+    
+    /// Track onboarding notification response
+    func trackOnboardingNotificationResponse(enabled: Bool) {
+        FirebaseAnalyticsManager.shared.trackOnboardingNotificationResponse(enabled: enabled)
+    }
+    
+    /// Track onboarding rating
+    func trackOnboardingRating(rating: Int) {
+        FirebaseAnalyticsManager.shared.trackOnboardingRating(rating: rating)
+    }
+    
+    /// Track screen view
+    func trackScreenView(_ screen: FirebaseAnalyticsManager.ScreenName) {
+        FirebaseAnalyticsManager.shared.logScreenView(screen)
     }
     
     /// Track successful subscription with both subscribe and purchase events

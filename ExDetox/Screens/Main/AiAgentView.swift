@@ -63,6 +63,9 @@ struct AiAgentView: View {
         )
         .onAppear {
             viewModel.messages = [.init(text: "Hi \(userProfileStore.profile.name)! I'm here to listen. How are you feeling today?", isUser: false)]
+            
+            // Track AI Agent opened
+            AnalyticsManager.shared.trackAiAgentOpen()
         }
     }
     

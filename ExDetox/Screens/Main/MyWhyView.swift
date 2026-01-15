@@ -77,10 +77,17 @@ struct MyWhyView: View {
                 let newItem = WhyItemRecord(title: title, imageFileName: fileName)
                 modelContext.insert(newItem)
                 try? modelContext.save()
+                
+                // Track why item added
+                AnalyticsManager.shared.trackWhyItemAdd(hasImage: image != nil)
             }
         }
         .sheet(isPresented: $showSettings) {
             SettingsView()
+        }
+        .onAppear {
+            // Track My Why opened
+            AnalyticsManager.shared.trackMyWhyOpen(itemCount: items.count)
         }
     }
     

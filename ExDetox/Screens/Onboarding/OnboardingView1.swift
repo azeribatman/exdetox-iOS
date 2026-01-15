@@ -115,6 +115,10 @@ struct OnboardingView1: View {
         .onAppear {
             runCinematicSequence()
             startFloating()
+            
+            // Track onboarding start
+            AnalyticsManager.shared.trackOnboardingStep(step: 1, name: "welcome")
+            FirebaseAnalyticsManager.shared.trackOnboardingStart()
         }
         .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)

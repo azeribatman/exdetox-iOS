@@ -174,6 +174,10 @@ struct OnboardingView2: View {
     // MARK: - Conversation Logic
     
     func startConversation() {
+        // Track onboarding quiz start
+        AnalyticsManager.shared.trackOnboardingStep(step: 2, name: "quiz")
+        FirebaseAnalyticsManager.shared.trackOnboardingQuizStart()
+        
         addAppMessage("Hey you. 👋", delay: 0.3) {
             addAppMessage("You made it here.\nThat takes guts.") {
                 addAppMessage("I'm gonna ask you some real questions.\nNo BS.") {

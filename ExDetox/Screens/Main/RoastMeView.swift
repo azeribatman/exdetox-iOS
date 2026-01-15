@@ -66,6 +66,9 @@ struct RoastMeView: View {
         }
         
         generateRoast()
+        
+        // Track roast generated
+        AnalyticsManager.shared.trackRoastGenerated()
     }
     
     private var headerView: some View {

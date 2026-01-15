@@ -144,11 +144,18 @@ struct OnboardingView5: View {
     
     private func navigateToNext() {
         userProfileStore.profile.excitementRating = rating
+        
+        // Track onboarding rating
+        if rating > 0 {
+            AnalyticsManager.shared.trackOnboardingRating(rating: rating)
+        }
+        
         router.navigate(.onboarding4)
         
         if rating >= 4 {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                 requestReview()
+                AnalyticsManager.shared.trackRateApp(source: "onboarding")
             }
         }
     }

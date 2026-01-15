@@ -44,6 +44,11 @@ struct LearningView: View {
         }
         .onAppear {
             loadLearningSectionsIfNeeded()
+            
+            // Track learning opened
+            let totalCompleted = learningSections.reduce(0) { $0 + $1.completedCount }
+            let totalLessons = learningSections.reduce(0) { $0 + $1.totalCount }
+            AnalyticsManager.shared.trackLearningOpen(completedCount: totalCompleted, totalCount: totalLessons)
         }
     }
     

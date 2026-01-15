@@ -73,7 +73,10 @@ struct MeditateView: View {
                             BreathingStep(count: "8s", label: "Exhale", color: .teal)
                         }
                         
-                        Button(action: { showBreathingGame = true }) {
+                        Button(action: {
+                            showBreathingGame = true
+                            AnalyticsManager.shared.trackBreathingSessionStart()
+                        }) {
                             HStack(spacing: 10) {
                                 Image(systemName: "play.fill")
                                     .font(.system(size: 14, weight: .bold))
@@ -116,6 +119,7 @@ struct MeditateView: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 12))
                             
                             Button(action: {
+                                AnalyticsManager.shared.trackBurnTextStart()
                                 withAnimation(.easeInOut(duration: 0.5)) {
                                     showBurnAnimation = true
                                 }
@@ -124,6 +128,7 @@ struct MeditateView: View {
                                     withAnimation {
                                         showBurnAnimation = false
                                     }
+                                    AnalyticsManager.shared.trackBurnTextComplete()
                                 }
                             }) {
                                 HStack(spacing: 8) {

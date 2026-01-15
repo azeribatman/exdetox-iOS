@@ -32,6 +32,12 @@ struct AnalyticsView: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 animateProgress = true
             }
+            
+            // Track analytics view opened
+            AnalyticsManager.shared.trackAnalyticsViewOpen(
+                streakDays: trackingStore.currentStreakDays,
+                level: trackingStore.currentLevel.rawValue
+            )
         }
         .sheet(isPresented: $showAllLevels) {
             AllLevelsSheet()
