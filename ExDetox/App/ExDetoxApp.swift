@@ -4,6 +4,7 @@ import UserNotifications
 import SuperwallKit
 import AppsFlyerLib
 import AppTrackingTransparency
+import Firebase
 
 @main
 struct ExDetoxApp: App {
@@ -57,21 +58,6 @@ struct ExDetoxApp: App {
         AppsFlyerLib.shared().appsFlyerDevKey = "42Lv7YCLa6d23HZsjVAnBP"
         AppsFlyerLib.shared().appleAppID = "6756420232"
         AppsFlyerLib.shared().waitForATTUserAuthorization(timeoutInterval: 60)
-        
-        ATTrackingManager.requestTrackingAuthorization { (status) in
-            switch status {
-            case .denied:
-                print("AuthorizationSatus is denied")
-            case .notDetermined:
-                print("AuthorizationSatus is notDetermined")
-            case .restricted:
-                print("AuthorizationSatus is restricted")
-            case .authorized:
-                print("AuthorizationSatus is authorized")
-            @unknown default:
-                fatalError("Invalid authorization status")
-            }
-        }
         
         AppsFlyerLib.shared().start()
     }
@@ -168,6 +154,22 @@ struct ExDetoxApp: App {
                 .presentationDragIndicator(.visible)
             }
             .preferredColorScheme(.light)
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+                ATTrackingManager.requestTrackingAuthorization { (status) in
+                    switch status {
+                    case .denied:
+                        print("AuthorizationStatus is denied")
+                    case .notDetermined:
+                        print("AuthorizationStatus is notDetermined")
+                    case .restricted:
+                        print("AuthorizationStatus is restricted")
+                    case .authorized:
+                        print("AuthorizationStatus is authorized")
+                    @unknown default:
+                        fatalError("Invalid authorization status")
+                    }
+                }
+            }
         }
     }
     
@@ -296,6 +298,8 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         
         Superwall.configure(apiKey: "pk_UVy__-LmdHBZflLIZ7SfN")
         Superwall.shared.delegate = SuperwallAnalyticsDelegate.shared
+        
+        FirebaseApp.configure()
         
         return true
     }
