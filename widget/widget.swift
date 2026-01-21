@@ -129,9 +129,7 @@ struct HomeWidgetView: View {
     }
     
     var body: some View {
-        ZStack {
-            bgColor
-            
+        Group {
             switch family {
             case .systemSmall:
                 smallWidget
