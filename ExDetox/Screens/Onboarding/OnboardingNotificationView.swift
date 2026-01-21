@@ -411,7 +411,7 @@ struct OnboardingNotificationView: View {
     }
     
     private func navigateToNext() {
-        router.navigate(.onboarding5)
+        router.navigate(.onboardingWidget)
     }
 }
 

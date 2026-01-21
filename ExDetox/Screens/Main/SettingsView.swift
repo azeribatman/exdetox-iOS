@@ -18,6 +18,7 @@ struct SettingsView: View {
     @State private var showExQuizSheet = false
     @State private var testQuizMessage: ExQuizMessage?
     @State private var debugStreakValue = 7
+    @State private var showWidgetSettings = false
     
     private let notificationManager = LocalNotificationManager.shared
     
@@ -37,6 +38,7 @@ struct SettingsView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 20) {
                         lifetimeStatsSection
+                        widgetsSection
                         notificationsSection
                         accountSection
                         legalSection
@@ -128,6 +130,11 @@ struct SettingsView: View {
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
             }
+        }
+        .sheet(isPresented: $showWidgetSettings) {
+            WidgetSettingsView()
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
         }
         .onAppear {
             Task {
@@ -359,6 +366,20 @@ struct SettingsView: View {
         }
     }
     #endif
+    
+    private var widgetsSection: some View {
+        SettingsSection(title: "WIDGETS") {
+            SettingsRow(
+                icon: "square.grid.2x2.fill",
+                title: "Customize Widgets",
+                subtitle: "Colors & appearance",
+                iconColor: Color(hex: "8B5CF6")
+            ) {
+                Haptics.feedback(style: .light)
+                showWidgetSettings = true
+            }
+        }
+    }
     
     private var lifetimeStatsSection: some View {
         SettingsSection(title: "LIFETIME STATS") {

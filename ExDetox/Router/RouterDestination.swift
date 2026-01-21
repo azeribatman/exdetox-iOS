@@ -24,6 +24,8 @@ enum RouterDestination: Identifiable, Hashable {
             return "onboarding4"
         case .onboarding5:
             return "onboarding5"
+        case .onboardingWidget:
+            return "onboardingWidget"
         case .main:
             return "main"
         }
@@ -35,6 +37,7 @@ enum RouterDestination: Identifiable, Hashable {
     case onboardingNotification
     case onboarding4
     case onboarding5
+    case onboardingWidget
     case main
     
     @MainActor @ViewBuilder
@@ -52,6 +55,8 @@ enum RouterDestination: Identifiable, Hashable {
             OnboardingView4()
         case .onboarding5:
             OnboardingView5()
+        case .onboardingWidget:
+            OnboardingWidgetShowcaseView()
         case .main:
             MainView()
         }

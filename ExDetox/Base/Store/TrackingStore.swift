@@ -1,5 +1,6 @@
 import Foundation
 import AppsFlyerLib
+import WidgetKit
 
 enum HealingLevel: String, CaseIterable, Codable, Hashable {
     case emergency = "emergency"
@@ -619,9 +620,21 @@ final class TrackingStore: Store<TrackingState> {
         state.calendar.date(byAdding: .day, value: state.totalProgramDays, to: state.programStartDate) ?? Date()
     }
     
+    func syncWidgetData() {
+        WidgetDataManager.shared.updateWidgetData(
+            streakDays: currentStreakDays,
+            exName: state.exName,
+            level: currentLevel.title,
+            levelEmoji: currentLevel.emoji,
+            levelColor: currentLevel.color,
+            maxStreak: max(maxStreak, currentStreakDays)
+        )
+    }
+    
     func updateForCurrentDate(_ date: Date = Date()) {
         updateLevelIfNeeded(currentDate: date)
         checkAndAwardBadges()
+        syncWidgetData()
     }
     
     func recordRelapse(on date: Date = Date()) {
@@ -643,6 +656,7 @@ final class TrackingStore: Store<TrackingState> {
         
         state.levelStartDate = today
         state.bonusDays = 0
+        syncWidgetData()
     }
     
     func recordPowerAction(_ type: PowerActionType, on date: Date = Date(), note: String? = nil) {
@@ -660,6 +674,7 @@ final class TrackingStore: Store<TrackingState> {
         
         updateLevelIfNeeded(currentDate: date)
         checkAndAwardBadges()
+        syncWidgetData()
     }
     
     func recordDailyCheckIn(mood: Int, urge: Int, note: String? = nil, on date: Date = Date()) {

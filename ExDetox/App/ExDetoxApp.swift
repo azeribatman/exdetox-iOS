@@ -98,6 +98,11 @@ struct ExDetoxApp: App {
                                 }
                             }
                             rescheduleNotificationsIfNeeded()
+                            
+                            // Sync widget data when app becomes active
+                            if userProfileStore.hasCompletedOnboarding {
+                                trackingStore.syncWidgetData()
+                            }
                         }
                     }
                     .task {
